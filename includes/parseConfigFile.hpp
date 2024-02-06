@@ -8,13 +8,27 @@
 
 struct s_location
 {
-	
-};Who yeah what
+	std::string name;
+	std::vector<std::string>allowMethods;
+	bool autoIndex = false;
+	std::string index;
+	std::string returnPath;
+}t_location;
+struct s_server
+{
+	int listen = 0;
+	std::string server_name;
+	std::string host;
+	std::string rootPath;
+	std::string index;
+	std::pair<int, std::string>errorPage;
+}t_server;
 
 
 class NConfig{
 	public:
-		std::vector<std::string>server;
+		t_server s;
+		t_location;
 		std::vector<std::string>comments;
 		
 };
