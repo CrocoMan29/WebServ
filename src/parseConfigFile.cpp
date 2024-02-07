@@ -2,82 +2,109 @@
 
 // #include "parseConfigFile.hpp"
 
-WebServ::WebServ(){}
-
-void WebServ::parseNginxLocation(std::istringstream &iss, NLocation &location)
+std::string trim(std::string &s, char c)
 {
-	std::string key, value;
-	while (iss >> key){
-		std::string rest_of_line;
-		std::getline(iss, rest_of_line);
-		char* r_o_line = strdup(rest_of_line.c_str());
-		char* token = std::strtok(r_o_line, " ");
-		while (token != NULL){
-			std::string splits;
-			splits = token;
-			if (std::strrchr(token, ';'))
-				splits = strtrim_semicolon(splits);
-			location.properties[key].push_back(splits);
-			token = std::strtok(NULL, " ");
-		}
+	std::string  str;
+	size_t index = s.find_first_not_of(c);
+    if (index != std::string::npos)
+        str += s.substr(index);
+    index = str.find_last_not_of(c);
+    if (index != std::string::npos)
+	{
+        str = str.substr(0, index + 1);
 	}
+	s = str;
+	return (s);
 }
-void WebServ::parseNgnixConfig(const std::string &filename)
+
+std::vector<std::string> split(std::string s, char c)
+{
+    std::string  str;
+    std::vector<std::string> splited;
+    std::string  initial = s;
+    int del=0,i=0,p=0,j=0;
+    
+	str = trim(initial, c);
+    for (size_t i = 0; i < str.length(); i++)
+		if (str[i] && str[i] == c && str[i + 1] != c)
+			del++;
+    while (del-- >= 0)
+	{
+		i = 0;
+		while (str[p] && str[p] != c && str[p++])
+			i++;
+		splited.push_back(str.substr(j, i));
+		while (str[p] && str[p] == c)
+			p++;
+		j = p;
+	}
+	return (splited);
+}
+WebServ::WebServ(){
+	this->c_bracket = 0;
+}
+
+void WebServ::parseConfigFile(std::string &filename)
 {
 	std::ifstream file(filename.c_str());
-	if (!file.is_open()){
-		std::cerr << "ERROR: Could not open this file: " << filename << std::endl;
-		return ;
+	if (!file){
+		throw std::runtime_error("ERROR: file not found");
 	}
 	std::string line;
-	NLocation* currentlocation = NULL;
-	if (!std::getline(file, line))
+	std::vector<std::string>lines;
+	if (!getline(file, line)){
+		throw std::runtime_error("ERROR: file is empty");
+	}
+	lines.push_back(line.append(" \n"));
+	while (getline(file, line))
 	{
-		std::cerr << "ERROR: File is empty" << std::endl;
-		return ;
+		if (!line.empty())
+			lines.push_back(line.append(" \n"));
 	}
-	if (line != "server {"){
-		std::cerr << "ERROR" << std::endl;
-		return ;
+	checkbracket(lines);
+	printConfFile(lines);
+}
+void WebServ::checkbracket(std::vector<std::string>&lines)
+{
+	std::vector<std::string>::iterator it = lines.begin();
+	while (it != lines.end())
+	{
+		trim(*it, ' ');
+		if ((*it).size() > 1 && (*it)[0] == '#')
+			it = lines.erase(it);
+		else
+			it++;
 	}
-	while (std::getline(file, line)){
-		std::istringstream iss(line);
-		std::string key;
-		iss >> key;
-
-		if (key.empty() || key[0] == '#')
-			continue;
-		if (key == "location") {
-			std::string path;
-			iss >> path;
-			config.locationBlocks[path] = NLocation();
-			currentlocation = &config.locationBlocks[path];
-			parseNginxLocation(iss, *currentlocation);	
-		} else if (currentlocation){
-			parseNginxLocation(iss, *currentlocation);
-		} else {
-			std::string value;
-			iss >> value;
-			config.properties[key] = value;
+	
+	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++)
+	{
+		std::vector<std::string> line = split(*it, ' ');
+		if (line[0] == "server")
+		{
+			// std::cout << "---i'm here---" << std::endl;
+			if (line.size() > 2 && line[1] != "{")
+				std::invalid_argument("ERROR: syntaxe error");
+			c_bracket++;
+		}
+		else
+		{
+			for (std::vector<std::string>::iterator iter = line.begin(); iter < line.end(); iter++)
+			{
+				if (*iter == "{")
+				{
+					if (*(iter - 2) == "location")
+						c_bracket++;
+				}
+				else if (*iter == "}")
+					c_bracket--;
+			}
+			
 		}
 	}
-}
-void WebServ::printNgnixConfig()
-{
-	// for (std::map<std::string, std::string>::const_iterator it = config.properties.begin(); it != config.properties.end(); ++it) {
-    //     std::cout << it->first << ": " << it->second << std::endl;
-    // }
-
-	for (std::map<std::string, NLocation>::const_iterator it = config.locationBlocks.begin(); it != config.locationBlocks.end(); ++it) {
-        std::cout << "Location: " << it->first << std::endl;
-        for (std::map<std::string, std::vector<std::string> >::const_iterator it2 = it->second.properties.begin(); it2 != it->second.properties.end(); ++it2) {
-            std::cout << "  " << it2->first << " y: ";
-            for (std::vector<std::string>::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3) {
-                std::cout << *it3 << " ";
-            }
-            std::cout << ";" << std::endl;
-        }
-    }
+	std::cout << c_bracket << std::endl;
+	if (c_bracket)
+		throw std::invalid_argument("ERROR: bracket missing");
+	
 }
 std::string strtrim_semicolon(const std::string &str)
 {
@@ -86,4 +113,14 @@ std::string strtrim_semicolon(const std::string &str)
         return str.substr(0, last);
     }
     return str;
+}
+
+
+void WebServ::printConfFile(std::vector<std::string>&line){
+	std::vector<std::string>::iterator it = line.begin();
+	for (; it != line.end() ; it++)
+	{
+		std::cout << *it << std::endl;
+	}
+	
 }

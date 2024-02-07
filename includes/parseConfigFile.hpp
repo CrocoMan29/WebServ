@@ -6,41 +6,48 @@
 #include <fstream>
 #include <vector>
 
-struct s_location
-{
-	std::string name;
-	std::vector<std::string>allowMethods;
-	bool autoIndex = false;
-	std::string index;
-	std::string returnPath;
-}t_location;
-struct s_server
-{
-	int listen = 0;
-	std::string server_name;
-	std::string host;
-	std::string rootPath;
-	std::string index;
-	std::pair<int, std::string>errorPage;
-}t_server;
-
-
-class NConfig{
+class errorPage{
 	public:
-		t_server s;
-		t_location;
-		std::vector<std::string>comments;
-		
+		int id;
+		std::string page;
+		std::string path;
+};
+
+class location
+{
+	public:
+		std::vector<std::string>name;
+		std::vector<std::string>allowMethods;
+		bool autoIndex;
+		std::vector<std::string>index;
+		std::vector<std::string>returnPath;
+};
+class server 
+{
+	public:
+		std::vector<int>listen;
+		std::vector<std::string> server_name;
+		std::vector<std::string>host;
+		std::vector<std::string>rootPath;
+		std::vector<std::string>index;
+		std::vector<errorPage>error;
 };
 
 class WebServ{
 	private:
-		NConfig config;
+		location location;
+		server server;
+		std::vector<std::string>comment;
+		int c_bracket;
+		std::vector<std::string>configFile;
 	public:
 		WebServ();
-		void parseNginxLocation(std::istringstream &iss, NLocation &location);
-		void parseNgnixConfig(const std::string &filename);
-		void printNgnixConfig();
+		void parseConfigFile(std::string &filename);
+		void checkbracket(std::vector<std::string>&lines);
+		void printConfFile(std::vector<std::string>&line);
+		
 };
 
+std::vector<std::string> split(std::string s, char c);
 std::string strtrim_semicolon(const std::string& str);
+std::string trim(std::string &s, char c);

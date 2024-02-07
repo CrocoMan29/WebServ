@@ -1,4 +1,3 @@
-#include <iostream>
 #include "includes/parseConfigFile.hpp"
 
 int main (int ac, char **av){
@@ -9,9 +8,16 @@ int main (int ac, char **av){
 	}
 	std::string filename = av[1];
 	std::cout<< "filename = " << filename << std::endl; 
-	WebServ webserv;
-	webserv.parseNgnixConfig(filename);
-	webserv.printNgnixConfig();
+	try
+	{
+		WebServ webserv;
+		webserv.parseConfigFile(filename);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
 	// root : ./
 	// allow_method : GET POST DELETE;
 	// index : time.py;
