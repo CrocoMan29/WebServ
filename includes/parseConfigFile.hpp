@@ -6,14 +6,14 @@
 #include <fstream>
 #include <vector>
 
-class errorPage{
+class ErrorPage{
 	public:
 		int status_code;
 		std::string page;
 		std::string path;
 };
 
-class location
+class Location
 {
 	public:
 		std::vector<std::string>r_location;
@@ -25,8 +25,10 @@ class location
 		bool autoIndex;
 		std::string index;
 		std::string returnPath;
+
+
 };
-class server 
+class Server 
 {
 	public:
 		std::vector<std::string> r_server;
@@ -39,22 +41,24 @@ class server
 		std::string returnPath;
 		long client_max_body_size;
 		bool is_duplicate;
-		std::vector<location> locations;
-		std::vector<errorPage>error_page;
+		std::vector<Location> locations;
+		std::vector<ErrorPage>error_page;
+
+		
+		void splitLocation(std::vector<std::string> &server_info);
 };
 
-class WebServ{
-	private:
-		location location;
-		server server;
-		std::vector<std::string>comment;
-		int c_bracket;
-		std::vector<std::string>configFile;
+class Conf{
 	public:
-		WebServ();
+		std::vector<Server> _servers;
+		int c_bracket;
+		Conf();
 		void parseConfigFile(std::string &filename);
 		void checkbracket(std::vector<std::string>&lines);
+		void splitServers(std::vector<std::string>&lines, std::vector<Server>&servers);
 		void printConfFile(std::vector<std::string>&line);
+		void parseServer(Server &server);
+		void printServer(Server *server);
 		
 };
 

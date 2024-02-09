@@ -7,11 +7,11 @@ int main (int ac, char **av){
 		return (1);
 	}
 	std::string filename = av[1];
-	std::cout<< "filename = " << filename << std::endl; 
+	// std::cout<< "filename = " << filename << std::endl; 
 	try
 	{
-		WebServ webserv;
-		webserv.parseConfigFile(filename);
+		Conf conf;
+		conf.parseConfigFile(filename);
 	}
 	catch(const std::exception& e)
 	{
