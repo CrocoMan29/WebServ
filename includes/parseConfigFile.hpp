@@ -8,7 +8,7 @@
 
 class errorPage{
 	public:
-		int id;
+		int status_code;
 		std::string page;
 		std::string path;
 };
@@ -16,21 +16,31 @@ class errorPage{
 class location
 {
 	public:
-		std::vector<std::string>name;
+		std::vector<std::string>r_location;
+		std::string name;
+		std::string root;
+		bool upload_enable;
+		std::string upload_store;
 		std::vector<std::string>allowMethods;
 		bool autoIndex;
-		std::vector<std::string>index;
-		std::vector<std::string>returnPath;
+		std::string index;
+		std::string returnPath;
 };
 class server 
 {
 	public:
+		std::vector<std::string> r_server;
+
 		std::vector<int>listen;
 		std::vector<std::string> server_name;
-		std::vector<std::string>host;
-		std::vector<std::string>rootPath;
-		std::vector<std::string>index;
-		std::vector<errorPage>error;
+		std::string host;
+		std::string rootPath;
+		std::string index;
+		std::string returnPath;
+		long client_max_body_size;
+		bool is_duplicate;
+		std::vector<location> locations;
+		std::vector<errorPage>error_page;
 };
 
 class WebServ{
