@@ -49,18 +49,18 @@ std::vector<std::string> split(std::string s, char c)
 	}
 	return (splited);
 }
-Conf::Conf(){
-	this->c_bracket = 0;
-}
+
 
 void Conf::parseConfigFile(std::string &filename)
 {
-	std::ifstream file(filename.c_str());
-	if (!file){
-		throw std::runtime_error("ERROR: file not found");
-	}
+	std::ifstream file;
+	file.open(filename.c_str());
+
 	std::string line;
 	std::vector<std::string>lines;
+	if (!file.is_open()){
+		throw std::runtime_error("ERROR: file not found");
+	}
 	while (getline(file, line))
 	{
 		if (!line.empty())
@@ -85,85 +85,83 @@ void Conf::parseConfigFile(std::string &filename)
 }
 void Conf::checkbracket(std::vector<std::string>&lines)
 {
-	std::vector<std::string>::iterator it = lines.begin();
-	while (it != lines.end())
+	int bracket = 0;
+	std::vector<std::string>::iterator iter = lines.begin();
+	while (iter != lines.end())
 	{
-		trim(*it, ' ');
-		if ((*it).size() > 0 && (*it)[0] == '#')
-			it = lines.erase(it);
+		trim(*iter, ' ');
+		if ((*iter).size() > 0 && (*iter)[0] == '#')
+			iter = lines.erase(iter);
 		else
-			it++;
+			iter++;
 	}
 	
-	for (std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); iter++)
+	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++)
 	{
-		std::vector<std::string> line = split(*iter, ' ');
+		std::vector<std::string> line = split(*it, ' ');
 		if (line[0] == "server")
 		{
 			// std::cout << "---i'm here---" << std::endl;
 			if (line.size() > 2 && line[1] != "{")
-				std::invalid_argument("ERROR: syntaxe error");
-			c_bracket++;
+				throw std::invalid_argument("ERROR: syntaxe error");
+			bracket++;
 		}
 		else
 		{
-			for (std::vector<std::string>::iterator it = line.begin(); it < line.end(); it++)
+			for (std::vector<std::string>::iterator iter = line.begin(); iter != line.end(); iter++)
 			{
-				if (*it == "{")
+				if (*iter == "{")
 				{
-					if (*(it - 2) == "location")
-						c_bracket++;
+					if (*(iter - 2) == "location")
+						bracket++;
 				}
-				else if (*it == "}")
-					c_bracket--;
+				else if (*iter == "}")
+					bracket--;
 			}
 			
 		}
 	}
 	// std::cout << c_bracket << std::endl;
-	if (c_bracket)
+	if (bracket != 0)
 		throw std::invalid_argument("ERROR: bracket missing");
 	
 }
 
 void Conf::splitServers(std::vector<std::string> &lines, std::vector<Server> &servers)
 {
-	std::vector<std::string> raw;
-	for(std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++)
-	{
-		// std::cout << "--->" << *it << std::endl;
-		std::vector<std::string> line = split(*it, ' ');
-		if (*it == "server {")
-			c_bracket++;
-		else
-		{
-			for(std::vector<std::string>::iterator iter = line.begin(); iter != line.begin(); iter++)
-			{
-				if (*iter == "{")
-					c_bracket++;
-				else if (*iter == "}")
-					c_bracket--;
-			}
-		}
-		raw.push_back(*it);
-		// std::cout << c_bracket << std::endl;	
-		if (c_bracket == 0)
-		{
-			Server server;
-			for (std::vector<std::string>::iterator itera = raw.begin(); itera != raw.end(); itera++)
-			{
-				// std::cout << "1-->" << *itera << std::endl;
-				trim(*itera, ' ');
-				trim(*itera, 9);
-				trim(*itera, '\n');
-				// std::cout << "2-->" << *itera << std::endl;
-			}
-			server.r_server = raw;
-			server.is_duplicate = false;
-			servers.push_back(server);
-			raw.clear();
-		}
-	}
+	int braket = 0;
+    std::vector<std::string> raw;
+    for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++)
+    {
+        std::vector<std::string> line = split(*it, ' ');
+        if (it == lines.begin())
+            braket++;
+        else
+        {
+            for (std::vector<std::string>::iterator iter = line.begin(); iter != line.end(); iter++)
+            {
+                if (*iter == "{")
+                    braket++;
+                else if (*iter == "}")
+                    braket--;
+            }
+        }
+        raw.push_back(*it);
+        if (braket == 0)
+        {
+            Server server;
+            for (std::vector<std::string>::iterator itera = raw.begin(); itera != raw.end(); itera++)
+            {
+                trim(*itera, ' ');
+                trim(*itera, 9);
+                trim(*itera, '\n');
+            }
+            server.r_server = raw;
+            server.is_duplicate = 0;
+            servers.push_back(server);
+            raw.clear();
+        }
+    }
 	// for (int i = 0; i < 10; i++)
 	// {
 	// 	std::cout << "i = " << i << std::endl;
