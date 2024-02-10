@@ -1,9 +1,9 @@
 NAME		=	webserv
 CPP			=	c++
 
-CPPFLAGS		=	#-Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g3
+CPPFLAGS		=	-fsanitize=address -g3#-Wall -Wextra -Werror -std=c++98 
 RM			=	rm -rf
-SRCS		=	main.cpp src/parseConfigFile.cpp
+SRCS		=	main.cpp src/parseConfigFile.cpp src/parseLocation.cpp
 
 
 OBJS		= ${SRCS:.cpp=.opp}

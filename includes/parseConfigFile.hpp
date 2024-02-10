@@ -41,7 +41,7 @@ class Server
 		std::string returnPath;
 		long client_max_body_size;
 		bool is_duplicate;
-		std::vector<Location> locations;
+		std::vector<Location> _locations;
 		std::vector<ErrorPage>error_page;
 
 		

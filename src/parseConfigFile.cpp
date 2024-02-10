@@ -1,5 +1,5 @@
 #include "../includes/parseConfigFile.hpp"
-#include "parseConfigFile.hpp"
+// #include "parseConfigFile.hpp"
 
 // #include "parseConfigFile.hpp"
 std::string strtrim_semicolon(const std::string &str)
@@ -61,10 +61,6 @@ void Conf::parseConfigFile(std::string &filename)
 	}
 	std::string line;
 	std::vector<std::string>lines;
-	if (!getline(file, line)){
-		throw std::runtime_error("ERROR: file is empty");
-	}
-	lines.push_back(line.append(" \n"));
 	while (getline(file, line))
 	{
 		if (!line.empty())
@@ -72,17 +68,19 @@ void Conf::parseConfigFile(std::string &filename)
 	}
 	checkbracket(lines);
 	splitServers(lines, _servers);
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
-	{
-		printServer(&(*it));
-	}
-	if (_servers.size() < 1)
+	// for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	// {
+	// 	printServer(&(*it));
+	// }
+	if (_servers.size() == 0)
 		throw std::invalid_argument("ERROR: no server blocks");
 	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 	{
 		parseServer(*it);
 
 	}
+	// std::vector<Server>::iterator it = _servers.begin();
+	// parseServer(*it);
 	// printConfFile(lines);
 }
 void Conf::checkbracket(std::vector<std::string>&lines)
@@ -91,15 +89,15 @@ void Conf::checkbracket(std::vector<std::string>&lines)
 	while (it != lines.end())
 	{
 		trim(*it, ' ');
-		if ((*it).size() > 1 && (*it)[0] == '#')
+		if ((*it).size() > 0 && (*it)[0] == '#')
 			it = lines.erase(it);
 		else
 			it++;
 	}
 	
-	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); it++)
+	for (std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); iter++)
 	{
-		std::vector<std::string> line = split(*it, ' ');
+		std::vector<std::string> line = split(*iter, ' ');
 		if (line[0] == "server")
 		{
 			// std::cout << "---i'm here---" << std::endl;
@@ -109,14 +107,14 @@ void Conf::checkbracket(std::vector<std::string>&lines)
 		}
 		else
 		{
-			for (std::vector<std::string>::iterator iter = line.begin(); iter < line.end(); iter++)
+			for (std::vector<std::string>::iterator it = line.begin(); it < line.end(); it++)
 			{
-				if (*iter == "{")
+				if (*it == "{")
 				{
-					if (*(iter - 2) == "location")
+					if (*(it - 2) == "location")
 						c_bracket++;
 				}
-				else if (*iter == "}")
+				else if (*it == "}")
 					c_bracket--;
 			}
 			
@@ -155,9 +153,9 @@ void Conf::splitServers(std::vector<std::string> &lines, std::vector<Server> &se
 			for (std::vector<std::string>::iterator itera = raw.begin(); itera != raw.end(); itera++)
 			{
 				// std::cout << "1-->" << *itera << std::endl;
-				trim(*itera, 32);
+				trim(*itera, ' ');
 				trim(*itera, 9);
-				trim(*itera, 10);
+				trim(*itera, '\n');
 				// std::cout << "2-->" << *itera << std::endl;
 			}
 			server.r_server = raw;
@@ -188,18 +186,18 @@ void Conf::parseServer(Server &server)
 	server.splitLocation(server.r_server);
 	
 }
-void Conf::printServer(Server *server)
-{
-	if (server)
-	{
-		int i = 0;
-		std::cout << i << std::endl;
-		for (std::vector<std::string>::iterator it = server->r_server.begin(); it != server->r_server.end(); it++)
-		{
-			std::cout<< "--->" << *it << std::endl;
-		}
-		i++;
-		std::cout << i << std::endl;
+// void Conf::printServer(Server *server)
+// {
+// 	if (server)
+// 	{
+// 		int i = 0;
+// 		std::cout << i << std::endl;
+// 		for (std::vector<std::string>::iterator it = server->r_server.begin(); it != server->r_server.end(); it++)
+// 		{
+// 			std::cout<< "--->" << *it << std::endl;
+// 		}
+// 		i++;
+// 		std::cout << i << std::endl;
 
-	}
-}
+// 	}
+// }
