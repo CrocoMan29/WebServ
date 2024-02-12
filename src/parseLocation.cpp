@@ -7,6 +7,7 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 		Location location;
 		int braket = 0;
 		std::vector<std::string> info = split(*it, ' ');
+			// std::cout << *it << std::endl;
 		if (info[0] == "location")
 		{
 			if (info.size() != 3 || (info[1][0] != '/' && info[1] != "*.php" && info[1] != "*.py") || info[2] != "{")
@@ -16,17 +17,84 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 			rawlocation.push_back(info[1]);
 			it = server_info.erase(it);
 			// std::cout << "yassir" << std::endl;
-			std::cout << *it << std::endl;
-            // while (it != server_info.end() && (*it)[0] != '}')
-            // {
-            //     if (!((*it).empty()))
-            //         rawlocation.push_back(*it);
-            //     it = server_info.erase(it);
-            // }
-            // location.r_location = rawlocation;
-            // _locations.push_back(location);
+            while (it != server_info.end() && (*it)[0] != '}')
+            {
+                if (!((*it).empty()))
+                    rawlocation.push_back(*it);
+                it = server_info.erase(it);
+            }
+            location.r_location = rawlocation;
+            _locations.push_back(location);
         }
-        // if ((*it)[0] == '}')
-        //     *it = "";
+        if ((*it)[0] == '}')
+            *it = "";
     }
+}
+
+void Server::checkSemiColon(std::vector<std::string> &info)
+{
+	int semi = 0;
+	
+	if (info[info.size() - 1][info[info.size() - 1].size() - 1] == ';')
+	{
+		for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
+		{
+			std::string word = *it;
+			for(int i = 0; i < word.length(); i++)
+			{
+				if (word[i] == ';')
+					semi++;
+			}
+		}
+	}
+	else
+		if (!info[0].empty())
+			throw std::invalid_argument("Syntax Error: semicolon missing");
+	if (semi > 1)
+		throw std::invalid_argument("Syntax Error: more than one semicolon");
+	// std::cout << semi << std::endl;
+}
+
+void Server::enterData(std::vector<std::string> &info)
+{
+	trim(info[info.size() - 1], ';');
+	if (info[info.size() - 1].empty())
+		info.erase(info.end() - 1);
+	if (info.size() > 1 && info[0] == "listen")
+		setPorts(info);
+	else if (info.size() >= 2 && info[0] == "server_name")
+		setServerName(info);
+	else if (info.size() > 1 && info[0] == "host")
+		setHost(info);
+	else if (info.size() > 1 && info[0] == "error_page")
+	{
+		if (info.size() == 2 || info.size() == 3)
+			setErrorPage(info);
+		else
+			throw std::invalid_argument("wrong number of arguments");
+
+	}
+	// else if (info.size() == 2 && info[0] == "root")
+	// 	setRoot(info);
+	// else if (info.size() == 2 && info[0] == "index")
+	// 	setIndex(info);
+	// else if (info.size() == 2 && info[0] == "client_max_body_size")
+	// 	setClientMaxBodySize(info);
+	// else
+	// 	throw std::invalid_argument("ERROR: unknown argument");
+	// std::cout << info[info.size() - 1] << std::endl;
+}
+
+void Server::checkSyntaxe(std::vector<std::string> &server_info)
+{
+	server_info.erase(server_info.begin());
+	for (std::vector<std::string>::iterator it = server_info.begin(); it != server_info.end(); it++)
+	{
+		std::vector<std::string> info = split(*it, ' ');
+		checkSemiColon(info);
+		enterData(info);
+		// printV(info);
+		// std::cout << *it << std::endl;
+	}
+	
 }

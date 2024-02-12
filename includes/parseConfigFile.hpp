@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 class ErrorPage{
 	public:
@@ -33,7 +34,7 @@ class Server
 	public:
 		std::vector<std::string> r_server;
 
-		std::vector<int>listen;
+		std::vector<int>ports;
 		std::vector<std::string> server_name;
 		std::string host;
 		std::string rootPath;
@@ -46,6 +47,15 @@ class Server
 
 		
 		void splitLocation(std::vector<std::string> &server_info);
+		void checkSyntaxe(std::vector<std::string> &server_info);
+		void checkSemiColon(std::vector<std::string> &info);
+		void checkHost(std::string &info);
+		void enterData(std::vector<std::string> &info);
+		void setPorts(std::vector<std::string> &info);
+		void setServerName(std::vector<std::string> &info);
+		void setHost(std::vector<std::string> &info);
+		void setErrorPage(std::vector<std::string> &info);
+		bool findCodes(int code);
 };
 
 class Conf{
@@ -65,3 +75,5 @@ class Conf{
 std::vector<std::string> split(std::string s, char c);
 std::string strtrim_semicolon(const std::string& str);
 std::string trim(std::string &s, char c);
+int	ft_stoi(std::string str);
+void printV(std::vector<std::string> &vector);
