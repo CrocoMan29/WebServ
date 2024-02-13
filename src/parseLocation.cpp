@@ -72,16 +72,34 @@ void Server::enterData(std::vector<std::string> &info)
 			setErrorPage(info);
 		else
 			throw std::invalid_argument("wrong number of arguments");
+		// std::cout << error_page[0].status_code << std::endl;
+		// std::cout << error_page[0].path << std::endl; 
+		// std::cout << error_page[0].page << std::endl; 
 
 	}
-	// else if (info.size() == 2 && info[0] == "root")
-	// 	setRoot(info);
-	// else if (info.size() == 2 && info[0] == "index")
-	// 	setIndex(info);
-	// else if (info.size() == 2 && info[0] == "client_max_body_size")
-	// 	setClientMaxBodySize(info);
-	// else
-	// 	throw std::invalid_argument("ERROR: unknown argument");
+	else if (info.size() > 1 && info[0] == "root")
+	{
+		if (info.size() == 2)
+			this->rootPath = info[1];
+		else
+			throw std::invalid_argument("ERROR: root path is missing");
+	}
+	else if (info.size() > 1 && info[0] == "index")
+	{
+		if (info.size() == 2)
+		{
+			if (!this->index.empty())
+				throw std::invalid_argument("ERROR");
+			this->index = info[1];
+		}
+		else
+			throw std::invalid_argument("Syntax Error: wrong number of arguments");
+	}
+	else if (info.size() > 1 && info[0] == "client_max_body_size")
+		setClientMaxBodySize(info);
+	else
+		if (info.size() > 0 && !info[0].empty())
+            throw std::invalid_argument("Syntax Error: unknow argument"); 
 	// std::cout << info[info.size() - 1] << std::endl;
 }
 
@@ -93,8 +111,25 @@ void Server::checkSyntaxe(std::vector<std::string> &server_info)
 		std::vector<std::string> info = split(*it, ' ');
 		checkSemiColon(info);
 		enterData(info);
-		// printV(info);
-		// std::cout << *it << std::endl;
 	}
-	
+}
+
+void Server::syntax_error(std::vector<Location> &locations)
+{
+	for (std::vector<location>::iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		Location &curr_location = *it;
+		std::vector<std::string> loc = curr_location.r_location;
+		(*it).name = loc[0];
+		if (loc.size() < 2)
+			throw std::invalid_argument("Syntax Error: Location block empty");
+		for (std::vector<std::string>::iterator i = loc.begin() + 1; i != loc.end(); i++)
+		{
+			std::vector<std::string> info = split(*i, ' ');
+			checkSemiColon(info);
+			trim(info[info.size() - 1], ';');
+			
+		}
+		
+	}
 }

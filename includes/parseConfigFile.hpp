@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <string.h>
 
 class ErrorPage{
 	public:
@@ -27,7 +28,7 @@ class Location
 		std::string index;
 		std::string returnPath;
 
-
+		void setDataLocation(std::vector<std::string> &info);
 };
 class Server 
 {
@@ -55,7 +56,10 @@ class Server
 		void setServerName(std::vector<std::string> &info);
 		void setHost(std::vector<std::string> &info);
 		void setErrorPage(std::vector<std::string> &info);
+		void setClientMaxBodySize(std::vector<std::string> &info);
+		std::string getErrorPage(std::string path, std::string status);
 		bool findCodes(int code);
+		void syntax_error(std::vector<Location> &locations);
 };
 
 class Conf{
@@ -75,5 +79,7 @@ class Conf{
 std::vector<std::string> split(std::string s, char c);
 std::string strtrim_semicolon(const std::string& str);
 std::string trim(std::string &s, char c);
+std::string	to_String(int n);
+std::map<int, std::string> initErrorPage();
 int	ft_stoi(std::string str);
 void printV(std::vector<std::string> &vector);

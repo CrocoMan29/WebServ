@@ -140,7 +140,7 @@ void Conf::parseServer(Server &server)
 	server.splitLocation(server.r_server);
 	server.client_max_body_size = -1;
 	server.checkSyntaxe(server.r_server);
-	
+	syntax_error(server._locations);
 }
 // void Conf::printServer(Server *server)
 // {

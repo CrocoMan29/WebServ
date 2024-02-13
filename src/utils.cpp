@@ -74,6 +74,42 @@ int	ft_stoi(std::string str)
 	return (res * sign);
 }
 
+std::string	to_String(int n)
+{
+	std::stringstream tmp;
+
+	tmp << n;
+
+	return tmp.str();
+}
+
+std::map<int, std::string> initErrorPage()
+{
+	std::map<int, std::string> status_code;
+    
+	status_code[100] = "Continue";
+	status_code[200] = "OK";
+	status_code[201] = "Created";
+	status_code[202] = "Accepted";
+	status_code[204] = "No Content";
+	status_code[300] = "Multiple Choices";
+	status_code[301] = "Moved Permanently";
+	status_code[302] = "Found";
+	status_code[303] = "See Other";
+	status_code[304] = "Not Modified";
+	status_code[305] = "Use Proxy";
+	status_code[307] = "Temporary Redirect";
+	status_code[400] = "Bad Request";
+	status_code[403] = "Forbidden";
+	status_code[404] = "Not Found";
+	status_code[405] = "Method Not Allowed";
+	status_code[413] = "Payload Too Large";
+	status_code[500] = "Internal Server Error";
+	status_code[504] = "Gateway Timeout";
+    
+    return status_code;
+}
+
 void printV(std::vector<std::string> &vector)
 {
 	std::vector<std::string>::iterator it = vector.begin();
