@@ -31,7 +31,7 @@ void Conf::parseConfigFile(std::string &filename)
 	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 	{
 		parseServer(*it);
-
+		dataValidity(*it);
 	}
 	// std::vector<Server>::iterator it = _servers.begin();
 	// parseServer(*it);

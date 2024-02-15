@@ -31,7 +31,7 @@ void Server::splitLocation(std::vector<std::string> &server_info)
     }
 }
 
-void Server::checkSemiColon(std::vector<std::string> &info)
+void checkSemiColon(std::vector<std::string> &info)
 {
 	int semi = 0;
 	
@@ -114,9 +114,9 @@ void Server::checkSyntaxe(std::vector<std::string> &server_info)
 	}
 }
 
-void Server::syntax_error(std::vector<Location> &locations)
+void syntax_error(std::vector<Location> &locations)
 {
-	for (std::vector<location>::iterator it = locations.begin(); it != locations.end(); it++)
+	for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++)
 	{
 		Location &curr_location = *it;
 		std::vector<std::string> loc = curr_location.r_location;
@@ -128,7 +128,7 @@ void Server::syntax_error(std::vector<Location> &locations)
 			std::vector<std::string> info = split(*i, ' ');
 			checkSemiColon(info);
 			trim(info[info.size() - 1], ';');
-			
+			curr_location.setDataLocation(info);
 		}
 		
 	}

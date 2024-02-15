@@ -1,4 +1,5 @@
 #include "../includes/parseConfigFile.hpp"
+// #include "parseConfigFile.hpp"
 
 std::string strtrim_semicolon(const std::string &str)
 {
@@ -117,3 +118,6 @@ void printV(std::vector<std::string> &vector)
 		std::cout << *it << std::endl;
 	}
 }
+// void checkSemiColon(std::vector<std::string> &info)
+// {
+// }

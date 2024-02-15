@@ -27,8 +27,18 @@ class Location
 		bool autoIndex;
 		std::string index;
 		std::string returnPath;
+		std::string fastCgiPass;
 
 		void setDataLocation(std::vector<std::string> &info);
+		void setUploadEnable(std::vector<std::string> &info);
+		void setUploadStore(std::string &info);
+		void setRoot(std::vector<std::string> &info);
+		void setFastCGIPass(std::vector<std::string> &info);
+		void setIndex(std::vector<std::string> &info);
+		void setAllowMethodes(std::vector<std::string> &info);
+		void setAutoIndex(std::vector<std::string> &info);
+		void setReturnPath(std::vector<std::string> &info);
+		int	 notTheCode(std::string code);
 };
 class Server 
 {
@@ -49,7 +59,6 @@ class Server
 		
 		void splitLocation(std::vector<std::string> &server_info);
 		void checkSyntaxe(std::vector<std::string> &server_info);
-		void checkSemiColon(std::vector<std::string> &info);
 		void checkHost(std::string &info);
 		void enterData(std::vector<std::string> &info);
 		void setPorts(std::vector<std::string> &info);
@@ -59,7 +68,7 @@ class Server
 		void setClientMaxBodySize(std::vector<std::string> &info);
 		std::string getErrorPage(std::string path, std::string status);
 		bool findCodes(int code);
-		void syntax_error(std::vector<Location> &locations);
+		// void syntax_error(std::vector<Location> &locations);
 };
 
 class Conf{
@@ -72,7 +81,8 @@ class Conf{
 		void splitServers(std::vector<std::string>&lines, std::vector<Server>&servers);
 		void printConfFile(std::vector<std::string>&line);
 		void parseServer(Server &server);
-		void printServer(Server *server);
+		void dataValidity(Server &server);
+		// void printServer(Server *server);
 		
 };
 
@@ -83,3 +93,5 @@ std::string	to_String(int n);
 std::map<int, std::string> initErrorPage();
 int	ft_stoi(std::string str);
 void printV(std::vector<std::string> &vector);
+void syntax_error(std::vector<Location> &locations);
+void checkSemiColon(std::vector<std::string> &info);

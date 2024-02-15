@@ -4,7 +4,7 @@ CPP			=	c++
 CPPFLAGS		=	-fsanitize=address -g3#-Wall -Wextra -Werror -std=c++98 
 RM			=	rm -rf
 SRCS		=	main.cpp src/parseConfigFile.cpp src/parseLocation.cpp \
-				src/utils.cpp src/setData.cpp
+				src/utils.cpp src/setData.cpp src/setDataLocation.cpp
 
 
 OBJS		= ${SRCS:.cpp=.opp}
