@@ -39,6 +39,7 @@ class Location
 		void setAutoIndex(std::vector<std::string> &info);
 		void setReturnPath(std::vector<std::string> &info);
 		int	 notTheCode(std::string code);
+		void checkfile(std::vector<ErrorPage> &err);
 };
 class Server 
 {
@@ -82,6 +83,9 @@ class Conf{
 		void printConfFile(std::vector<std::string>&line);
 		void parseServer(Server &server);
 		void dataValidity(Server &server);
+		void dataValidityLocation(Location &loc, std::string root);
+		void lastCheck(std::vector<Server> &servers);
+		void betweenServers(Server &server1, Server &server2);
 		// void printServer(Server *server);
 		
 };

@@ -33,6 +33,7 @@ void Conf::parseConfigFile(std::string &filename)
 		parseServer(*it);
 		dataValidity(*it);
 	}
+	lastCheck(_servers);
 	// std::vector<Server>::iterator it = _servers.begin();
 	// parseServer(*it);
 	// it++;
