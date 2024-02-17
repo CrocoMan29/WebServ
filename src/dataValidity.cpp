@@ -38,7 +38,7 @@ void Conf::dataValidityLocation(Location &loc, std::string root)
 	if (loc.root.empty())
 		loc.root = root;
 	if (loc.autoIndex == false)
-		loc.autoIndex == false;
+		loc.autoIndex = false;
 }
 
 void Location::checkfile(std::vector<ErrorPage> &err)
@@ -69,5 +69,17 @@ void Conf::lastCheck(std::vector<Server> &servers)
 
 void Conf::betweenServers(Server &server1, Server &server2)
 {
-	if ()
+	if (server1.host != server2.host)
+		return ;
+	for (std::vector<int>::iterator it = server1.ports.begin(); it != server1.ports.end(); it++)
+	{
+		if (std::find(server2.ports.begin(), server2.ports.end(), *it) != server2.ports.end())
+		{
+			server2.dup_port.push_back(*it);
+			server2.is_duplicate = 1;
+			std::vector<int>::iterator iter = std::find(server2.ports.begin(), server2.ports.end(), *it);
+			server2.ports.erase(iter);
+			// std::cout << *iter << std::endl;
+		}
+	}
 }
