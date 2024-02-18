@@ -90,7 +90,7 @@ class Conf{
 		// void printServer(Server *server);
 		
 };
-
+std::ostream &operator<<(std::ostream &os, const Conf &obj);
 std::vector<std::string> split(std::string s, char c);
 std::string strtrim_semicolon(const std::string& str);
 std::string trim(std::string &s, char c);

@@ -12,6 +12,7 @@ int main (int ac, char **av){
 	{
 		Conf conf;
 		conf.parseConfigFile(filename);
+		std::cout << conf << std::endl;
 	}
 	catch(const std::exception& e)
 	{

@@ -118,6 +118,83 @@ void printV(std::vector<std::string> &vector)
 		std::cout << *it << std::endl;
 	}
 }
+
+std::ostream &operator<<(std::ostream &os, const Conf &obj)
+{
+	for (int i = 0; i < obj._servers.size(); i++)
+	{
+		os << "=============Server==============" << std::endl;
+		os << "------------" << i << "------------" << std::endl;
+		os << "ports: ";
+		for (std::vector<int>::const_iterator iter = obj._servers[i].ports.begin(); iter != obj._servers[i].ports.end(); iter++)
+		{
+			if (iter != obj._servers[i].ports.end() - 1)
+				os << *iter << " ,";
+			else
+				os << *iter << "." << std::endl;
+		}
+		os << "server name: ";
+		for (std::vector<std::string>::const_iterator iter = obj._servers[i].server_name.begin(); iter != obj._servers[i].server_name.end(); iter++)
+		{
+			if (iter != obj._servers[i].server_name.end() - 1)
+				os << *iter << " ,";
+			else
+				os << *iter << "." << std::endl;
+		}
+		os << "host: " << obj._servers[i].host << std::endl;
+		os << "root: " << obj._servers[i].rootPath << std::endl;
+		os << "index: " << obj._servers[i].index << std::endl;
+		os << "returnPath: " << obj._servers[i].returnPath << std::endl;
+		os << "client_max_body_size: " << obj._servers[i].client_max_body_size << std::endl;
+		if (obj._servers[i].is_duplicate == true)
+			os << "is_duplicate: true" << std::endl;
+		else
+			os << "is_duplicate: false"<< std::endl;
+		os << "dup_port: ";
+		for (std::vector<int>::const_iterator iter = obj._servers[i].dup_port.begin(); iter != obj._servers[i].dup_port.end(); iter++)
+		{
+			if (iter != obj._servers[i].ports.end() - 1)
+				os << *iter << " ,";
+			else
+				os << *iter << "." << std::endl;
+		}
+		for(int j = 0; j < obj._servers[i]._locations.size(); j++)
+		{
+			os << "_________________________________________________" << std::endl;
+			os << "location " << obj._servers[i]._locations[j].name << "{" << std::endl;
+			if (obj._servers[i]._locations[j].autoIndex == true)
+				os << "     " << "autoindex: " << "true" << std::endl;
+			else
+				os << "     " << "autoindex: " << "false" << std::endl;
+			os << "     root: " << obj._servers[i]._locations[j].root << std::endl;
+			os << "     index: " << obj._servers[i]._locations[j].index << std::endl;
+			os << "     returnPath: " << obj._servers[i]._locations[j].returnPath << std::endl;
+			os << "     fastCgiPass: " << obj._servers[i]._locations[j].fastCgiPass << std::endl;
+			if (obj._servers[i]._locations[j].upload_enable == true)
+			{
+				os << "     upload_enable: true" << std::endl;
+				os << "     upload_store: " << obj._servers[i]._locations[j].upload_store << std::endl;
+			}
+			else
+			{
+				os << "     upload_enable: false" << std::endl;
+				os << "     upload_store: " << obj._servers[i]._locations[j].upload_store << std::endl;
+			}
+			os << "     allowMethdes: ";
+			for (std::vector<std::string>::const_iterator it = obj._servers[i]._locations[j].allowMethods.begin(); it != obj._servers[i]._locations[j].allowMethods.end(); it++)
+			{
+				if (it != obj._servers[i]._locations[j].allowMethods.end() - 1)
+					os << *it << " ,";
+				else
+					os << *it << "." << std::endl;
+			}
+			os << "}" << std::endl;
+			os << "_________________________________________________" << std::endl;
+		}
+	}
+	return os;
+	
+}
 // void checkSemiColon(std::vector<std::string> &info)
 // {
 // }
