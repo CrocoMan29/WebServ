@@ -167,8 +167,11 @@ std::ostream &operator<<(std::ostream &os, const Conf &obj)
 			else
 				os << "     " << "autoindex: " << "false" << std::endl;
 			os << "     root: " << obj._servers[i]._locations[j].root << std::endl;
-			os << "     index: " << obj._servers[i]._locations[j].index << std::endl;
-			os << "     returnPath: " << obj._servers[i]._locations[j].returnPath << std::endl;
+			if (!obj._servers[i]._locations[j].index.empty())
+				os << "     index: " << obj._servers[i]._locations[j].index << std::endl;
+			if (!obj._servers[i]._locations[j].returnPath.empty())
+				os << "     returnPath: " << obj._servers[i]._locations[j].returnPath << std::endl;
+			if (!obj._servers[i]._locations[j].fastCgiPass.empty())
 			os << "     fastCgiPass: " << obj._servers[i]._locations[j].fastCgiPass << std::endl;
 			if (obj._servers[i]._locations[j].upload_enable == true)
 			{
@@ -181,12 +184,15 @@ std::ostream &operator<<(std::ostream &os, const Conf &obj)
 				os << "     upload_store: " << obj._servers[i]._locations[j].upload_store << std::endl;
 			}
 			os << "     allowMethdes: ";
-			for (std::vector<std::string>::const_iterator it = obj._servers[i]._locations[j].allowMethods.begin(); it != obj._servers[i]._locations[j].allowMethods.end(); it++)
+			if (obj._servers[i]._locations[j].allowMethods.size() < 1)
 			{
-				if (it != obj._servers[i]._locations[j].allowMethods.end() - 1)
-					os << *it << " ,";
-				else
-					os << *it << "." << std::endl;
+				for (std::vector<std::string>::const_iterator it = obj._servers[i]._locations[j].allowMethods.begin(); it != obj._servers[i]._locations[j].allowMethods.end(); it++)
+				{
+					if (it != obj._servers[i]._locations[j].allowMethods.end() - 1)
+						os << *it << " ,";
+					else
+						os << *it << "." << std::endl;
+				}
 			}
 			os << "}" << std::endl;
 			os << "_________________________________________________" << std::endl;

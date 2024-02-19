@@ -82,6 +82,7 @@ void Location::setAutoIndex(std::vector<std::string> &info)
 {
 	if (info.size() == 2)
 	{
+		std::cout << info[1] << std::endl;
 		if (info[1] == "on")
 			this->autoIndex = true;
 		else if (info[1] == "off")
@@ -95,6 +96,7 @@ void Location::setAutoIndex(std::vector<std::string> &info)
 
 void Location::setUploadEnable(std::vector<std::string> &info)
 {
+	std::cout << "====>" << info[1] << std::endl;
 	if (info.size() == 2)
 	{
 		if (info[1] == "on")
