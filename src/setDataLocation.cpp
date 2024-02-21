@@ -4,14 +4,18 @@ void Location::setDataLocation(std::vector<std::string> &info)
 {
 	if (info[info.size() - 1].empty())
 		info.erase(info.end() - 1);
-	if (info.size() > 2)
+	if (info.size() > 1)
 	{
+		// std::cout << info[0] << std::endl;
 		if (info[0] == "autoindex")
 			setAutoIndex(info);
 		else if (info[0] == "upload_enable")
 			setUploadEnable(info);
 		else if (info[0] == "upload_store")
+		{
+			// std::cout << info[1] << std::endl;
 			setUploadStore(info[1]);
+		}
 		else if (info[0] == "allow_methods")
 			setAllowMethodes(info);
 		else if (info[0] == "index")
@@ -50,8 +54,10 @@ void Location::setReturnPath(std::vector<std::string> &info)
 void Location::setAllowMethodes(std::vector<std::string> &info)
 {
 	std::vector<std::string>::iterator it = info.begin() + 1;
+	// std::cout << "==============" << std::endl;
 	for (; it != info.end(); it++)
 	{
+		// std::cout << *it << std::endl;
 		if (*it == "POST")
 		{
 			if (std::find(this->allowMethods.begin(), this->allowMethods.end(), *it) != this->allowMethods.end())
@@ -66,7 +72,7 @@ void Location::setAllowMethodes(std::vector<std::string> &info)
 			this->allowMethods.push_back(*it);
 		}
 			// std::cout << "| " << *it << " |" << std::endl;
-		if (*it == "DELETE")
+		if (*it == "DELET")
 		{
 			if (std::find(this->allowMethods.begin(), this->allowMethods.end(), *it) != this->allowMethods.end())
 				throw std::invalid_argument("Syntax Error: duplicate method");
@@ -75,6 +81,7 @@ void Location::setAllowMethodes(std::vector<std::string> &info)
 			// std::cout << "| " << *it << " |" << std::endl;
 	}
 	// std::cout << "==============" << std::endl;
+	// printV(this->allowMethods);
 	
 }
 
@@ -82,7 +89,7 @@ void Location::setAutoIndex(std::vector<std::string> &info)
 {
 	if (info.size() == 2)
 	{
-		std::cout << info[1] << std::endl;
+		// std::cout << info[1] << std::endl;
 		if (info[1] == "on")
 			this->autoIndex = true;
 		else if (info[1] == "off")
@@ -96,7 +103,8 @@ void Location::setAutoIndex(std::vector<std::string> &info)
 
 void Location::setUploadEnable(std::vector<std::string> &info)
 {
-	std::cout << "====>" << info[1] << std::endl;
+	// std::cout << "====>" << info[1] << std::endl;
+	this->upload_enable = false;
 	if (info.size() == 2)
 	{
 		if (info[1] == "on")
@@ -113,6 +121,7 @@ void Location::setUploadEnable(std::vector<std::string> &info)
 void Location::setUploadStore(std::string &info)
 {
 	this->upload_store = info;
+	// std::cout << "&&&&&&> " << this->upload_store = 
 }
 
 void Location::setRoot(std::vector<std::string> &info)

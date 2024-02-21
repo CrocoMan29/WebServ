@@ -77,7 +77,7 @@ class Conf{
 	public:
 		std::vector<Server> _servers;
 		// int c_bracket;
-		// Conf();
+		Conf();
 		void parseConfigFile(std::string &filename);
 		void checkbracket(std::vector<std::string>&lines);
 		void splitServers(std::vector<std::string>&lines, std::vector<Server>&servers);

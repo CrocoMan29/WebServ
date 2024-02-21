@@ -184,7 +184,7 @@ std::ostream &operator<<(std::ostream &os, const Conf &obj)
 				os << "     upload_store: " << obj._servers[i]._locations[j].upload_store << std::endl;
 			}
 			os << "     allowMethdes: ";
-			if (obj._servers[i]._locations[j].allowMethods.size() < 1)
+			if (obj._servers[i]._locations[j].allowMethods.size() != 0)
 			{
 				for (std::vector<std::string>::const_iterator it = obj._servers[i]._locations[j].allowMethods.begin(); it != obj._servers[i]._locations[j].allowMethods.end(); it++)
 				{

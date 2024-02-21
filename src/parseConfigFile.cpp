@@ -3,7 +3,9 @@
 
 // #include "parseConfigFile.hpp"
 
-
+Conf::Conf(){
+	
+}
 
 void Conf::parseConfigFile(std::string &filename)
 {
@@ -114,7 +116,11 @@ void Conf::splitServers(std::vector<std::string> &lines, std::vector<Server> &se
                 trim(*itera, '\n');
             }
             server.r_server = raw;
-            server.is_duplicate = 0;
+            server.is_duplicate = false;
+			// if (server.is_duplicate == true)
+			// 	std::cout << "is duplicate = true" << std::endl;
+			// else
+			// 	std::cout << "is duplicate = false" << std::endl;
             servers.push_back(server);
             raw.clear();
         }

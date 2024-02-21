@@ -76,7 +76,7 @@ void Conf::betweenServers(Server &server1, Server &server2)
 		if (std::find(server2.ports.begin(), server2.ports.end(), *it) != server2.ports.end())
 		{
 			server2.dup_port.push_back(*it);
-			server2.is_duplicate = 1;
+			server2.is_duplicate = true;
 			std::vector<int>::iterator iter = std::find(server2.ports.begin(), server2.ports.end(), *it);
 			server2.ports.erase(iter);
 			// std::cout << *iter << std::endl;
