@@ -1,4 +1,5 @@
 #include "includes/parseConfigFile.hpp"
+#include "includes/webServer.hpp"
 
 int main (int ac, char **av){
 	if (ac != 2)
@@ -12,7 +13,9 @@ int main (int ac, char **av){
 	{
 		Conf conf;
 		conf.parseConfigFile(filename);
-		std::cout << conf << std::endl;
+		webServ server(conf._servers);
+		server.setUpServer();
+		// std::cout << conf << std::endl;
 	}
 	catch(const std::exception& e)
 	{

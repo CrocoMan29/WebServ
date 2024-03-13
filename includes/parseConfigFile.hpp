@@ -58,6 +58,10 @@ class Server
 		std::vector<Location> _locations;
 		std::vector<ErrorPage>error_page;
 
+		int _port;
+        int socket_fd;
+        struct sockaddr_in _address;
+
 		
 		void splitLocation(std::vector<std::string> &server_info);
 		void checkSyntaxe(std::vector<std::string> &server_info);

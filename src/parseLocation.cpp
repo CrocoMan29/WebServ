@@ -34,7 +34,7 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 void checkSemiColon(std::vector<std::string> &info)
 {
 	int semi = 0;
-	
+	std::cout << "==> |" << info[info.size() - 1][info[info.size() - 1].size() - 1] << "|" << std::endl;
 	if (info[info.size() - 1][info[info.size() - 1].size() - 1] == ';')
 	{
 		for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
