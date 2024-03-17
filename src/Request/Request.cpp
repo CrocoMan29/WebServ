@@ -1,4 +1,4 @@
-# include "Request.hpp"
+# include "../../includes/Request.hpp"
 #include <cstring>
 
 Request::Request(){
@@ -30,7 +30,6 @@ void Request::collectData(std::string &request){
     while (token)
     {
         std::string stoken(token);
-        // std::cout << "token --- " << stoken << std::endl;
         lineNumber++;
         switch (lineNumber)
         {
