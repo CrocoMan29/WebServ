@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <string.h>
+#include <netinet/in.h>
 
 class ErrorPage{
 	public:
