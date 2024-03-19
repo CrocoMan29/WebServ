@@ -12,37 +12,39 @@ Request::~Request(){
 void Request::readingRequest(std::ifstream &infile){
     if(infile.is_open()){
         char buffer[1024];
-        // while (!infile.eof()) {
-            infile.read(&buffer[0],1024);
-            std::streamsize size = infile.gcount();
-        // }
+        infile.read(&buffer[0],1024);
+        std::streamsize size = infile.gcount();
         std::string readed(buffer);
-        collectData(readed);
-        // std::cout << readed << std::endl;
+        splitingHeaderBody(readed);
+        collectData();
     }
 }
 
-void Request::collectData(std::string &request){
+void Request::collectData(){
     int         lineNumber = 0;
     char        *token;
 
-    token = strtok((char *)request.c_str(),"\n");
-    while (token)
-    {
-        std::string stoken(token);
-        lineNumber++;
-        switch (lineNumber)
+    try{
+        token = strtok((char *)_headers.c_str(),"\n");
+        while (token)
         {
-            case 1 :
-                isValidHttpRequestLine(stoken);
-                break;
-            default:
-                collector(stoken);
-                break;
+            std::string stoken(token);
+            lineNumber++;
+            switch (lineNumber)
+            {
+                case 1 :
+                    isValidHttpRequestLine(stoken);
+                    break;
+                default:
+                    collector(stoken);
+                    break;
+            }
+            token = strtok(NULL , "\n");
         }
-        token = strtok(NULL , "\n");
+    } catch (std::runtime_error &e) {
+        this->_requestInfos.clear();
+        std::cout<< e.what() << std::endl; 
     }
-
 }
 
 void Request::collector(std::string &token){
@@ -58,7 +60,20 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
     return _requestInfos;
 }
 
-bool Request::isValidHttpRequestLine(const std::string& requestLine) {
+void Request::splitingHeaderBody(std::string &request){
+    size_t it;
+    it = request.find("\n\n");
+    if (it == std::string::npos){
+        _body.clear();
+        _headers = request;
+    }
+    else {
+        _headers = request.substr(0, it);
+        _body = request.substr(it+2);
+    }
+}
+
+void Request::isValidHttpRequestLine(const std::string& requestLine) {
     std::vector<std::string> methods;
     methods.push_back("GET");
     methods.push_back("POST");
@@ -77,9 +92,8 @@ bool Request::isValidHttpRequestLine(const std::string& requestLine) {
     while (std::getline(iss, part, ' ')) {
         parts.push_back(part);
     }
-    if (numSpaces != 2 || parts.size() != 3) {
-        return false;
-    }
+    if (numSpaces != 2 || parts.size() != 3)
+        throw std::runtime_error("Error");
 
     bool startsWithMethod = false;
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
@@ -89,9 +103,8 @@ bool Request::isValidHttpRequestLine(const std::string& requestLine) {
             break;
         }
     }
-    if (!startsWithMethod) {
-        return false;
-    }
+    if (!startsWithMethod)
+        throw std::runtime_error("Error");
     bool endsWithVersion = false;
     for (std::vector<std::string>::const_iterator it = versions.begin(); it != versions.end(); ++it) {
         if (parts[2] == *it) {
@@ -100,13 +113,12 @@ bool Request::isValidHttpRequestLine(const std::string& requestLine) {
             break;
         }
     }
-
     if (!endsWithVersion) {
-        return false;
+        throw std::runtime_error("Error");
     }
     _requestInfos.insert(std::make_pair("path", parts[1]));
-    return true;
 }
+
 void Request::requestLine(std::string &request){
 
 }
