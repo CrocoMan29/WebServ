@@ -27,11 +27,13 @@ int main (int ac, char **av){
     std::ifstream infile("tst.txt");
 
     request.readingRequest(infile);
-	std::cout << "Header \n"<<request.getHeader() << std::endl;
-	std::cout << "Body \n"<<request.getBody() << std::endl;
-    // for(auto a : request.getRequestInfo()){
-    //     std::cout << a.first << ": " << a.second << std::endl;
-    // }
+	// std::cout << "Header \n"<<request.getHeader() << std::endl;
+	// std::cout << "Body \n"<<request.getBody() << std::endl;
+    for(auto a : request.getRequestInfo()){
+        std::cout << a.first << ": " << a.second << std::endl;
+    }
+
+	std::cout << NOTIMPLEMENTED << std::endl;
 	// root : ./
 	// allow_method : GET POST DELETE;
 	// index : time.py;
