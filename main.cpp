@@ -33,7 +33,6 @@ int main (int ac, char **av){
         std::cout << a.first << ": " << a.second << std::endl;
     }
 
-	std::cout << NOTIMPLEMENTED << std::endl;
 	// root : ./
 	// allow_method : GET POST DELETE;
 	// index : time.py;
