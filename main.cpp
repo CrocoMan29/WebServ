@@ -33,6 +33,7 @@ int main (int ac, char **av){
         std::cout << a.first << ": " << a.second << std::endl;
     }
 
+	request.pathInCannonicalForm();
 	// root : ./
 	// allow_method : GET POST DELETE;
 	// index : time.py;

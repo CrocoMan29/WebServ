@@ -127,6 +127,14 @@ void Request::isValidHttpRequestLine(const std::string& requestLine) {
     _requestInfos.insert(std::make_pair("path", parts[1]));
 }
 
+void isValidUri(std::string uri){
+    if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$'()*+,;=%") != std::string::npos)
+        throw std::invalid_argument("Invalid URI");
+}
+
+// void Request::matchingLocation(webServ &servers){
+
+// }
 void Request::checkingBadRequests(){
     // Not implemented
     // std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
@@ -140,4 +148,30 @@ void Request::checkingBadRequests(){
     //     throw REQUESTURITOOLONG;
     
     // if(_requestInfos["path"])
+}
+
+std::vector<std::string> Request::pathInCannonicalForm(){
+    std::vector<std::string>    parts;
+    char                        *token;
+
+    std::cout << this->_requestInfos["path"] << std::endl;
+    token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
+    while (token){
+
+        std::string stoken(token);
+
+        if(stoken== ".") {
+
+        } else if(stoken== "..") {
+            if(parts.size() > 1){
+                parts.pop_back();
+            }
+        } else {
+            parts.push_back(stoken);
+        }
+        token = strtok(NULL, "/");
+    }
+    for (auto it : parts)
+        std::cout << it << std::endl;
+    return parts;
 }

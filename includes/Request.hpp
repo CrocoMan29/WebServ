@@ -77,7 +77,8 @@ class Request
         void collector(std::string &request);
         void checkingBadRequests();
         void splitingHeaderBody(std::string &request);
-        void matchLocation();
+        void matchingLocation();
+        std::vector<std::string>    pathInCannonicalForm();
         std::string getHeader() const {
             return _headers;
         };
@@ -86,4 +87,5 @@ class Request
         };
 };
 
+void isValidUri(std::string uri);
 # endif
