@@ -66,7 +66,9 @@ class Request
         std::map<std::string , std::string> _requestInfos;
         std::string                         _headers;
         std::string                         _body;
+        std::vector<std::string>            _uriParts;
         size_t                              _read;
+
     public:
         Request();
         ~Request();
@@ -77,8 +79,8 @@ class Request
         void collector(std::string &request);
         void checkingBadRequests();
         void splitingHeaderBody(std::string &request);
-        void matchingLocation();
-        std::vector<std::string>    pathInCannonicalForm();
+        void pathInCannonicalForm();
+        std::string matchingLocation(webServ &server);
         std::string getHeader() const {
             return _headers;
         };

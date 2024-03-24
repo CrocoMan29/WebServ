@@ -150,8 +150,7 @@ void Request::checkingBadRequests(){
     // if(_requestInfos["path"])
 }
 
-std::vector<std::string> Request::pathInCannonicalForm(){
-    std::vector<std::string>    parts;
+void Request::pathInCannonicalForm(){
     char                        *token;
 
     std::cout << this->_requestInfos["path"] << std::endl;
@@ -163,15 +162,34 @@ std::vector<std::string> Request::pathInCannonicalForm(){
         if(stoken== ".") {
 
         } else if(stoken== "..") {
-            if(parts.size() > 1){
-                parts.pop_back();
+            if(_uriParts.size() > 1){
+                _uriParts.pop_back();
             }
         } else {
-            parts.push_back(stoken);
+            _uriParts.push_back(stoken);
         }
         token = strtok(NULL, "/");
     }
-    for (auto it : parts)
-        std::cout << it << std::endl;
-    return parts;
+    // for(auto p : _uriParts)
+    //     std::cout << p << std::endl;
+}
+
+std::string Request::matchingLocation(webServ &server){
+    std::vector<Server>::iterator   sIt;
+    std::vector<Server>             servers;
+
+    servers = server.getServers();
+    for (std::vector<Server>::iterator sIt = servers.begin() ; sIt != servers.end(); sIt++){
+        if(std::find(sIt->server_name.begin(),sIt->server_name.end(),this->_uriParts[0]) != sIt->server_name.end()){
+            if(this->_uriParts.size() == 1){
+                this->_requestInfos["path"] = "/" + this->_uriParts[0];
+                return "/" + this->_uriParts[0];
+            }
+            for (std::vector<Location>::iterator lIt = sIt->_locations.begin(); lIt != sIt->_locations.end(); lIt++) {
+                
+            }
+        }
+        
+    }
+    return "";
 }
