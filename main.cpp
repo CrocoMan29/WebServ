@@ -5,7 +5,7 @@
 int main (int ac, char **av){
 	if (ac != 2)
 	{
-		std::cerr << "to many argument" << std::endl;
+		std::cerr << "too many argument" << std::endl;
 		return (1);
 	}
 	std::string filename = av[1];
