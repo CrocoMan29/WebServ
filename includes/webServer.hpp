@@ -37,4 +37,7 @@ class webServ{
 		webServ(std::vector<Server> servers);
 		void setUpServer();
 		~webServ();
+		std::vector<Server> getServers() const {
+			return this->_servers ;
+		}
 };

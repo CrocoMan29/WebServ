@@ -8,6 +8,8 @@
 #include <cstring>
 # include <algorithm>
 # include <sstream>
+# include "./parseConfigFile.hpp"
+# include "./webServer.hpp"
 
 enum ClientError{
     BADREQUEST = 400,
@@ -64,7 +66,9 @@ class Request
         std::map<std::string , std::string> _requestInfos;
         std::string                         _headers;
         std::string                         _body;
+        std::vector<std::string>            _uriParts;
         size_t                              _read;
+
     public:
         Request();
         ~Request();
@@ -72,9 +76,11 @@ class Request
         void isValidHttpRequestLine(const std::string& requestLine);
         void readingRequest(std::ifstream &infile);
         void collectData();
-        void requestLine(std::string &request);
         void collector(std::string &request);
+        void checkingBadRequests();
         void splitingHeaderBody(std::string &request);
+        void pathInCannonicalForm();
+        std::string matchingLocation(webServ &server);
         std::string getHeader() const {
             return _headers;
         };
@@ -83,4 +89,5 @@ class Request
         };
 };
 
+void isValidUri(std::string uri);
 # endif
