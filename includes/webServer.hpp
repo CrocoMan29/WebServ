@@ -11,6 +11,7 @@
 # include <arpa/inet.h>
 # include <sys/time.h>
 # include <cstring>
+# include <sys/epoll.h>
 
 class Server;
 
@@ -20,19 +21,14 @@ class FdsInfo{
 		std::vector<Server> all_servers;
 
 		int serverSock;
-		int port;
-		int readLen;
-		int headrLen;
-		size_t totalSend;
-		size_t totalRead;
-		size_t byteLeft; 
+		struct epoll_event event;
 };
 
 class webServ{
 	private:
 		std::vector<Server> _servers;
 		std::vector<Server> _serv;
-		std::vector<Server> _fdsinfo;
+		std::vector<FdsInfo> _fdsinfo;
 	public:
 		webServ(std::vector<Server> servers);
 		void setUpServer();
@@ -40,4 +36,7 @@ class webServ{
 		std::vector<Server> getServers() const {
 			return this->_servers ;
 		}
+		int guard(int n, const char *er);
+		void fdData(FdsInfo tmp, int fd);
+		void acceptConnexion();
 };
