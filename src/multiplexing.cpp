@@ -23,7 +23,20 @@ void webServ::fdData(FdsInfo tmp, int fd)
 	tmp.event.events = EPOLLIN | EPOLLOUT;
 }
 
-void webServ::acceptConnexion(){
+void webServ::acceptConnexion(int epoll_fd){
+	struct epoll_event events[MAX_EVENTS];
+	while (true){
+		int num_events;
+		if (guard(num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1), "epoll_wait error") < 0)
+			exit(1);
+		for (int i = 0; i < num_events; i++)
+		{
+			if (events[i].data.fd = _serv[i].socket_fd)
+			{
+				
+			}
+		}
+	}
 	std::cout << "connexion accepted" << std::endl;
 	std::cout << _fdsinfo.size() << std::endl;
 }
@@ -38,7 +51,9 @@ void webServ::setUpServer(){
 			continue;
 		// if (guard(setsockopt(_serv[i].socket_fd, SO_REUSEADDR , &optval, sizeof(optval)), "setsockopt error") < 0)
 		// 	continue;
-		if (guard(bind(_serv[i].socket_fd, (struct sockaddr *) &_serv[i]._address, sizeof(_serv[i]._address)), "bind error") < 0)
+		if (guard(bind(_serv[i].socket_fd,
+			(struct sockaddr *) &_serv[i]._address,
+			sizeof(_serv[i]._address)), "bind error") < 0)
 		{
 			noBind++;
 			if (noBind == (int)_serv.size())
@@ -53,7 +68,7 @@ void webServ::setUpServer(){
 			continue;
 		_fdsinfo.push_back(tmp);
 	}
-	acceptConnexion();
+	acceptConnexion(epoll_fd);
 }
 
 int webServ::guard(int n, const char *er){

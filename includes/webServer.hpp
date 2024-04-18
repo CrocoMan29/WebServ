@@ -14,7 +14,7 @@
 # include <sys/epoll.h>
 
 class Server;
-
+#define MAX_EVENTS 10;
 class FdsInfo{
 	public:
 		std::vector<Server> my_server;
@@ -38,5 +38,5 @@ class webServ{
 		}
 		int guard(int n, const char *er);
 		void fdData(FdsInfo tmp, int fd);
-		void acceptConnexion();
+		void acceptConnexion(int epoll_fd);
 };
