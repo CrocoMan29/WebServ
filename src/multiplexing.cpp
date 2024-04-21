@@ -8,6 +8,7 @@ webServ::webServ(std::vector<Server> servers){
         {
             Server _servers = servers[i];
             _servers._port = servers[i].ports[j];
+			_servers.addrLen = sizeof(_servers._address);
             _servers._address.sin_family = AF_INET;
             _servers._address.sin_addr.s_addr = inet_addr(servers[i].host.c_str());
             _servers._address.sin_port = htons(servers[i].ports[j]);
@@ -25,6 +26,7 @@ void webServ::fdData(FdsInfo tmp, int fd)
 
 void webServ::acceptConnexion(int epoll_fd){
 	struct epoll_event events[MAX_EVENTS];
+	int new_socket;
 	while (true){
 		int num_events;
 		if (guard(num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1), "epoll_wait error") < 0)
@@ -33,7 +35,8 @@ void webServ::acceptConnexion(int epoll_fd){
 		{
 			if (events[i].data.fd = _serv[i].socket_fd)
 			{
-				
+				if ((new_socket = guard(accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&_serv[i].addrLen), "accept error")) < 0)
+					
 			}
 		}
 	}

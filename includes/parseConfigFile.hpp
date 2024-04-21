@@ -62,6 +62,7 @@ class Server
 		int _port;
         int socket_fd;
         struct sockaddr_in _address;
+		int addrLen;
 
 		
 		void splitLocation(std::vector<std::string> &server_info);
