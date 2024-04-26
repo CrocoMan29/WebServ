@@ -17,9 +17,6 @@ int main (int ac, char **av){
 		webServ server(conf._servers);
 		server.setUpServer();
 		// std::cout << conf << std::endl;
-		// Request request;
-		// std::ifstream infile("tst.txt");
-
 		// request.readingRequest(infile);
 		// // std::cout << "Header \n"<<request.getHeader() << std::endl;
 		// // std::cout << "Body \n"<<request.getBody() << std::endl;

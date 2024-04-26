@@ -1,4 +1,6 @@
 #include "../includes/webServer.hpp"
+#include "../includes/Request.hpp"
+
 
 webServ::webServ(std::vector<Server> servers){
 	this->_servers = servers;
@@ -112,9 +114,10 @@ void webServ::setUpServer(){
                     std::cout << "Connection closed by client." << std::endl;
                     close(client_socket);
                 } else {
-                    std::cout << "Received: " << buffer << std::endl;
-                    // Echo received data back to client
+                    // std::cout << "Received: " << buffer << std::endl;
                     send(client_socket, buffer, strlen(buffer), 0);
+                    Request request;
+					request.requestParser(buffer);
                 }
 			}
 		}
