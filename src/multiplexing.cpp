@@ -33,9 +33,10 @@ void webServ::acceptConnexion(int epoll_fd){
 			exit(1);
 		for (int i = 0; i < num_events; i++)
 		{
-			if (events[i].data.fd = _serv[i].socket_fd)
+			if (events[i].data.fd == _serv[i].socket_fd)
 			{
 				if ((new_socket = guard(accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&_serv[i].addrLen), "accept error")) < 0)
+					std::cout << "akhiiran " << std::endl;
 					
 			}
 		}

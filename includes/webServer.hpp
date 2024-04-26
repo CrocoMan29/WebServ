@@ -14,7 +14,7 @@
 # include <sys/epoll.h>
 
 class Server;
-#define MAX_EVENTS 10;
+#define MAX_EVENTS 10
 class FdsInfo{
 	public:
 		std::vector<Server> my_server;
