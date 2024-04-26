@@ -9,23 +9,13 @@ Request::~Request(){
 
 }
 
-void Request::readingRequest(std::ifstream &infile){
-    if(infile.is_open()){
-        char buffer[1024];
-        infile.read(&buffer[0],1024);
-        std::streamsize size = infile.gcount();
-        std::string readed(buffer);
-        splitingHeaderBody(readed);
-        collectData();
-    }
-}
 
 void Request::collectData(){
     int         lineNumber = 0;
     char        *token;
 
     try{
-        token = strtok((char *)_headers.c_str(),"\n");
+        token = strtok((char *)_headers.c_str(),"\r\n");
         while (token)
         {
             std::string stoken(token);
@@ -39,7 +29,7 @@ void Request::collectData(){
                     collector(stoken);
                     break;
             }
-            token = strtok(NULL , "\n");
+            token = strtok(NULL , "\r\n");
         }
     } catch (std::runtime_error &e) {
         this->_requestInfos.clear();
@@ -63,13 +53,24 @@ void Request::collector(std::string &token){
     }
 }
 
+void Request::requestParser(std::string request){
+    splitingHeaderBody(request);
+    std::cout << "Header \n"<<getHeader() << std::endl;
+	std::cout << "Body \n"<<getBody() << std::endl;
+	for(auto a : getRequestInfo()){
+		std::cout << a.first << ": " << a.second << std::endl;
+	}
+    collectData();
+    pathInCannonicalForm();
+}
+
 std::map<std::string , std::string> Request::getRequestInfo() const{
     return _requestInfos;
 }
 
 void Request::splitingHeaderBody(std::string &request){
     size_t it;
-    it = request.find("\n\n");
+    it = request.find("\r\n\r\n");
     if (it == std::string::npos){
         _body.clear();
         _headers = request;
@@ -132,9 +133,6 @@ void isValidUri(std::string uri){
         throw std::invalid_argument("Invalid URI");
 }
 
-// void Request::matchingLocation(webServ &servers){
-
-// }
 void Request::checkingBadRequests(){
     // Not implemented
     // std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
@@ -151,9 +149,9 @@ void Request::checkingBadRequests(){
 }
 
 void Request::pathInCannonicalForm(){
+    std::string                 path;
     char                        *token;
 
-    std::cout << this->_requestInfos["path"] << std::endl;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
     while (token){
 
@@ -170,8 +168,14 @@ void Request::pathInCannonicalForm(){
         }
         token = strtok(NULL, "/");
     }
-    // for(auto p : _uriParts)
-    //     std::cout << p << std::endl;
+    // std::cout << this->_requestInfos["path"] << std::endl;
+    for(auto p : _uriParts){
+        path.append(p);
+        path.append("/");
+        // std::cout << p << std::endl;
+    }
+    this->_requestInfos["path"] = path.substr(0, path.length()-1);
+    std::cout<< this->_requestInfos["path"] << std::endl;
 }
 
 std::string Request::matchingLocation(webServ &server){

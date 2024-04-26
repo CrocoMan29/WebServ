@@ -74,7 +74,7 @@ class Request
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
         void isValidHttpRequestLine(const std::string& requestLine);
-        void readingRequest(std::ifstream &infile);
+        void requestParser(std::string request);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
