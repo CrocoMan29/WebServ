@@ -55,11 +55,11 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(std::string request){
     splitingHeaderBody(request);
-    std::cout << "Header \n"<<getHeader() << std::endl;
-	std::cout << "Body \n"<<getBody() << std::endl;
-	for(auto a : getRequestInfo()){
-		std::cout << a.first << ": " << a.second << std::endl;
-	}
+    // std::cout << "Header \n"<<getHeader() << std::endl;
+	// std::cout << "Body \n"<<getBody() << std::endl;
+	// for(auto a : getRequestInfo()){
+	// 	std::cout << a.first << ": " << a.second << std::endl;
+	// }
     collectData();
     pathInCannonicalForm();
 }
@@ -168,14 +168,16 @@ void Request::pathInCannonicalForm(){
         }
         token = strtok(NULL, "/");
     }
-    // std::cout << this->_requestInfos["path"] << std::endl;
+    if(_uriParts.size() == 0)
+        _uriParts.push_back("");
     for(auto p : _uriParts){
-        path.append(p);
         path.append("/");
-        // std::cout << p << std::endl;
+        path.append(p);
+        std::cout << p << std::endl;
     }
-    this->_requestInfos["path"] = path.substr(0, path.length()-1);
+    this->_requestInfos["path"] = path;
     std::cout<< this->_requestInfos["path"] << std::endl;
+
 }
 
 std::string Request::matchingLocation(webServ &server){
