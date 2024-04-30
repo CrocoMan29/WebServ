@@ -53,7 +53,7 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(std::string request){
+void Request::requestParser(std::string request,std::vector<Location> &locations){
     splitingHeaderBody(request);
     // std::cout << "Header \n"<<getHeader() << std::endl;
 	// std::cout << "Body \n"<<getBody() << std::endl;
@@ -62,6 +62,7 @@ void Request::requestParser(std::string request){
 	// }
     collectData();
     pathInCannonicalForm();
+    matchingLocation(locations);
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -177,25 +178,20 @@ void Request::pathInCannonicalForm(){
     }
     this->_requestInfos["path"] = path;
     std::cout<< this->_requestInfos["path"] << std::endl;
-
 }
 
-std::string Request::matchingLocation(webServ &server){
-    std::vector<Server>::iterator   sIt;
-    std::vector<Server>             servers;
+bool Request::matchingLocation(std::vector<Location> &locations){
+    std::vector<Location>::iterator   lIt;
 
-    servers = server.getServers();
-    for (std::vector<Server>::iterator sIt = servers.begin() ; sIt != servers.end(); sIt++){
-        if(std::find(sIt->server_name.begin(),sIt->server_name.end(),this->_uriParts[0]) != sIt->server_name.end()){
-            if(this->_uriParts.size() == 1){
-                this->_requestInfos["path"] = "/" + this->_uriParts[0];
-                return "/" + this->_uriParts[0];
-            }
-            for (std::vector<Location>::iterator lIt = sIt->_locations.begin(); lIt != sIt->_locations.end(); lIt++) {
-                
+    for (std::vector<Location>::iterator   lIt = locations.begin(); lIt != locations.end(); lIt++) {
+        std::cout << "location name: " << (*lIt).name << std::endl;
+        for (std::vector<std::string>::iterator pIt = _uriParts.begin(); pIt != _uriParts.end(); pIt++){
+            if ((*lIt).name == ("/" + *pIt)){
+                std::cout << "matching" << std::endl;
+                return true;
             }
         }
-        
     }
-    return "";
+    std::cout << "Not matching" << std::endl;
+    return false;
 }
