@@ -69,7 +69,8 @@ class Request
         std::string                         _body;
         std::vector<std::string>            _uriParts;
         size_t                              _read;
-
+        int                                 _status;
+        Location                            _location;
     public:
         Request();
         ~Request();
@@ -81,7 +82,8 @@ class Request
         void checkingBadRequests();
         void splitingHeaderBody(std::string &request);
         void pathInCannonicalForm();
-        bool matchingLocation(std::vector<Location> &locations);
+        void matchingLocation(std::vector<Location> &locations);
+        void isallowedMethod();
         std::string getHeader() const {
             return _headers;
         };
