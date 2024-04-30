@@ -169,12 +169,15 @@ void Request::pathInCannonicalForm(){
         }
         token = strtok(NULL, "/");
     }
+    if(_uriParts.size() == 0)
+        _uriParts.push_back("");
     for(auto p : _uriParts){
-        path.append("/"+p);
-        // path.append(p);
+        path.append("/");
+        path.append(p);
+        std::cout << p << std::endl;
     }
-    // this->_requestInfos["path"] = path.substr(0, path.length()-1);
-    std::cout<< "here is the path ====> "+this->_requestInfos["path"] << std::endl;
+    this->_requestInfos["path"] = path;
+    std::cout<< this->_requestInfos["path"] << std::endl;
 }
 
 bool Request::matchingLocation(std::vector<Location> &locations){
