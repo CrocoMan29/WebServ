@@ -9,39 +9,44 @@ Request::~Request(){
 
 }
 
-
-void Request::collectData(){
-    int         lineNumber = 0;
-    char        *token;
-
-    try{
-        token = strtok((char *)_headers.c_str(),"\r\n");
-        while (token)
-        {
-            std::string stoken(token);
-            lineNumber++;
-            switch (lineNumber)
-            {
-                case 1 :
-                    isValidHttpRequestLine(stoken);
-                    break;
-                default:
-                    collector(stoken);
-                    break;
-            }
-            token = strtok(NULL , "\r\n");
-        }
-    } catch (std::runtime_error &e) {
-        this->_requestInfos.clear();
-        std::cout<< e.what() << std::endl; 
-    }
-}
 std::string toLowercase(std::string str) {
     std::string newStr(str);
     for (size_t i = 0; i < str.length(); ++i) {
         newStr[i] = std::tolower(newStr[i]);
     }
     return (newStr);
+}
+
+bool caseInsensitiveStringCompare(const std::string& str1, const std::string& str2) {
+    std::string lowercaseStr1 = toLowercase(str1);
+    std::string lowercaseStr2 = toLowercase(str2);
+    // for (std::string::const_iterator it = str2.begin(); it != str2.end(); ++it) {
+    //     lowercaseStr2 += tolower(*it);
+    // }
+    return lowercaseStr1 == lowercaseStr2;
+}
+
+
+void Request::collectData(){
+    int         lineNumber = 0;
+    char        *token;
+
+    token = strtok((char *)_headers.c_str(),"\r\n");
+    while (token)
+    {
+        std::string stoken(token);
+        lineNumber++;
+        switch (lineNumber)
+        {
+            case 1 :
+                isValidHttpRequestLine(stoken);
+                break;
+            default:
+                collector(stoken);
+                break;
+        }
+        token = strtok(NULL , "\r\n");
+    }
 }
 
 void Request::collector(std::string &token){
@@ -53,15 +58,23 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(std::string request){
-    splitingHeaderBody(request);
-    // std::cout << "Header \n"<<getHeader() << std::endl;
-	// std::cout << "Body \n"<<getBody() << std::endl;
-	// for(auto a : getRequestInfo()){
-	// 	std::cout << a.first << ": " << a.second << std::endl;
-	// }
-    collectData();
-    pathInCannonicalForm();
+void Request::requestParser(std::string request,std::vector<Location> &locations){
+    try{
+        std::cout <<"Before splitingHeaderBody"<< std::endl;
+        splitingHeaderBody(request);
+        std::cout << "Befor collectData"<< std::endl;
+        collectData();
+        std::cout << "Befor pathInCannonicalForm"<< std::endl;
+        pathInCannonicalForm();
+        std::cout << "Befor matchingLocation"<< std::endl;
+        matchingLocation(locations);
+        std::cout << "Befor isallowedMethod"<< std::endl;
+        isallowedMethod();
+        std::cout << "Befor checkingBadRequests"<< std::endl;
+        checkingBadRequests();
+    } catch ( ClientError e) {
+        _status = e;
+    }
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -71,10 +84,8 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
 void Request::splitingHeaderBody(std::string &request){
     size_t it;
     it = request.find("\r\n\r\n");
-    if (it == std::string::npos){
-        _body.clear();
-        _headers = request;
-    }
+    if (it == std::string::npos)
+        throw BADREQUEST;
     else {
         _headers = request.substr(0, it);
         _body = request.substr(it+2);
@@ -102,7 +113,7 @@ void Request::isValidHttpRequestLine(const std::string& requestLine) {
         parts.push_back(part);
     }
     if (numSpaces != 2 || parts.size() != 3)
-        throw std::runtime_error("Error");
+        throw BADREQUEST;
 
     bool startsWithMethod = false;
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
@@ -113,7 +124,7 @@ void Request::isValidHttpRequestLine(const std::string& requestLine) {
         }
     }
     if (!startsWithMethod)
-        throw std::runtime_error("Error");
+        throw BADREQUEST;
     bool endsWithVersion = false;
     for (std::vector<std::string>::const_iterator it = versions.begin(); it != versions.end(); ++it) {
         if (parts[2] == *it) {
@@ -122,29 +133,31 @@ void Request::isValidHttpRequestLine(const std::string& requestLine) {
             break;
         }
     }
-    if (!endsWithVersion) {
-        throw std::runtime_error("Error");
-    }
+    if (!endsWithVersion)
+        throw BADREQUEST;
     _requestInfos.insert(std::make_pair("path", parts[1]));
+    isValidUri(parts[1]);
 }
 
 void isValidUri(std::string uri){
     if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$'()*+,;=%") != std::string::npos)
-        throw std::invalid_argument("Invalid URI");
+        throw BADREQUEST;
 }
 
 void Request::checkingBadRequests(){
-    // Not implemented
-    // std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
-    // if(it != _requestInfos.end() || it->second.compare("chunked"))
-    //     throw NOTIMPLEMENTED;
-    // if(_requestInfos["method"].compare("post") && 
-    //     _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
-    //     _requestInfos.find("content-length") == _requestInfos.end())
-    //     throw BADREQUEST;
-    // if(_requestInfos["path"].length >= 2048)
-    //     throw REQUESTURITOOLONG;
-    
+    std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
+    if(it != _requestInfos.end() || it->second.compare("chunked"))
+        throw BADREQUEST;
+    if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
+        throw BADREQUEST;
+    if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length")==_requestInfos.end() && _requestInfos["method"].compare("post"))
+        throw BADREQUEST;
+    if(_requestInfos["method"].compare("post") && 
+        _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
+        _requestInfos.find("content-length") == _requestInfos.end())
+        throw BADREQUEST;
+    if(_requestInfos["path"].length() >= 2048)
+        throw REQUESTURITOOLONG;
     // if(_requestInfos["path"])
 }
 
@@ -177,25 +190,36 @@ void Request::pathInCannonicalForm(){
     }
     this->_requestInfos["path"] = path;
     std::cout<< this->_requestInfos["path"] << std::endl;
-
 }
 
-std::string Request::matchingLocation(webServ &server){
-    std::vector<Server>::iterator   sIt;
-    std::vector<Server>             servers;
+void Request::matchingLocation(std::vector<Location> &locations){
+    std::vector<Location>::iterator   lIt;
+    bool                              found = false;
 
-    servers = server.getServers();
-    for (std::vector<Server>::iterator sIt = servers.begin() ; sIt != servers.end(); sIt++){
-        if(std::find(sIt->server_name.begin(),sIt->server_name.end(),this->_uriParts[0]) != sIt->server_name.end()){
-            if(this->_uriParts.size() == 1){
-                this->_requestInfos["path"] = "/" + this->_uriParts[0];
-                return "/" + this->_uriParts[0];
-            }
-            for (std::vector<Location>::iterator lIt = sIt->_locations.begin(); lIt != sIt->_locations.end(); lIt++) {
-                
-            }
+    for (std::vector<Location>::iterator   lIt = locations.begin(); lIt != locations.end(); lIt++) {
+        // std::cout << "location name: " << (*lIt).name << std::endl;
+        std::string checks = _requestInfos["path"].substr(0, (*lIt).name.length());
+        // std::cout << "checks: " << checks << std::endl;
+        if ((*lIt).name == checks){
+            found = true;
+            this->_location = *lIt;
+            // return;
         }
-        
     }
-    return "";
+    if (!found)
+        throw NOTFOUND;
+}
+
+void Request::isallowedMethod(){
+    std::cout << "isallowedMethod" << std::endl;
+    if (_location.allowMethods.empty()) {
+        return;
+    }
+    for (std::vector<std::string>::const_iterator it = _location.allowMethods.begin(); it != _location.allowMethods.end(); ++it) {
+        if (caseInsensitiveStringCompare(_requestInfos["method"], *it)) {
+            return;
+        }
+    }
+    std::cout << "isallowedMethod" << std::endl;
+    throw METHODNOTALLOWED;
 }

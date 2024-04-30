@@ -117,7 +117,7 @@ void webServ::setUpServer(){
                     // std::cout << "Received: " << buffer << std::endl;
                     send(client_socket, buffer, strlen(buffer), 0);
                     Request request;
-					request.requestParser(buffer);
+					request.requestParser(buffer, _serv[i]._locations);
                 }
 			}
 		}
