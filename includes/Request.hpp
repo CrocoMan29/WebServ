@@ -10,6 +10,7 @@
 # include <sstream>
 # include "./parseConfigFile.hpp"
 # include "./webServer.hpp"
+# include "./parseConfigFile.hpp"
 
 enum ClientError{
     BADREQUEST = 400,
@@ -74,13 +75,13 @@ class Request
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
         void isValidHttpRequestLine(const std::string& requestLine);
-        void requestParser(std::string request);
+        void requestParser(std::string request,std::vector<Location> &locations);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
         void splitingHeaderBody(std::string &request);
         void pathInCannonicalForm();
-        std::string matchingLocation(webServ &server);
+        bool matchingLocation(std::vector<Location> &locations);
         std::string getHeader() const {
             return _headers;
         };
