@@ -84,12 +84,12 @@ class Request
         void pathInCannonicalForm();
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
+        void readingBody();
+        std::string getExtension(std::string path);
         std::string getHeader() const {
             return _headers;
         };
-        std::string getBody() const {
-            return _body;
-        };
+        std::string getBody() const ;
 };
 
 void isValidUri(std::string uri);

@@ -9,6 +9,7 @@
 # include <algorithm>
 # include <sstream>
 #include <sys/stat.h>   
+# include "../includes/Request.hpp"
 
 class Response {
 	private:
@@ -28,6 +29,7 @@ class Response {
 		bool validPath(std::string& path, std::string& root);
 		bool isRegularFile(const std::string& path);
 		bool isDirectory(const std::string& path);
+		void postResponse(Request &request);
 };
 
 
