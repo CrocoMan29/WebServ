@@ -5,7 +5,7 @@ Response::Response() : status(0), socket(0) {}
 
 Response::Response(const Response& copy) {}
 
-Response& Response::operator=(const Response& rhs) {}
+Response& Response::operator=(const Response& rhs) {return (*this);}
 
 Response::~Response() {}
 
@@ -57,7 +57,7 @@ std::string Response::getContentType(std::string& path) {
 	mimetypes[".jng"] = "image/x-jng";
 	mimetypes[".bmp"] = "image/x-ms-bmp";
 	mimetypes[".woff"] = "font/woff";
-	mimetypes['.woff2'] = "font/woff2";
+	mimetypes[".woff2"] = "font/woff2";
 	mimetypes[".jar"] = "application/java-archive";
 	mimetypes[".war"] = "application/java-archive";
 	mimetypes[".ear"] = "application/java-archive";

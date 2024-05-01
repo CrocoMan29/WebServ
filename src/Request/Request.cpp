@@ -26,6 +26,17 @@ bool caseInsensitiveStringCompare(const std::string& str1, const std::string& st
     return lowercaseStr1 == lowercaseStr2;
 }
 
+std::string Request::getBody() const{
+    return _body;
+}
+
+std::string Request::getExtension(std::string path){
+    size_t pos = path.find_last_of(".");
+    if (pos == std::string::npos)
+        return "";
+    return path.substr(pos);
+}
+
 
 void Request::collectData(){
     int         lineNumber = 0;
@@ -70,9 +81,8 @@ void Request::requestParser(std::string request,std::vector<Location> &locations
         _status = e;
     }
 
-    std::cout << "status : " << _status << std::endl;
-    std::cout << "body : " << getBody() << std::endl;
-
+    // std::cout << "status : " << _status << std::endl;
+    // std::cout << "body : " << getBody() << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -81,7 +91,7 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
 
 void Request::splitingHeaderBody(std::string &request){
     size_t it;
-    std::cout << "request : " << request << std::endl;
+    // std::cout << "request : " << request << std::endl;
     it = request.find("\r\n\r\n");
     if (it == std::string::npos){
         std::cout << "BADREQUEST" << std::endl;
@@ -219,4 +229,34 @@ void Request::isallowedMethod(){
         }
     }
     throw METHODNOTALLOWED;
+}
+
+void Request::readingBody(){
+    std::map<std::string, std::string>::iterator it = _requestInfos.find("content-length");
+    if (it != _requestInfos.end()) {
+        size_t contentLength = std::stoi(it->second);
+        if (contentLength > _body.length()) {
+            throw LENGTHREQUIRED;
+        }
+    }
+    else {
+        it = _requestInfos.find("transfer-encoding");
+        if (it != _requestInfos.end() && it->second == "chunked") {
+            size_t pos = 0;
+            while (pos < _body.length()) {
+                size_t chunkSize = std::stoi(_body.substr(pos), 0, 16);
+                if (chunkSize == 0) {
+                    break;
+                }
+                pos = _body.find("\r\n", pos) + 2;
+                if (pos == std::string::npos) {
+                    throw BADREQUEST;
+                }
+                pos += chunkSize;
+                if (pos > _body.length()) {
+                    throw BADREQUEST;
+                }
+            }
+        }
+    }
 }
