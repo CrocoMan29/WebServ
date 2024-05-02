@@ -92,9 +92,11 @@ class Request
         std::string getHeader() const {
             return _headers;
         };
+
         bool isRequestParsed() const {
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
+
         std::string getBody() const;
         std::string getMethod() const {
             return this->_requestInfos.at("method");

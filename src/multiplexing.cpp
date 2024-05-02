@@ -132,7 +132,7 @@ void webServ::setUpServer(){
 				if (events[i].data.fd == _serv[i].socket_fd)
 				{
 					int addlen = sizeof(_serv[i]._address);
-					client_socket = accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
+					client_socket =accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
 					if (client_socket == -1){
 						perror("accept: new socket");
 						continue;
@@ -147,7 +147,6 @@ void webServ::setUpServer(){
 						// exit(EXIT_FAILURE);
 					}
 					_fdsinfo.push_back(tmp);
-					std::cout << "EPOLLIN: " << i << std::endl;
 				}
 				else
 				{
@@ -162,16 +161,12 @@ void webServ::setUpServer(){
 						close(client_socket);
 					} else {
 						std::cout << "Received: " << buffer << std::endl;
-						if(send(client_socket, buffer, strlen(buffer), 0) == -1){
-							perror("send");
-							continue;
-						}
-						std::cout << "Here" << std::endl;
+						send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
 						Request request;
 						request.requestParser(buffer, _serv[i]._locations);
-						if(request.isRequestParsed()){
+						if(!request.getStatus()){
 							Response response;
 							if (request.getMethod() == "post")
 							{
@@ -195,7 +190,7 @@ void webServ::setUpServer(){
 					// std::cout << "dkhelt l else" << std::endl;	
 					// exit (22);
 				}
-				continue;
+				std::cout << "EPOLLIN: " << i << std::endl;
 			}
 			else if (events[i].events & EPOLLOUT)
 			{
@@ -209,8 +204,19 @@ void webServ::setUpServer(){
 					std::cout << "Connection closed by client." << std::endl;
 					close(client_socket);
 				} else {
-					// std::cout << "Received: " << buffer << std::endl;
-					// send(client_socket, buffer, strlen(buffer), 0);
+					std::cout << "Received: " << buffer << std::endl;
+					send(client_socket, buffer, strlen(buffer), 0);
+					// Request request;
+					// request.requestParser(buffer);
+					// Request request;
+					// request.requestParser(buffer, _serv[i]._locations);
+					// if(!request.getStatus()){
+					// 	Response response;
+					// 	if (request.getMethod() == "post")
+					// 	{
+					// 		response.postResponse(request, _serv[i]._locations[0]);
+					// 	}
+					// }
 				}
 				std::cout << "EPOLLOUT: " << i << std::endl;
 			}
