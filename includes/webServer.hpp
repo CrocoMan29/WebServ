@@ -12,6 +12,8 @@
 # include <sys/time.h>
 # include <cstring>
 # include <sys/epoll.h>
+#include <fcntl.h>
+
 
 class Server;
 #define MAX_EVENTS 10
@@ -29,6 +31,7 @@ class webServ{
 		std::vector<Server> _servers;
 		std::vector<Server> _serv;
 		std::vector<FdsInfo> _fdsinfo;
+		int client_socket;
 	public:
 		webServ(std::vector<Server> servers);
 		void setUpServer();
@@ -39,4 +42,5 @@ class webServ{
 		int guard(int n, const char *er);
 		void fdData(FdsInfo tmp, int fd);
 		void acceptConnexion(int epoll_fd);
+		// int epollIn(int i, int &epoll_fd, epoll_event &events[MAX_EVENTS]);
 };

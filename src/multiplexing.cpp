@@ -52,7 +52,6 @@ void webServ::setUpServer(){
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
-	int addlen = sizeof(_serv[0]._address);
 	for (int i = 0; i < this->_serv.size(); i++)
 	{
 		// int optval = 1;
@@ -62,7 +61,7 @@ void webServ::setUpServer(){
 		// 	continue;
 		if (guard(bind(_serv[i].socket_fd,
 			(struct sockaddr *) &_serv[i]._address,
-			addlen), "bind error") < 0)
+			_serv[i].addrLen), "bind error") < 0)
 		{
 			noBind++;
 			if (noBind == (int)_serv.size())
@@ -79,53 +78,151 @@ void webServ::setUpServer(){
 			continue;
 		_fdsinfo.push_back(tmp);
 	}
-	int new_socket;
 	while (true){
 		int num_events;
 		if (guard(num_events = epoll_wait(epoll_fd, events, MAX_EVENTS, -1), "epoll_wait error") < 0)
 			exit(1);
 		for (int i = 0; i < num_events; i++)
 		{
-			std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
-			std::cout << "socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
-			if (events[i].data.fd == _serv[i].socket_fd)
+			// std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
+			// std::cout << "socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
+			// if (events[i].data.fd == _serv[i].socket_fd)
+			// {
+			// 	if ((new_socket = guard(accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen), "accept error")) < 0)
+			// 		exit(33);
+			// 	std::cout << "new connection..............." << std::endl;
+			// 	FdsInfo tmp;
+			// 	tmp.event.events =  EPOLLIN | EPOLLOUT;
+			// 	tmp.event.data.fd = new_socket;
+			// 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &tmp.event) < 0)
+			// 	{
+			// 		perror("epoll error");
+			// 		exit(EXIT_FAILURE);
+			// 	}
+			// 	_fdsinfo.push_back(tmp);
+			// }
+			// else
+			// {
+			// 	int client_socket = events[i].data.fd;
+            //     char buffer[1024] = {0};
+            //     int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+            //     if (bytes_received == -1) {
+            //         perror("recv");
+            //         exit(EXIT_FAILURE);
+            //     } else if (bytes_received == 0) {
+            //         std::cout << "Connection closed by client." << std::endl;
+            //         close(client_socket);
+            //     } else {
+            //         std::cout << "Received: " << buffer << std::endl;
+            //         send(client_socket, buffer, strlen(buffer), 0);
+            //         Request request;
+			// 		request.requestParser(buffer, _serv[i]._locations);
+			// 		Response response;
+			// 		if (request.getMethod() == "post")
+			// 		{
+			// 			response.postResponse(request, _serv[i]._locations[0]);
+			// 		}
+					
+            //     }
+			// }
+			if (events[i].events & EPOLLIN)
 			{
-				if ((new_socket = guard(accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen), "accept error")) < 0)
-					exit(33);
-				std::cout << "new connection..............." << std::endl;
-				FdsInfo tmp;
-				tmp.event.events =  EPOLLIN | EPOLLOUT;
-				tmp.event.data.fd = new_socket;
-				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &tmp.event) < 0)
+				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
+				std::cout << "socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
+				if (events[i].data.fd == _serv[i].socket_fd)
 				{
-					perror("epoll error");
-					exit(EXIT_FAILURE);
+					int addlen = sizeof(_serv[i]._address);
+					client_socket =accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
+					if (client_socket == -1){
+						perror("accept: new socket");
+						continue;
+					}
+					std::cout << "new connection..............." << std::endl;
+					FdsInfo tmp;
+					tmp.event.events =  EPOLLIN | EPOLLOUT;
+					tmp.event.data.fd = client_socket;
+					if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &tmp.event) < 0)
+					{
+						perror("epoll error");
+						// exit(EXIT_FAILURE);
+					}
+					_fdsinfo.push_back(tmp);
 				}
-				_fdsinfo.push_back(tmp);
+				else
+				{
+					int client_socket = events[i].data.fd;
+					char buffer[1024] = {0};
+					int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+					if (bytes_received == -1) {
+						perror("recv");
+					// exit(EXIT_FAILURE);
+					} else if (bytes_received == 0) {
+						std::cout << "Connection closed by client." << std::endl;
+						close(client_socket);
+					} else {
+						std::cout << "Received: " << buffer << std::endl;
+						send(client_socket, buffer, strlen(buffer), 0);
+						// Request request;
+						// request.requestParser(buffer);
+						Request request;
+						request.requestParser(buffer, _serv[i]._locations);
+						if(!request.getStatus()){
+							Response response;
+							if (request.getMethod() == "post")
+							{
+								response.postResponse(request, _serv[i]._locations[0]);
+							}
+					}
+				}
+					// int addlen = sizeof(_serv[i]._address);
+					// if ((client_socket = guard(accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen), "accept error")) < 0)
+					// 	exit(33);
+					// std::cout << "new connection..............." << std::endl;
+					// FdsInfo tmp;
+					// tmp.event.events =  EPOLLIN | EPOLLOUT;
+					// tmp.event.data.fd = client_socket;
+					// if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &tmp.event) < 0)
+					// {
+					// 	perror("epoll error");
+					// 	// exit(EXIT_FAILURE);
+					// }
+					// _fdsinfo.push_back(tmp);
+					// std::cout << "dkhelt l else" << std::endl;	
+					// exit (22);
+				}
+				std::cout << "EPOLLIN: " << i << std::endl;
+			}
+			else if (events[i].events & EPOLLOUT)
+			{
+				int client_socket = events[i].data.fd;
+				char buffer[1024] = {0};
+				int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+				if (bytes_received == -1) {
+					perror("recv");
+					// exit(EXIT_FAILURE);
+				} else if (bytes_received == 0) {
+					std::cout << "Connection closed by client." << std::endl;
+					close(client_socket);
+				} else {
+					std::cout << "Received: " << buffer << std::endl;
+					send(client_socket, buffer, strlen(buffer), 0);
+					// Request request;
+					// request.requestParser(buffer);
+					// Request request;
+					// request.requestParser(buffer, _serv[i]._locations);
+					// if(!request.getStatus()){
+					// 	Response response;
+					// 	if (request.getMethod() == "post")
+					// 	{
+					// 		response.postResponse(request, _serv[i]._locations[0]);
+					// 	}
+					// }
+				}
+				std::cout << "EPOLLOUT: " << i << std::endl;
 			}
 			else
 			{
-				int client_socket = events[i].data.fd;
-                char buffer[1024] = {0};
-                int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-                if (bytes_received == -1) {
-                    perror("recv");
-                    exit(EXIT_FAILURE);
-                } else if (bytes_received == 0) {
-                    std::cout << "Connection closed by client." << std::endl;
-                    close(client_socket);
-                } else {
-                    std::cout << "Received: " << buffer << std::endl;
-                    send(client_socket, buffer, strlen(buffer), 0);
-                    Request request;
-					request.requestParser(buffer, _serv[i]._locations);
-					Response response;
-					if (request.getMethod() == "post")
-					{
-						response.postResponse(request, _serv[i]._locations[0]);
-					}
-					
-                }
+				std::cout << "ELSE: " << i << std::endl;
 			}
 		}
 	}

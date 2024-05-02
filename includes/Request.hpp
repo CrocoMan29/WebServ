@@ -89,6 +89,9 @@ class Request
         std::string getHeader() const {
             return _headers;
         };
+		int getStatus() const {
+			return _status;
+		}
         std::string getBody() const;
         std::string getMethod() const {
             return this->_requestInfos.at("method");
