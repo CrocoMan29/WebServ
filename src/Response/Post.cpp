@@ -15,13 +15,13 @@ std::string randomFileGenerator() {
 
 void Response::postResponse(Request &request, Location &location) {
     std::string file = randomFileGenerator() + request.getExtension();
-    // std::string extension = request.getExtension();
+    std::string extension = request.getExtension();
     if(location.upload_enable == false) {
         std::cout << "Upload is not enabled" << std::endl;
         return;
     }
     
-    std::string path = "/home/yassinelr/Desktop/WebServ"+location.upload_store + "/" + file;
+    std::string path = "/home/ylarhris/Desktop/WebServ"+location.upload_store + "/" + file;
     std::cout << "Path: " << path << std::endl;
     // struct stat st = {0};
     // if (stat(location.upload_store.c_str(), &st) == -1) {

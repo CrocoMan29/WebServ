@@ -1,7 +1,7 @@
 NAME		=	webserv
 CPP			=	c++
 
-CPPFLAGS	= -fsanitize=address -g3 #-std=c++98
+CPPFLAGS	= #-fsanitize=address -g3 -std=c++98
 RM			=	rm -rf
 SRCS		=	main.cpp src/parseConfigFile.cpp src/parseLocation.cpp \
 				src/utils.cpp src/setData.cpp src/setDataLocation.cpp \

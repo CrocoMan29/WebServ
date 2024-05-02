@@ -1,8 +1,8 @@
 # include "../../includes/Request.hpp"
 #include <cstring>
 
-Request::Request(){
-    _status = 0;
+Request::Request():_status(0),_read(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false){
+
 }
 
 Request::~Request(){
@@ -50,7 +50,7 @@ void Request::collectData(){
         switch (lineNumber)
         {
             case 1 :
-                isValidHttpRequestLine(stoken);
+                RequestLineParser(stoken);
                 break;
             default:
                 collector(stoken);
@@ -73,16 +73,16 @@ void Request::requestParser(std::string request,std::vector<Location> &locations
     try{
         splitingHeaderBody(request);
         collectData();
-        pathInCannonicalForm();
-        matchingLocation(locations);
-        isallowedMethod();
-        checkingBadRequests();
+        if (_headersParsed && !_requestLineParsed)
+        {
+            pathInCannonicalForm();
+            matchingLocation(locations);
+            isallowedMethod();
+            checkingBadRequests();
+        }
     } catch ( ClientError &e) {
         _status = e;
     }
-
-    // std::cout << "status : " << _status << std::endl;
-    // std::cout << "body : " << getBody() << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -91,19 +91,24 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
 
 void Request::splitingHeaderBody(std::string &request){
     size_t it;
-    // std::cout << "request : " << request << std::endl;
-    it = request.find("\r\n\r\n");
-    if (it == std::string::npos){
-        std::cout << "BADREQUEST" << std::endl;
-        throw BADREQUEST;
-    }
+
+    if(_headersParsed)
+        _body = request;
     else {
-        _headers = request.substr(0, it);
-        _body = request.substr(it+4);
+        it = request.find("\r\n\r\n");
+        if (it != std::string::npos){
+            _headers = request.substr(0, it);
+            _body += request.substr(it+4);
+            _headersParsed = true;
+        }
+        else
+            _headers = request;
     }
 }
 
-void Request::isValidHttpRequestLine(const std::string& requestLine) {
+void Request::RequestLineParser(const std::string& requestLine) {
+    if(_requestLineParsed)
+        return;
     std::vector<std::string> methods;
     methods.push_back("GET");
     methods.push_back("POST");
@@ -147,6 +152,7 @@ void Request::isValidHttpRequestLine(const std::string& requestLine) {
         throw BADREQUEST;
     _requestInfos.insert(std::make_pair("path", parts[1]));
     isValidUri(parts[1]);
+    _requestLineParsed = true;
 }
 
 void isValidUri(std::string uri){
@@ -155,19 +161,22 @@ void isValidUri(std::string uri){
 }
 
 void Request::checkingBadRequests(){
-    std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
-    if(it != _requestInfos.end() && it->second.compare("chunked"))
-        throw BADREQUEST;
-    if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
-        throw BADREQUEST;
-    if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length")==_requestInfos.end() && !_requestInfos["method"].compare("post"))
-        throw BADREQUEST;
-    if(!_requestInfos["method"].compare("post") && 
-        _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
-        _requestInfos.find("content-length") == _requestInfos.end())
+    if (_headersParsed == true)
+    {
+        std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
+        if(it != _requestInfos.end() && it->second.compare("chunked"))
             throw BADREQUEST;
-    if(_requestInfos["path"].length() >= 2048)
-        throw REQUESTURITOOLONG;
+        if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
+            throw BADREQUEST;
+        if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length")==_requestInfos.end() && !_requestInfos["method"].compare("post"))
+            throw BADREQUEST;
+        if(!_requestInfos["method"].compare("post") && 
+            _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
+            _requestInfos.find("content-length") == _requestInfos.end())
+                throw BADREQUEST;
+        if(_requestInfos["path"].length() >= 2048)
+            throw REQUESTURITOOLONG;
+    }
 }
 
 void Request::pathInCannonicalForm(){
@@ -180,7 +189,7 @@ void Request::pathInCannonicalForm(){
         std::string stoken(token);
 
         if(stoken== ".") {
-
+            // do nothing 
         } else if(stoken== "..") {
             if(_uriParts.size() > 1){
                 _uriParts.pop_back();
@@ -205,13 +214,10 @@ void Request::matchingLocation(std::vector<Location> &locations){
     bool                              found = false;
 
     for (std::vector<Location>::iterator   lIt = locations.begin(); lIt != locations.end(); lIt++) {
-        // std::cout << "location name: " << (*lIt).name << std::endl;
         std::string checks = _requestInfos["path"].substr(0, (*lIt).name.length());
-        // std::cout << "checks: " << checks << std::endl;
         if ((*lIt).name == checks){
             found = true;
             this->_location = *lIt;
-            // return;
         }
     }
     if (!found)
