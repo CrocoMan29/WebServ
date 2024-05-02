@@ -1,5 +1,6 @@
 #include "../includes/webServer.hpp"
 #include "../includes/Request.hpp"
+# include "../includes/Response.hpp"
 
 
 webServ::webServ(std::vector<Server> servers){
@@ -114,10 +115,16 @@ void webServ::setUpServer(){
                     std::cout << "Connection closed by client." << std::endl;
                     close(client_socket);
                 } else {
-                    // std::cout << "Received: " << buffer << std::endl;
+                    std::cout << "Received: " << buffer << std::endl;
                     send(client_socket, buffer, strlen(buffer), 0);
                     Request request;
 					request.requestParser(buffer, _serv[i]._locations);
+					Response response;
+					if (request.getMethod() == "post")
+					{
+						response.postResponse(request, _serv[i]._locations[0]);
+					}
+					
                 }
 			}
 		}

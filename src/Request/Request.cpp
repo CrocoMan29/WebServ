@@ -30,11 +30,11 @@ std::string Request::getBody() const{
     return _body;
 }
 
-std::string Request::getExtension(std::string path){
-    size_t pos = path.find_last_of(".");
+std::string Request::getExtension(){
+    size_t pos =  _requestInfos["path"].find_last_of(".");
     if (pos == std::string::npos)
         return "";
-    return path.substr(pos);
+    return _requestInfos["path"].substr(pos);
 }
 
 
@@ -99,10 +99,9 @@ void Request::splitingHeaderBody(std::string &request){
     }
     else {
         _headers = request.substr(0, it);
-        _body = request.substr(it+2);
+        _body = request.substr(it+4);
     }
 }
-
 
 void Request::isValidHttpRequestLine(const std::string& requestLine) {
     std::vector<std::string> methods;

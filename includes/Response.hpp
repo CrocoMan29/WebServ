@@ -29,7 +29,7 @@ class Response {
 		bool validPath(std::string& path, std::string& root);
 		bool isRegularFile(const std::string& path);
 		bool isDirectory(const std::string& path);
-		void postResponse(Request &request);
+		void postResponse(Request &request, Location &location);
 };
 
 
