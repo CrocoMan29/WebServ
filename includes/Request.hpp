@@ -85,11 +85,14 @@ class Request
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
         void readingBody();
-        std::string getExtension(std::string path);
+        std::string getExtension();
         std::string getHeader() const {
             return _headers;
         };
-        std::string getBody() const ;
+        std::string getBody() const;
+        std::string getMethod() const {
+            return this->_requestInfos.at("method");
+        };
 };
 
 void isValidUri(std::string uri);
