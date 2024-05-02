@@ -14,6 +14,7 @@
 class Response {
 	private:
 		std::map<int, std::string> code;
+		std::map<std::string, std::string> mimetypes;
 		std::string type;
 		std::string header;
 		std::string path;
@@ -31,6 +32,9 @@ class Response {
 		bool isDirectory(const std::string& path);
 		void postResponse(Request &request, Location &location);
 };
+
+
+#endif
 
 
 #endif
