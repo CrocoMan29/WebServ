@@ -71,11 +71,14 @@ class Request
         size_t                              _read;
         int                                 _status;
         Location                            _location;
+        bool                                _headersParsed;
+        bool                                _bodyParsed;
+        bool                                _requestLineParsed;
     public:
         Request();
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
-        void isValidHttpRequestLine(const std::string& requestLine);
+        void RequestLineParser(const std::string& requestLine);
         void requestParser(std::string request,std::vector<Location> &locations);
         void collectData();
         void collector(std::string &request);
@@ -88,6 +91,9 @@ class Request
         std::string getExtension();
         std::string getHeader() const {
             return _headers;
+        };
+        bool isRequestParsed() const {
+            return _headersParsed && _bodyParsed && _requestLineParsed;
         };
         std::string getBody() const;
         std::string getMethod() const {

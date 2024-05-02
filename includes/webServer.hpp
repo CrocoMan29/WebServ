@@ -26,9 +26,10 @@ class FdsInfo{
 
 class webServ{
 	private:
-		std::vector<Server> _servers;
-		std::vector<Server> _serv;
-		std::vector<FdsInfo> _fdsinfo;
+		std::vector<Server> 	_servers;
+		std::vector<Server> 	_serv;
+		std::vector<FdsInfo> 	_fdsinfo;
+		int						client_socket;
 	public:
 		webServ(std::vector<Server> servers);
 		void setUpServer();
