@@ -35,6 +35,3 @@ class Response {
 
 
 #endif
-
-
-#endif
