@@ -255,7 +255,7 @@ void	Response::checkPath() {
 }
 
 
-void	Response::setResponse(Request &req, int socket) {
-	setHeader();
-	// exit(1);
-}
+// void	Response::setResponse(Request &req, int socket) {
+// 	setHeader();
+// 	// exit(1);
+// }
