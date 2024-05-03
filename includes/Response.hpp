@@ -19,7 +19,7 @@ class Response {
 		std::string type;
 		std::string header;
 		std::string path;
-		std::string chunkSize
+		std::string chunkSize;
 		int status;
 		int socket;
 	public:

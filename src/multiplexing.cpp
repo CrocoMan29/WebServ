@@ -88,10 +88,10 @@ void webServ::setUpServer(){
 		for (int i = 0; i < num_events; i++)
 		{
 			Server* server = fd_to_server[events[i].data.fd];
-			std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
-			std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
 			if (events[i].data.fd == server->socket_fd)
 			{
+				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
+				std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
 				int addlen = sizeof(_serv[i]._address);
 				client_socket = accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
 				if (client_socket > 0){
@@ -113,10 +113,10 @@ void webServ::setUpServer(){
 			}
 			if (events[i].events & EPOLLIN)
 			{
-				// std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
-				// std::cout << "socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
+				std::cout << "epoll in event fd : " << events[i].data.fd << ";" << std::endl;
+				std::cout << "epoll in socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
 				// else
-				
+					// Server *server = fd_to_server[events[i].data.fd];
 					// std::cout << "hellooooooooooooooooooo" << std::endl;
 					client_socket = events[i].data.fd;
 					char buffer[1024] = {0};
@@ -129,11 +129,11 @@ void webServ::setUpServer(){
 						close(client_socket);
 					} else {
 						std::cout << "Received: " << buffer << std::endl;
-						send(client_socket, buffer, strlen(buffer), 0);
+						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
 						Request request;
-						request.requestParser(buffer, server->_locations);
+						request.requestParser(buffer, _serv[i]._locations);
 						// if(!request.getStatus()){
 						// 	Response response;
 						// 	if (request.getMethod() == "post")
@@ -145,21 +145,23 @@ void webServ::setUpServer(){
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
-			else if (events[i].events & EPOLLOUT)
+			if (events[i].events & EPOLLOUT)
 			{
-				Server *server = fd_to_server[events[i].data.fd];
-				// client_socket = events[i].data.fd;
+				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
+				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
+				// Server *server = fd_to_server[events[i].data.fd];
+				client_socket = events[i].data.fd;
 				char buffer[1024] = {0};
-				int bytes_received = recv(server->socket_fd, buffer, sizeof(buffer), 0);
+				int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
 				if (bytes_received == -1) {
-					perror("recv");
+					// perror("recv");
 					// exit(EXIT_FAILURE);
 				} else if (bytes_received == 0) {
 					std::cout << "Connection closed by client." << std::endl;
 					close(client_socket);
 				} else {
 					std::cout << "Received: " << buffer << std::endl;
-					// send(client_socket, buffer, strlen(buffer), 0);
+					send(client_socket, buffer, strlen(buffer), 0);
 					// Request request;
 					// request.requestParser(buffer);
 					// Request request;
@@ -172,12 +174,12 @@ void webServ::setUpServer(){
 					// 	}
 					// }
 				}
-				std::cout << "EPOLLOUT: " << i << std::endl;
+				// std::cout << "EPOLLOUT: " << i << std::endl;
 			}
-			else
-			{
-				std::cout << "ELSE: " << i << std::endl;
-			}
+			// else
+			// {
+			// 	std::cout << "ELSE: " << i << std::endl;
+			// }
 		}
 	}
 	std::cout << "connexion accepted" << std::endl;
