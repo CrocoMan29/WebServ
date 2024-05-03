@@ -69,9 +69,9 @@ class Request
         std::string                         _body;
         std::vector<std::string>            _uriParts;
         size_t                              _read;
-        int                                 _status;
         Location                            _location;
         bool                                _headersParsed;
+        int                                 _status;
         bool                                _bodyParsed;
         bool                                _requestLineParsed;
     public:

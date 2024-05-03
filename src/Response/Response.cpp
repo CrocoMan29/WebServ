@@ -1,44 +1,50 @@
 # include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
 
-Response::Response() : status(0), socket(0) {}
+// Response::Response() : status(0), socket(0) {}
 
-Response::Response(Request& req, int socket) {
-	this->path = this->_requestInfos["path"];
+Response::Response(Request req, int socket) {
+	std::cout << "Rspsonse started..... ?" << std::endl;
+	this->path = req.getRequestInfo()["path"];
+	// this->path = 
+	// this->method = req._requestInfos["method"];
+	// this->status = req._status;
+	std::cout << "Path: " << this->path << std::endl;
+	std::cout << "Method: " << this->method << std::endl;
+	exit(10);
 }
 
-Response::Response(const Response& copy) {}
+// Response::Response(const Response& copy) {}
 
-Response& Response::operator=(const Response& rhs) {
-	if (this != &rhs) {
-		this->type = rhs.type;
-		this->header = rhs.header;
-	}	
-	return (*this);
-}
+// Response& Response::operator=(const Response& rhs) {
+// 	if (this != &rhs) {
+// 		this->type = rhs.type;
+// 		this->header = rhs.header;
+// 	}	
+// 	return (*this);
+// }
 
 Response::~Response() {}
 
-	bool Response::isDirectory(const std::string& path) {
-		struct stat save;
-		if ((stat(path.c_str(), &save) == 0) && S_ISDIR(save.st_mode))
-			return (true);
-		return (false);
-	}
+bool Response::isDirectory(const std::string& path) {
+	struct stat save;
+	if ((stat(path.c_str(), &save) == 0) && S_ISDIR(save.st_mode))
+		return (true);
+	return (false);
+}
 
-	bool Response::isRegularFile(const std::string& path) {
-		struct stat save;
-		if ((stat(path.c_str(), &save) == 0) && S_ISREG(save.st_mode))
-			return (true);
-		return (false);
-	}
+bool Response::isRegularFile(const std::string& path) {
+	struct stat save;
+	if ((stat(path.c_str(), &save) == 0) && S_ISREG(save.st_mode))
+		return (true);
+	return (false);
+}
 
 bool Response::validPath(std::string& path, std::string& root) {
 	return (path.find(root) != std::string::npos);
 }
 
-std::string Response::getContentType(std::string& path) {
-	std::map<std::string, std::string> this->mimetypes;
+void Response::getContentType(std::string& path) {
 	this->mimetypes[".html"] = "text/html";
 	this->mimetypes[".htm"] = "text/html";
 	this->mimetypes[".shtml"] = "text/html";
@@ -67,7 +73,7 @@ std::string Response::getContentType(std::string& path) {
 	this->mimetypes[".jng"] = "image/x-jng";
 	this->mimetypes[".bmp"] = "image/x-ms-bmp";
 	this->mimetypes[".woff"] = "font/woff";
-	this->mimetypes['.woff2'] = "font/woff2";
+	this->mimetypes[".woff2"] = "font/woff2";
 	this->mimetypes[".jar"] = "application/java-archive";
 	this->mimetypes[".war"] = "application/java-archive";
 	this->mimetypes[".ear"] = "application/java-archive";
@@ -155,9 +161,9 @@ std::string Response::getContentType(std::string& path) {
 		std::string ext = path.substr(found);
 		std::map<std::string, std::string>::iterator it = this->mimetypes.find(ext);
 		if (it != this->mimetypes.end())
-			this->type =  (it->second);
+			this->type = (it->second);
 	}
-	this->type =  ("text/plain");
+	this->type =  "text/plain";
 }
 
 
@@ -185,23 +191,24 @@ std::string	Response::getStatus(int status) {
 	this->code[504	] = "504 Gateway Timeout";
 
 	if (this->code.find(status) != this->code.end())
-		return (this->code(status));
+		return (this->code[status]);
 	else
-		return ("Unknown status code");
+		return (" Unknown status code");
 }
 
-void    Response::header() {
+void    Response::setHeader() {
 
 	std::cout << "Status code: " << this->status << std::endl;
-	map<int, std::string>::iterator it = getStatus(this->status);
-	this->header += "HTTP/1.1" + it->second + "\r\n";
+	this->header += "HTTP/1.1" + getStatus(this->status) + "\r\n";
 	if (this->status == 301)
 		this->header += "Location: " + this->path + "\r\n\r\n";
 	else {
+		std::cout << "===Type: " << this->type << std::endl;
 		this->header += "Content-Type: " + this->type + "\r\n";
-		this->_header += "Transfer-Encoding: chunked\r\n";
+		this->header += "Transfer-Encoding: chunked\r\n";
 		
 	}
+	std::cout << "===========Head=======\n" << this->header << std::endl;
 	write(this->socket, this->header.c_str(), this->header.length());
 }
 
@@ -210,10 +217,10 @@ void	Response::chunk(Request& req) {
 	std::ifstream file(this->path, std::ios::binary); //binary mode
 	if (!file.is_open()) {
 		this->status = 404;
-		header();
+		setHeader();
 	}
-	this->status = 200;
-	header();
+	// this->status = 200;
+	// header();
 	file.read(buf, 1023);
 	if (file.gcount() > 0) {
 		std::stringstream ss;
@@ -230,9 +237,9 @@ void	Response::chunk(Request& req) {
 }
 
 void	Response::checkPath() {
-	if (isDirectory(this->path))
+	// if (isDirectory(this->path))
 		//need to check auto index;
-	else if (isRegularFile(this->path)) {
+	if (isRegularFile(this->path)) {
 		std::ifstream file(this->path, std::ios::binary);
 		if (!file.good()) {
 			if (access(this->path.c_str(), F_OK) != -1)
@@ -242,7 +249,13 @@ void	Response::checkPath() {
 		}
 		else {
 			getContentType(this->path);
-			header();
+			setHeader();
 		}
 	}
+}
+
+
+void	Response::setResponse(Request &req, int socket) {
+	setHeader();
+	// exit(1);
 }

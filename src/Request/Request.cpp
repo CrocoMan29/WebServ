@@ -71,6 +71,7 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(std::string request,std::vector<Location> &locations){
     try{
+        std::cout << "HERE ====================================" << std::endl;
         splitingHeaderBody(request);
         collectData();
         if (_headersParsed && !_requestLineParsed)

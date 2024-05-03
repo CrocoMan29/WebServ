@@ -51,6 +51,7 @@ void webServ::acceptConnexion(int epoll_fd){
 }
 
 void webServ::setUpServer(){
+	Request request;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -117,7 +118,7 @@ void webServ::setUpServer(){
 				std::cout << "epoll in socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
 				// else
 					// Server *server = fd_to_server[events[i].data.fd];
-					// std::cout << "hellooooooooooooooooooo" << std::endl;
+					std::cout << "hellooooooooooooooooooo" << std::endl;
 					client_socket = events[i].data.fd;
 					char buffer[1024] = {0};
 					int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
@@ -132,7 +133,7 @@ void webServ::setUpServer(){
 						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
-						Request request;
+						// Request request;
 						request.requestParser(buffer, _serv[i]._locations);
 						// if(!request.getStatus()){
 						// 	Response response;
@@ -150,30 +151,31 @@ void webServ::setUpServer(){
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
 				// Server *server = fd_to_server[events[i].data.fd];
-				client_socket = events[i].data.fd;
-				char buffer[1024] = {0};
-				int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-				if (bytes_received == -1) {
-					// perror("recv");
-					// exit(EXIT_FAILURE);
-				} else if (bytes_received == 0) {
-					std::cout << "Connection closed by client." << std::endl;
-					close(client_socket);
-				} else {
-					std::cout << "Received: " << buffer << std::endl;
-					send(client_socket, buffer, strlen(buffer), 0);
+				// client_socket = events[i].data.fd;
+				// char buffer[1024] = {0};
+				// int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+				// if (bytes_received == -1) {
+				// 	// perror("recv");
+				// 	// exit(EXIT_FAILURE);
+				// } else if (bytes_received == 0) {
+				// 	std::cout << "Connection closed by client." << std::endl;
+				// 	close(client_socket);
+				// } else {
+				// 	std::cout << "Received: " << buffer << std::endl;
+				// 	send(client_socket, buffer, strlen(buffer), 0);
 					// Request request;
 					// request.requestParser(buffer);
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus()){
-					// 	Response response;
+						Response response(request, events[i].data.fd);
+						response.setResponse(request, events[i].data.fd);
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
 					// 	}
 					// }
-				}
+				// }
 				// std::cout << "EPOLLOUT: " << i << std::endl;
 			}
 			// else
@@ -182,8 +184,8 @@ void webServ::setUpServer(){
 			// }
 		}
 	}
-	std::cout << "connexion accepted" << std::endl;
-	std::cout << _fdsinfo.size() << std::endl;
+	// std::cout << "connexion accepted" << std::endl;
+	// std::cout << _fdsinfo.size() << std::endl;
 	// acceptConnexion(epoll_fd);
 }
 
