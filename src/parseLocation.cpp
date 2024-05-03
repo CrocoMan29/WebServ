@@ -72,10 +72,6 @@ void Server::enterData(std::vector<std::string> &info)
 			setErrorPage(info);
 		else
 			throw std::invalid_argument("wrong number of arguments");
-		// std::cout << error_page[0].status_code << std::endl;
-		// std::cout << error_page[0].path << std::endl; 
-		// std::cout << error_page[0].page << std::endl; 
-
 	}
 	else if (info.size() > 1 && info[0] == "root")
 	{

@@ -1,7 +1,4 @@
 #include "../includes/parseConfigFile.hpp"
-// #include "parseConfigFile.hpp"
-
-// #include "parseConfigFile.hpp"
 
 Conf::Conf(){
 	
@@ -24,10 +21,6 @@ void Conf::parseConfigFile(std::string &filename)
 	}
 	checkbracket(lines);
 	splitServers(lines, _servers);
-	// for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
-	// {
-	// 	printServer(&(*it));
-	// }
 	if (_servers.size() == 0)
 		throw std::invalid_argument("ERROR: no server blocks");
 	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
@@ -36,11 +29,6 @@ void Conf::parseConfigFile(std::string &filename)
 		dataValidity(*it);
 	}
 	lastCheck(_servers);
-	// std::vector<Server>::iterator it = _servers.begin();
-	// parseServer(*it);
-	// it++;
-	// parseServer(*it);
-	// printConfFile(lines);
 }
 void Conf::checkbracket(std::vector<std::string>&lines)
 {

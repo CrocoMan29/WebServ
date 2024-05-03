@@ -11,7 +11,7 @@ Response::Response(Request req, int socket) {
 	// this->status = req._status;
 	std::cout << "Path: " << this->path << std::endl;
 	std::cout << "Method: " << this->method << std::endl;
-	exit(10);
+	// exit(10);
 }
 
 // Response::Response(const Response& copy) {}

@@ -23,9 +23,6 @@ void Server::setServerName(std::vector<std::string> &info)
 		if (std::find(this->server_name.begin(), this->server_name.end(), *it) == this->server_name.end())
 			this->server_name.push_back(*it);
 	}
-	// std::cout << server_name[0] << std::endl;
-	// std::cout << server_name[1] << std::endl;
-	// std::cout << server_name[2] << std::endl;
 }
 
 void Server::setHost(std::vector<std::string> &info)

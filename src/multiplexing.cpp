@@ -93,7 +93,9 @@ void webServ::setUpServer(){
 			{
 				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
 				std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
+				// std::cout << "yassir";
 				int addlen = sizeof(_serv[i]._address);
+				std::cout << "addlen = "<< std::endl;
 				client_socket = accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
 				if (client_socket > 0){
 					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
@@ -118,12 +120,12 @@ void webServ::setUpServer(){
 				std::cout << "epoll in socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
 				// else
 					// Server *server = fd_to_server[events[i].data.fd];
-					std::cout << "hellooooooooooooooooooo" << std::endl;
+					// std::cout << "hellooooooooooooooooooo" << std::endl;
 					client_socket = events[i].data.fd;
 					char buffer[1024] = {0};
 					int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
 					if (bytes_received == -1) {
-						perror("recv");
+						// perror("recv");
 					// exit(EXIT_FAILURE);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
@@ -146,36 +148,36 @@ void webServ::setUpServer(){
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
-			if (events[i].events & EPOLLOUT)
+			else if (events[i].events & EPOLLOUT)
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
 				// Server *server = fd_to_server[events[i].data.fd];
-				// client_socket = events[i].data.fd;
-				// char buffer[1024] = {0};
-				// int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-				// if (bytes_received == -1) {
-				// 	// perror("recv");
-				// 	// exit(EXIT_FAILURE);
-				// } else if (bytes_received == 0) {
-				// 	std::cout << "Connection closed by client." << std::endl;
-				// 	close(client_socket);
-				// } else {
-				// 	std::cout << "Received: " << buffer << std::endl;
-				// 	send(client_socket, buffer, strlen(buffer), 0);
+				client_socket = events[i].data.fd;
+				char buffer[1024] = {0};
+				int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+				if (bytes_received == -1) {
+					// perror("recv");
+					// exit(EXIT_FAILURE);
+				} else if (bytes_received == 0) {
+					std::cout << "Connection closed by client." << std::endl;
+					close(client_socket);
+				} else {
+					std::cout << "Received: " << buffer << std::endl;
+					send(client_socket, buffer, strlen(buffer), 0);
 					// Request request;
 					// request.requestParser(buffer);
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus()){
 						Response response(request, events[i].data.fd);
-						response.setResponse(request, events[i].data.fd);
+						// response.setResponse(request, events[i].data.fd);
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
 					// 	}
 					// }
-				// }
+				}
 				// std::cout << "EPOLLOUT: " << i << std::endl;
 			}
 			// else
