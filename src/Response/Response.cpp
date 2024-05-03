@@ -195,7 +195,36 @@ void    Response::header() {
 	std::cout << "Status code: " << this->status << std::endl;
 	map<int, std::string>::iterator it = getStatus(this->status);
 	this->header += "HTTP/1.1" + it->second + "\r\n";
-	this->header += "Content-Type: " + this->type + "\r\n";
-	this->header += "Content-length" + ;
+	if (this->status == 301)
+		this->header += "Location: " + this->path + "\r\n\r\n";
+	else {
+		this->header += "Content-Type: " + this->type + "\r\n";
+		this->_header += "Transfer-Encoding: chunk\r\n";
+		
+	}
+	write(this->socket, this->header.c_str(), this->header.length());
+}
 
+void	Response::chunk(Request& req) {
+	char buf[BUFFERSIZE] = {0};
+	std::ifstream file(this->path, std::ios::binary); //binary mode
+	if (!file.is_open()) {
+		this->status = 404;
+		header();
+	}
+	this->status = 200;
+	header();
+	file.read(buf, 1023);
+	if (file.gcount() > 0) {
+		std::stringstream ss;
+        ss << std::hex << file.gcount();
+		this->chunkSize = ss.str() + "\r\n";
+		this->chunkSize.append(buf, file.gcount());
+        this->chunkSize.append("\r\n", 2);
+		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
+	}
+	else if (file.gcount() == 0) {
+        write(this->_fdSocket, "0\r\n\r\n", 5);
+        file.close();
+	}
 }

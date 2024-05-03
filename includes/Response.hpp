@@ -10,6 +10,7 @@
 # include <sstream>
 #include <sys/stat.h>   
 # include "../includes/Request.hpp"
+# define BUFFERSIZE 1024
 
 class Response {
 	private:
@@ -18,6 +19,7 @@ class Response {
 		std::string type;
 		std::string header;
 		std::string path;
+		std::string chunkSize
 		int status;
 		int socket;
 	public:
@@ -32,6 +34,5 @@ class Response {
 		bool isDirectory(const std::string& path);
 		void postResponse(Request &request, Location &location);
 };
-
 
 #endif
