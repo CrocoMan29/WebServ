@@ -19,19 +19,19 @@ Response& Response::operator=(const Response& rhs) {
 
 Response::~Response() {}
 
-bool Response::isDirectory(const std::string& path) {
-	struct stat save;
-	if ((stat(path.c_str(), &save) == 0) && S_ISDIR(save.st_mode))
-		return (true);
-	return (false);
-}
+	bool Response::isDirectory(const std::string& path) {
+		struct stat save;
+		if ((stat(path.c_str(), &save) == 0) && S_ISDIR(save.st_mode))
+			return (true);
+		return (false);
+	}
 
-bool Response::isRegularFile(const std::string& path) {
-	struct stat save;
-	if ((stat(path.c_str(), &save) == 0) && S_ISREG(save.st_mode))
-		return (true);
-	return (false);
-}
+	bool Response::isRegularFile(const std::string& path) {
+		struct stat save;
+		if ((stat(path.c_str(), &save) == 0) && S_ISREG(save.st_mode))
+			return (true);
+		return (false);
+	}
 
 bool Response::validPath(std::string& path, std::string& root) {
 	return (path.find(root) != std::string::npos);
@@ -199,7 +199,7 @@ void    Response::header() {
 		this->header += "Location: " + this->path + "\r\n\r\n";
 	else {
 		this->header += "Content-Type: " + this->type + "\r\n";
-		this->_header += "Transfer-Encoding: chunk\r\n";
+		this->_header += "Transfer-Encoding: chunked\r\n";
 		
 	}
 	write(this->socket, this->header.c_str(), this->header.length());
@@ -224,7 +224,25 @@ void	Response::chunk(Request& req) {
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
 	}
 	else if (file.gcount() == 0) {
-        write(this->_fdSocket, "0\r\n\r\n", 5);
+        write(this->socket, "0\r\n\r\n", 5);
         file.close();
+	}
+}
+
+void	Response::checkPath() {
+	if (isDirectory(this->path))
+		//need to check auto index;
+	else if (isRegularFile(this->path)) {
+		std::ifstream file(this->path, std::ios::binary);
+		if (!file.good()) {
+			if (access(this->path.c_str(), F_OK) != -1)
+				this->status = 403;
+			else
+				this->status = 404;
+		}
+		else {
+			getContentType(this->path);
+			header();
+		}
 	}
 }
