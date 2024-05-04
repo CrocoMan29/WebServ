@@ -95,9 +95,9 @@ void webServ::setUpServer(){
 				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
 				std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
 				// std::cout << "yassir";
-				int addlen = sizeof(_serv[i]._address);
-				std::cout << "addlen = "<< std::endl;
-				client_socket = accept(_serv[i].socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&addlen);
+				// int addlen = sizeof(_serv[i]._address);
+				// std::cout << "addlen = "<< std::endl;
+				client_socket = accept(server->socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&_serv[i].addrLen);
 				if (client_socket > 0){
 					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
 					{
@@ -150,7 +150,7 @@ void webServ::setUpServer(){
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
 			// else if (events[i].events & EPOLLOUT )
-			else if (events[i].events & EPOLLOUT && request._requestLineParsed == true)
+			else if ( request._requestLineParsed == true && events[i].events & EPOLLOUT )
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
