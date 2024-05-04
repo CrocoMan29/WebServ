@@ -30,8 +30,7 @@ Response::Response(Request req, int socket) {
 // 	return (*this);
 // }
 
-Response::~Response() 
-{
+Response::~Response() {
 	std::cout << "===================response end============================" << std::endl;
 }
 
@@ -270,5 +269,5 @@ void	Response::checkPath() {
 void	Response::setResponse(Request &req, int socket) {
 	setHeader();
 	// chunk(req);
-	// exit(1);
+	exit(1);
 }
