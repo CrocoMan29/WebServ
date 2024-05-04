@@ -32,7 +32,7 @@ class Response {
 		// Response& operator=(const Response& rhs);
 		~Response();
 		std::string	getStatus(int code);
-		void getContentType(std::string& path);
+		std::string getContentType(std::string& path);
 		bool validPath(std::string& path, std::string& root);
 		bool isRegularFile(const std::string& path);
 		bool isDirectory(const std::string& path);

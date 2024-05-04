@@ -7,10 +7,14 @@ Response::Response(Request req, int socket) {
 	std::cout << "Rspsonse started..... ?" << std::endl;
 	this->path = req.getRequestInfo()["path"];
 	// this->path = 
+	this->method = req.getRequestInfo()["method"];
 	// this->method = req._requestInfos["method"];
-	// this->status = req._status;
+	if (!req._status)
+		// this->status = req._status;
+		this->status = 200;
 	std::cout << "Path: " << this->path << std::endl;
 	std::cout << "Method: " << this->method << std::endl;
+	std::cout << "stat: " << this->status << std::endl;
 	// exit(10);
 }
 
@@ -44,7 +48,8 @@ bool Response::validPath(std::string& path, std::string& root) {
 	return (path.find(root) != std::string::npos);
 }
 
-void Response::getContentType(std::string& path) {
+std::string Response::getContentType(std::string& path) {
+
 	this->mimetypes[".html"] = "text/html";
 	this->mimetypes[".htm"] = "text/html";
 	this->mimetypes[".shtml"] = "text/html";
@@ -161,14 +166,13 @@ void Response::getContentType(std::string& path) {
 		std::string ext = path.substr(found);
 		std::map<std::string, std::string>::iterator it = this->mimetypes.find(ext);
 		if (it != this->mimetypes.end())
-			this->type = (it->second);
+			return (it->second);
 	}
-	this->type =  "text/plain";
+	return  ("text/plain");
 }
 
 
-std::string	Response::getStatus(int status) {
-
+std::string	Response::getStatus(int stat) {
 	//SUCCESS
 	this->code[200] = "200 OK";
 	this->code[201] = "201 Created";
@@ -188,10 +192,10 @@ std::string	Response::getStatus(int status) {
 	this->code[501] = "501 Not Implemented";
 	this->code[502] = "502 Bad Gateway";
 	this->code[503] = "503 Service Unavailable";
-	this->code[504	] = "504 Gateway Timeout";
+	this->code[504] = "504 Gateway Timeout";
 
-	if (this->code.find(status) != this->code.end())
-		return (this->code[status]);
+	if (this->code.find(stat) != this->code.end())
+		return (this->code[stat]);
 	else
 		return (" Unknown status code");
 }
@@ -199,12 +203,11 @@ std::string	Response::getStatus(int status) {
 void    Response::setHeader() {
 
 	std::cout << "Status code: " << this->status << std::endl;
-	this->header += "HTTP/1.1" + getStatus(this->status) + "\r\n";
+	this->header += "HTTP/1.1 " + getStatus(this->status) + "\r\n";
 	if (this->status == 301)
 		this->header += "Location: " + this->path + "\r\n\r\n";
 	else {
-		std::cout << "===Type: " << this->type << std::endl;
-		this->header += "Content-Type: " + this->type + "\r\n";
+		this->header += "Content-Type: " + getContentType(this->path) + "\r\n";
 		this->header += "Transfer-Encoding: chunked\r\n";
 		
 	}
@@ -255,7 +258,7 @@ void	Response::checkPath() {
 }
 
 
-// void	Response::setResponse(Request &req, int socket) {
-// 	setHeader();
-// 	// exit(1);
-// }
+void	Response::setResponse(Request &req, int socket) {
+	setHeader();
+	// exit(1);
+}

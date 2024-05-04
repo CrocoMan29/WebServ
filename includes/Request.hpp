@@ -71,10 +71,10 @@ class Request
         size_t                              _read;
         Location                            _location;
         bool                                _headersParsed;
-        int                                 _status;
         bool                                _bodyParsed;
-        bool                                _requestLineParsed;
     public:
+        int                                 _status;
+        bool                                _requestLineParsed;
         Request();
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;

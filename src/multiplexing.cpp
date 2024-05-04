@@ -148,7 +148,7 @@ void webServ::setUpServer(){
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
-			else if (events[i].events & EPOLLOUT)
+			else if (events[i].events & EPOLLOUT && request._requestLineParsed == true)
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
@@ -171,7 +171,7 @@ void webServ::setUpServer(){
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus()){
 						Response response(request, events[i].data.fd);
-						// response.setResponse(request, events[i].data.fd);
+						response.setResponse(request, events[i].data.fd);
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
