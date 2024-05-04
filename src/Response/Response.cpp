@@ -5,6 +5,8 @@
 
 Response::Response(Request req, int socket) {
 	std::cout << "Rspsonse started..... ?" << std::endl;
+	this->socket = socket;
+	std::cout << "sock/ : " << this->socket << std::endl;
 	this->path = req.getRequestInfo()["path"];
 	// this->path = 
 	this->method = req.getRequestInfo()["method"];
@@ -28,7 +30,10 @@ Response::Response(Request req, int socket) {
 // 	return (*this);
 // }
 
-Response::~Response() {}
+Response::~Response() 
+{
+	std::cout << "===================response end============================" << std::endl;
+}
 
 bool Response::isDirectory(const std::string& path) {
 	struct stat save;
@@ -202,21 +207,25 @@ std::string	Response::getStatus(int stat) {
 
 void    Response::setHeader() {
 
-	std::cout << "Status code: " << this->status << std::endl;
+	// std::cout << "Status code: " << this->status << std::endl;
 	this->header += "HTTP/1.1 " + getStatus(this->status) + "\r\n";
-	if (this->status == 301)
-		this->header += "Location: " + this->path + "\r\n\r\n";
-	else {
+	// if (this->status == 301)
+	// 	this->header += "Location: " + this->path + "\r\n\r\n";
+	// else {
 		this->header += "Content-Type: " + getContentType(this->path) + "\r\n";
-		this->header += "Transfer-Encoding: chunked\r\n";
+		// this->header += "Transfer-Encoding: chunked\r\n";
+		this->header += " Content-Length: 12\n\nHello world!\r\n";
 		
-	}
+	// }
 	std::cout << "===========Head=======\n" << this->header << std::endl;
 	write(this->socket, this->header.c_str(), this->header.length());
+	
+	std::cout << "socket: " << this->socket << std::endl;
 }
 
 void	Response::chunk(Request& req) {
 	char buf[BUFFERSIZE] = {0};
+	std::cout << "content-length----->" << std::endl;
 	std::ifstream file(this->path, std::ios::binary); //binary mode
 	if (!file.is_open()) {
 		this->status = 404;
@@ -260,5 +269,6 @@ void	Response::checkPath() {
 
 void	Response::setResponse(Request &req, int socket) {
 	setHeader();
+	// chunk(req);
 	// exit(1);
 }

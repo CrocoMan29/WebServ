@@ -52,6 +52,7 @@ void webServ::acceptConnexion(int epoll_fd){
 
 void webServ::setUpServer(){
 	Request request;
+	// Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -148,6 +149,7 @@ void webServ::setUpServer(){
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
+			// else if (events[i].events & EPOLLOUT )
 			else if (events[i].events & EPOLLOUT && request._requestLineParsed == true)
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
