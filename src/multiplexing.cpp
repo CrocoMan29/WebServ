@@ -130,7 +130,7 @@ void webServ::setUpServer(){
 					// exit(EXIT_FAILURE);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
-						close(client_socket);
+						// close(client_socket);
 					} else {
 						std::cout << "Received: " << buffer << std::endl;
 						// send(client_socket, buffer, strlen(buffer), 0);
@@ -148,6 +148,7 @@ void webServ::setUpServer(){
 					}
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
+				std::cout << "request finished: " << request._requestLineParsed << std::endl;
 			}
 			// else if (events[i].events & EPOLLOUT )
 			else if (request._requestLineParsed == true && events[i].events & EPOLLOUT )
@@ -156,17 +157,20 @@ void webServ::setUpServer(){
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
 				// Server *server = fd_to_server[events[i].data.fd];
 				client_socket = events[i].data.fd;
-				char buffer[1024] = {0};
-				int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-				if (bytes_received == -1) {
-					// perror("recv");
-					// exit(EXIT_FAILURE);
-				} else if (bytes_received == 0) {
-					std::cout << "Connection closed by client." << std::endl;
-					close(client_socket);
-				} else {
-					std::cout << "Received: " << buffer << std::endl;
-					send(client_socket, buffer, strlen(buffer), 0);
+				// char buffer[1024] = {0};
+				// int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+				// if (bytes_received == -1) {
+				// 	// perror("recv");
+				// 	// exit(EXIT_FAILURE);
+				// } else if (bytes_received == 0) {
+				// 	std::cout << "Connection closed by client." << std::endl;
+				// 	close(client_socket);
+				// } else {
+					// std::cout << "Received: " << buffer << std::endl;
+				// 	std::string buffer = "GET / HTTP/1.1\r\n\r\n"; 
+				// 	size_t sended = send(client_socket, buffer.c_str(), strlen(buffer.c_str()), 0);
+				// std::cout << "socketttt ; " << client_socket << std::endl;
+				// std::cout << "bytes send ; " << sended << std::endl;
 					// Request request;
 					// request.requestParser(buffer);
 					// Request request;
@@ -179,7 +183,7 @@ void webServ::setUpServer(){
 					// 		response.postResponse(request, _serv[i]._locations[0]);
 					// 	}
 					// }
-				}
+				// }
 				// std::cout << "EPOLLOUT: " << i << std::endl;
 			}
 			// else
