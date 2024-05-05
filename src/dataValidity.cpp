@@ -60,7 +60,7 @@ void Conf::lastCheck(std::vector<Server> &servers)
 {
 	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
-		for (std::vector<Server>::iterator iter = servers.begin() + 1; iter != servers.end(); iter++)
+		for (std::vector<Server>::iterator iter = it + 1; iter != servers.end(); iter++)
 		{
 			betweenServers(*it, *iter);
 		}
