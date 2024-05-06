@@ -17,7 +17,8 @@ void Response::sendResp(Request req, int socket)
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
 		// this->path = req.getRequestInfo()["path"];
-		this->path = "./WWW/index.html";
+		// this->path = "./WWW/index.html";
+		this->path = "./error/error.html";
 		// this->path = "./WWW/aelbouaa.jpg";
 		this->method = req.getRequestInfo()["method"];
 		// this->method = req._requestInfos["method"];
@@ -276,12 +277,6 @@ void    Response::setHeader() {
 void	Response::chunk(Request& req) {
 	char buf[BUFFERSIZE] = {0};
 	// std::cout << "content-length----->" << std::endl;
-	// if (!file.is_open()) {
-	// 	std::cout << "Here = didn't open" << std::endl;
-	// 	this->status = 404;
-	// 	setHeader();
-	// 	return ;
-	// }
 	std::cout << "path: ---->" << this->path << std::endl;
 	std::cout <<"File/    :" << this->path << std::endl;
 	// this->status = 200;
@@ -312,6 +307,12 @@ void	Response::chunk(Request& req) {
 		// this->readed = true;
 		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
+	// else if (!file.is_open()) {
+	// 	std::cout << "Here = didn't open" << std::endl;
+	// 	this->status = 404;
+	// 	setHeader();
+	// 	return ;
+	// }
 	else if (file.gcount() == 0) {
 		std::cout << "STRING/ " << std::endl;
 		std::cout << "Here = Empty" << std::endl;
@@ -327,8 +328,7 @@ void	Response::checkPath() {
 	// if (isDirectory(this->path))
 		//need to check auto index;
 	if (isRegularFile(this->path)) {
-		// std::ifstream file(this->path, std::ios::binary);
-		std::ifstream file(this->path, std::ios::binary);
+		file.open(this->path, std::ios::binary);
 		if (!file.good()) {
 			if (access(this->path.c_str(), F_OK) != -1)
 				this->status = 403;
@@ -338,6 +338,7 @@ void	Response::checkPath() {
 		else {
 			getContentType(this->path);
 			setHeader();
+			return ;
 		}
 	}
 }
