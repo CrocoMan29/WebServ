@@ -1,33 +1,82 @@
 # include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
 
-// Response::Response() : status(0), socket(0) {}
-
-Response::Response(Request req, int socket) {
-	std::cout << "Rspsonse started..... ?" << std::endl;
-	this->socket = socket;
-	std::cout << "sock/ : " << this->socket << std::endl;
-	this->path = req.getRequestInfo()["path"];
-	this->method = req.getRequestInfo()["method"];
-	// this->method = req._requestInfos["method"];
-	if (!req._status)
-		// this->status = req._status;
-		this->status = 200;
-	std::cout << "Path: " << this->path << std::endl;
-	std::cout << "Method: " << this->method << std::endl;
-	std::cout << "stat: " << this->status << std::endl;
-	// exit(10);
+Response::Response() : status(0), socket(0), readed(false), finish(false) {
+    // path = "";
+    // method = "";
 }
 
-// Response::Response(const Response& copy) {}
+
+void Response::sendResp(Request req, int socket)
+{
+	if (!this->readed) {
+		// exit(1);
+		std::cout << "==========================2Rspsonse started2..... ?=================================" << std::endl;
+		this->req = req;
+		this->socket = socket;
+		this->chunkSize = "";
+		std::cout << "sock/ : " << this->socket << std::endl;
+		// this->path = req.getRequestInfo()["path"];
+		this->path = "./WWW/index.html";
+		// this->path = "./WWW/aelbouaa.jpg";
+		this->method = req.getRequestInfo()["method"];
+		// this->method = req._requestInfos["method"];
+		if (!req._status)
+			// this->status = req._status;
+			this->status = 200;
+		// this->readed = false;	
+		// vars = true;
+		std::cout << "Path: " << this->path << std::endl;
+		std::cout << "Method: " << this->method << std::endl;
+		std::cout << "stat: " << this->status << std::endl;
+		setHeader();
+	}
+	chunk(req);
+}
+
+// Response::Response(Request req, int socket) {
+// 	std::cout << "==========================Rspsonse started..... ?=================================" << std::endl;
+// 	this->socket = socket;
+// 	std::cout << "sock/ : " << this->socket << std::endl;
+// 	// this->path = req.getRequestInfo()["path"];
+// 	this->path = "./WWW/index.html";
+// 	this->method = req.getRequestInfo()["method"];
+// 	// this->method = req._requestInfos["method"];
+// 	if (!req._status)
+// 		// this->status = req._status;
+// 		this->status = 200;	
+// 	readed = false;
+// 	std::cout << "Path: " << this->path << std::endl;
+// 	std::cout << "Method: " << this->method << std::endl;
+// 	std::cout << "stat: " << this->status << std::endl;
+// 	// exit(10);
+// }
+
+// Response::Response(const Response& copy) {
+//     this->type = copy.type;
+//     this->header = copy.header;
+//     this->path = copy.path;
+//     this->chunkSize = copy.chunkSize;
+//     this->method = copy.method;
+//     this->status = copy.status;
+//     this->socket = copy.socket;
+//     this->readed = copy.readed;
+// }
 
 // Response& Response::operator=(const Response& rhs) {
-// 	if (this != &rhs) {
-// 		this->type = rhs.type;
-// 		this->header = rhs.header;
-// 	}	
-// 	return (*this);
+//     if (this != &rhs) {
+//         this->type = rhs.type;
+//         this->header = rhs.header;
+//         this->path = rhs.path;
+//         this->chunkSize = rhs.chunkSize;
+//         this->method = rhs.method;
+//         this->status = rhs.status;
+//         this->socket = rhs.socket;
+//         this->readed = rhs.readed;
+//     }   
+//     return (*this);
 // }
+
 
 Response::~Response() {
 	std::cout << "===================response end============================" << std::endl;
@@ -205,6 +254,8 @@ std::string	Response::getStatus(int stat) {
 
 void    Response::setHeader() {
 
+
+	std::cout << "=================================HEADER================================" << std::endl;
 	std::cout << "Status code: " << this->status << std::endl;
 	this->header += "HTTP/1.1 " + getStatus(this->status) + "\r\n";
 	if (this->status == 301)
@@ -213,37 +264,62 @@ void    Response::setHeader() {
 		this->header += "Content-Type: " + getContentType(this->path) + "\r\n";
 		this->header += "Transfer-Encoding: chunked\r\n";
 		// this->header += " Content-Length: 13\n\nHello world!1\r\n";
-		
 	}
+	this->header += "connection: close\r\n\r\n";
 	std::cout << "===========Head=======\n" << this->header << std::endl;
 	write(this->socket, this->header.c_str(), this->header.length());
+	// close(this->socket);
 	std::cout << "socket: " << this->socket << std::endl;
+	std::cout << "=================================HEADER END================================" << std::endl;
 }
 
 void	Response::chunk(Request& req) {
 	char buf[BUFFERSIZE] = {0};
-	std::cout << "content-length----->" << std::endl;
+	// std::cout << "content-length----->" << std::endl;
+	// if (!file.is_open()) {
+	// 	std::cout << "Here = didn't open" << std::endl;
+	// 	this->status = 404;
+	// 	setHeader();
+	// 	return ;
+	// }
 	std::cout << "path: ---->" << this->path << std::endl;
-	std::ifstream file(this->path, std::ios::binary); //binary mode
-	if (!file.is_open()) {
-		this->status = 404;
-		setHeader();
-		return ;
-	}
+	std::cout <<"File/    :" << this->path << std::endl;
 	// this->status = 200;
 	// header();
+	if (!this->readed) {
+		if (this->readed)
+			exit(5);
+		file.open(this->path, std::ios::binary); //binary mode
+		std::cout << "here-=========>: " << std::endl;
+		// setHeader();
+		this->readed = true;
+		std::cout << "FLAG: " << this->readed << std::endl;
+		
+	}
 	file.read(buf, 1023);
-	if (file.gcount() > 0) {
+	if (file.gcount() > 0 && this->readed) {
+	// if (file.gcount() > 0) {
+		std::cout << "statuscode: " << this->status << std::endl;
 		std::stringstream ss;
         ss << std::hex << file.gcount();
+		std::cout << "buffer size: " << ss.str() << std::endl;
 		this->chunkSize = ss.str() + "\r\n";
 		this->chunkSize.append(buf, file.gcount());
         this->chunkSize.append("\r\n", 2);
+		std::cout << "Sockeeeeeeet-->: " << this->socket << std::endl;
+		std::cout << "File: ----->" << this->chunkSize.c_str() << std::endl;
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
+		// this->readed = true;
+		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
 	else if (file.gcount() == 0) {
+		std::cout << "STRING/ " << std::endl;
+		std::cout << "Here = Empty" << std::endl;
+		// std::string test = 
         write(this->socket, "0\r\n\r\n", 5);
+		// close(this->socket);
         file.close();
+		this->finish = true;
 	}
 }
 
@@ -251,6 +327,7 @@ void	Response::checkPath() {
 	// if (isDirectory(this->path))
 		//need to check auto index;
 	if (isRegularFile(this->path)) {
+		// std::ifstream file(this->path, std::ios::binary);
 		std::ifstream file(this->path, std::ios::binary);
 		if (!file.good()) {
 			if (access(this->path.c_str(), F_OK) != -1)
@@ -267,7 +344,6 @@ void	Response::checkPath() {
 
 
 void	Response::setResponse(Request &req, int socket) {
-	// setHeader();
 	chunk(req);
-	exit(1);
+	// exit(1);
 }

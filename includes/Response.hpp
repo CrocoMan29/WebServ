@@ -23,11 +23,16 @@ class Response {
 		std::string path;
 		std::string chunkSize;
 		std::string method;
+		std::ifstream file;
 		int status;
 		int socket;
+		bool readed;
+		Request req;
 	public:
+		bool finish;
 		Response();
 		Response(Request req, int socket);
+		void sendResp(Request req, int socket);
 		// Response(const Response& copy);
 		// Response& operator=(const Response& rhs);
 		~Response();

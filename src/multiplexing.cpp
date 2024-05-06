@@ -52,7 +52,7 @@ void webServ::acceptConnexion(int epoll_fd){
 
 void webServ::setUpServer(){
 	Request request;
-	// Response response;
+	Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -150,8 +150,8 @@ void webServ::setUpServer(){
 				std::cout << "EPOLLIN: " << i << std::endl;
 				std::cout << "request finished: " << request._requestLineParsed << std::endl;
 			}
-			// else if (events[i].events & EPOLLOUT )
-			else if (request._requestLineParsed == true && events[i].events & EPOLLOUT )
+			else if (events[i].events & EPOLLOUT )
+			// else if (request._requestLineParsed == true && events[i].events & EPOLLOUT )
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
@@ -176,8 +176,11 @@ void webServ::setUpServer(){
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus()){
-						Response response(request, events[i].data.fd);
-						response.setResponse(request, events[i].data.fd);
+						response.sendResp(request, events[i].data.fd);
+						if (response.finish == true) {
+							std::cout << "finished-------:" << std::endl;
+							close(events[i].data.fd);
+						}
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
