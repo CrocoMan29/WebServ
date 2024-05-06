@@ -7,6 +7,8 @@
 # include <vector>
 #include <cstring>
 # include <algorithm>
+# include <string>
+# include <time.h>
 # include <sstream>
 # include "./parseConfigFile.hpp"
 # include "./webServer.hpp"
@@ -61,17 +63,19 @@ enum Redirection {
     USEPROXY = 305,
     UNUSED = 306
 };
+
 class Request
 {
     private:
         std::map<std::string , std::string> _requestInfos;
+        std::vector<std::string>            _uriParts;
         std::string                         _headers;
         std::string                         _body;
-        std::vector<std::string>            _uriParts;
-        size_t                              _read;
         Location                            _location;
-        bool                                _headersParsed;
+        size_t                              _bodySize;
         bool                                _bodyParsed;
+        bool                                _headersParsed;
+        std::string                         _file;
     public:
         int                                 _status;
         bool                                _requestLineParsed;
@@ -87,16 +91,40 @@ class Request
         void pathInCannonicalForm();
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
-        void readingBody();
-        std::string getExtension();
+        void bodyHandler();
+        void readingBody(const std::string &request);
+        std::string getExtension(const std::string &contentType){
+            std::string extension = "";
+            if (contentType == "text/html")
+                extension = ".html";
+            else if (contentType == "text/css")
+                extension = ".css";
+            else if (contentType == "image/jpeg")
+                extension = ".jpeg";
+            else if (contentType == "image/png")
+                extension = ".png";
+            else if (contentType == "image/gif")
+                extension = ".gif";
+            else if (contentType == "image/svg+xml")
+                extension = ".svg";
+            else if (contentType == "application/javascript")
+                extension = ".js";
+            else if (contentType == "application/json")
+                extension = ".json";
+            else if (contentType == "application/xml")
+                extension = ".xml";
+            else if (contentType == "text/plain")
+                extension = ".txt";
+            return extension;
+        };
         std::string getHeader() const {
             return _headers;
         };
 
         bool isRequestParsed() const {
+            std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
-
         std::string getBody() const;
         std::string getMethod() const {
             return this->_requestInfos.at("method");
@@ -104,4 +132,7 @@ class Request
 };
 
 void isValidUri(std::string uri);
+std::string toLowercase(std::string str);
+std::string randomFileGenerator();
+
 # endif

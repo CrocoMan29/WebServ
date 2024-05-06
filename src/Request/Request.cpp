@@ -1,7 +1,7 @@
 # include "../../includes/Request.hpp"
 #include <cstring>
 
-Request::Request():_status(0),_read(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false){
+Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0) {
 
 }
 
@@ -11,32 +11,18 @@ Request::~Request(){
 
 std::string toLowercase(std::string str) {
     std::string newStr(str);
-    for (size_t i = 0; i < str.length(); ++i) {
+    for (size_t i = 0; i < str.length(); ++i)
         newStr[i] = std::tolower(newStr[i]);
-    }
     return (newStr);
 }
 
 bool caseInsensitiveStringCompare(const std::string& str1, const std::string& str2) {
-    std::string lowercaseStr1 = toLowercase(str1);
-    std::string lowercaseStr2 = toLowercase(str2);
-    // for (std::string::const_iterator it = str2.begin(); it != str2.end(); ++it) {
-    //     lowercaseStr2 += tolower(*it);
-    // }
-    return lowercaseStr1 == lowercaseStr2;
+    return toLowercase(str1) == toLowercase(str2);
 }
 
 std::string Request::getBody() const{
     return _body;
 }
-
-std::string Request::getExtension(){
-    size_t pos =  _requestInfos["path"].find_last_of(".");
-    if (pos == std::string::npos)
-        return "";
-    return _requestInfos["path"].substr(pos);
-}
-
 
 void Request::collectData(){
     int         lineNumber = 0;
@@ -71,16 +57,16 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(std::string request,std::vector<Location> &locations){
     try{
-        std::cout << "HERE ====================================" << std::endl;
         splitingHeaderBody(request);
-        collectData();
-        if (_headersParsed && !_requestLineParsed)
-        {
-            pathInCannonicalForm();
-            matchingLocation(locations);
-            isallowedMethod();
-            checkingBadRequests();
+        if(_headersParsed) {
+            if (_headersParsed && _requestLineParsed && !_bodyParsed) {
+                pathInCannonicalForm();
+                matchingLocation(locations);
+                isallowedMethod();
+                checkingBadRequests();
+            }
         }
+        bodyHandler();
     } catch ( ClientError &e) {
         _status = e;
     }
@@ -93,17 +79,21 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
 void Request::splitingHeaderBody(std::string &request){
     size_t it;
 
-    if(_headersParsed)
-        _body = request;
+    if(_headersParsed){
+        readingBody(request);
+    }
     else {
         it = request.find("\r\n\r\n");
         if (it != std::string::npos){
             _headers = request.substr(0, it);
-            _body += request.substr(it+4);
+            collectData();
             _headersParsed = true;
+            readingBody(request.substr(it + 4));
         }
-        else
+        else {
             _headers = request;
+            collectData();
+        }
     }
 }
 
@@ -169,7 +159,7 @@ void Request::checkingBadRequests(){
             throw BADREQUEST;
         if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
             throw BADREQUEST;
-        if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length")==_requestInfos.end() && !_requestInfos["method"].compare("post"))
+        if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length") ==_requestInfos.end() && !_requestInfos["method"].compare("post"))
             throw BADREQUEST;
         if(!_requestInfos["method"].compare("post") && 
             _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
@@ -237,32 +227,51 @@ void Request::isallowedMethod(){
     throw METHODNOTALLOWED;
 }
 
-void Request::readingBody(){
-    std::map<std::string, std::string>::iterator it = _requestInfos.find("content-length");
-    if (it != _requestInfos.end()) {
-        size_t contentLength = std::stoi(it->second);
-        if (contentLength > _body.length()) {
-            throw LENGTHREQUIRED;
-        }
+std::string randomFileGenerator() {
+    std::string randomFile;
+    std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    srand(time(NULL));
+    for (size_t i = 0; i < 10; i++) {
+        randomFile += charset[rand() % charset.length()];
     }
-    else {
-        it = _requestInfos.find("transfer-encoding");
-        if (it != _requestInfos.end() && it->second == "chunked") {
-            size_t pos = 0;
-            while (pos < _body.length()) {
-                size_t chunkSize = std::stoi(_body.substr(pos), 0, 16);
-                if (chunkSize == 0) {
-                    break;
-                }
-                pos = _body.find("\r\n", pos) + 2;
-                if (pos == std::string::npos) {
-                    throw BADREQUEST;
-                }
-                pos += chunkSize;
-                if (pos > _body.length()) {
-                    throw BADREQUEST;
-                }
+    return (randomFile);
+}
+
+
+void Request::bodyHandler(){
+
+    if(_requestInfos["method"].compare("post"))
+        return;
+    if(_file.empty())
+        _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
+    std::string path = "/home/yassinelr/Web"+_location.upload_store + "/" + _file;
+    std::cout << _location.upload_store << std::endl;
+    std::ofstream ofs(path, std::ios_base::app);
+    if (ofs.is_open()) {
+        ofs << _body;
+        ofs.close();
+        std::cout << "File uploaded successfully" << std::endl;
+    } else {
+        std::cout << "Error opening file" << std::endl;
+        perror("Error");
+    }
+    std::cout <<"Here is the Body :" <<_body << std::endl;
+}
+
+void Request::readingBody(const std::string &body){
+    if(_requestInfos.find("content-length") != _requestInfos.end()){
+        if(_bodySize < atoi(_requestInfos["content-length"].c_str())){
+            _bodySize += body.length();
+            if(_bodySize > atoi(_requestInfos["content-length"].c_str())){
+                _body = body.substr(0, atoi(_requestInfos["content-length"].c_str()) - _bodySize);
+            }
+            else{
+                _body = body;
+            }
+            if (_bodySize == atoi(_requestInfos["content-length"].c_str())){
+                _bodyParsed = true;
             }
         }
+        // bodyHandler(_body);
     }
 }
