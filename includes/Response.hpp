@@ -24,6 +24,7 @@ class Response {
 		std::string chunkSize;
 		std::string method;
 		std::ifstream file;
+		std::string autoIndex;
 		int status;
 		int socket;
 		bool readed;

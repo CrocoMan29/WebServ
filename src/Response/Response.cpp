@@ -285,6 +285,13 @@ void	Response::chunk(Request& req) {
 		if (this->readed)
 			exit(5);
 		file.open(this->path, std::ios::binary); //binary mode
+		if (!file.is_open()) {
+			std::cout << "Here = didn't open" << std::endl;
+			this->status = 404;
+			setHeader();
+			write(this->socket, "404 Not Found", strlen("404 Not Found"));
+			return ;
+		}
 		std::cout << "here-=========>: " << std::endl;
 		// setHeader();
 		this->readed = true;
@@ -307,13 +314,7 @@ void	Response::chunk(Request& req) {
 		// this->readed = true;
 		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
-	// else if (!file.is_open()) {
-	// 	std::cout << "Here = didn't open" << std::endl;
-	// 	this->status = 404;
-	// 	setHeader();
-	// 	return ;
-	// }
-	else if (file.gcount() == 0) {
+	else if (file.gcount() == 0 && this->readed) {
 		std::cout << "STRING/ " << std::endl;
 		std::cout << "Here = Empty" << std::endl;
 		// std::string test = 
@@ -324,9 +325,24 @@ void	Response::chunk(Request& req) {
 	}
 }
 
+void Response::setAutoIndex(bool value) {
+    this->autoIndex = value;
+}
+
 void	Response::checkPath() {
-	// if (isDirectory(this->path))
+	if (isDirectory(this->path)) {
 		//need to check auto index;
+		// if (!this->autoIndex) {
+		// 	this->status = 403;
+		// 	return ;
+		// }
+		if (this->path.back() != '/') {
+			this->status = 301;
+			this->path += '/';
+			setHeader();
+			return ;
+		}
+	}
 	if (isRegularFile(this->path)) {
 		file.open(this->path, std::ios::binary);
 		if (!file.good()) {
@@ -340,6 +356,10 @@ void	Response::checkPath() {
 			setHeader();
 			return ;
 		}
+	}
+	else {
+		this->status = 404;
+		setHeader();
 	}
 }
 
