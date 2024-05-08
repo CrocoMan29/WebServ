@@ -28,6 +28,7 @@ class Response {
 		int status;
 		int socket;
 		bool readed;
+		bool isError;
 		Request req;
 	public:
 		bool finish;
@@ -46,7 +47,7 @@ class Response {
 		void setHeader();
 		void chunk(Request& req);
 		void setResponse(Request &req, int socket);
-		void checkPath();
+		int checkPath();
 };
 
 #endif

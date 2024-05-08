@@ -1,7 +1,7 @@
 # include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
 
-Response::Response() : status(0), socket(0), readed(false), finish(false) {
+Response::Response() : status(0), socket(0), readed(false), isError(false),finish(false) {
     // path = "";
     // method = "";
 }
@@ -17,8 +17,8 @@ void Response::sendResp(Request req, int socket)
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
 		// this->path = req.getRequestInfo()["path"];
-		// this->path = "./WWW/index.html";
-		this->path = "./error/error.html";
+		this->path = "./WWW/index.html";
+		// this->path = "./error/error.html";
 		// this->path = "./WWW/aelbouaa.jpg";
 		this->method = req.getRequestInfo()["method"];
 		// this->method = req._requestInfos["method"];
@@ -30,9 +30,28 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
-		setHeader();
+		// setHeader();
 	}
-	chunk(req);
+	if (checkPath()) {
+		std::cout << "checkPath---------========>" << std::endl;
+		std::cout << "Error Flag====>" << this->isError << std::endl;
+		if (this->readed && !this->isError) {
+			setHeader();
+			this->isError = true;
+		}
+		else if (this->isError && !this->readed) {
+			this->readed = true;
+			if (this->readed) {
+				// file.open(this->path, std::ios::binary);
+				setHeader();
+			}
+			// this->isError = false;
+			// chunk(req);
+			// exit(10);
+		}
+		chunk(req);
+	}
+	// chunk(req);
 }
 
 // Response::Response(Request req, int socket) {
@@ -281,26 +300,26 @@ void	Response::chunk(Request& req) {
 	std::cout <<"File/    :" << this->path << std::endl;
 	// this->status = 200;
 	// header();
-	if (!this->readed) {
-		if (this->readed)
-			exit(5);
-		file.open(this->path, std::ios::binary); //binary mode
-		if (!file.is_open()) {
-			std::cout << "Here = didn't open" << std::endl;
-			this->status = 404;
-			setHeader();
-			write(this->socket, "404 Not Found", strlen("404 Not Found"));
-			return ;
-		}
-		std::cout << "here-=========>: " << std::endl;
-		// setHeader();
-		this->readed = true;
-		std::cout << "FLAG: " << this->readed << std::endl;
+	// if (!this->readed) {
+	// 	if (this->readed)
+	// 		exit(5);
+	// 	// file.open(this->path, std::ios::binary); //binary mode
+	// 	// checkPath();
+	// 	// if (!file.is_open()) {
+	// 	// 	std::cout << "Here = didn't open" << std::endl;
+	// 	// 	this->status = 404;
+	// 	// 	setHeader();
+	// 	// 	write(this->socket, "404 Not Found", strlen("404 Not Found"));
+	// 	// 	return ;
+	// 	// }
+	// 	std::cout << "here-=========>: " << std::endl;
+	// 	// setHeader();
+	// 	this->readed = true;
+	// 	std::cout << "FLAG: " << this->readed << std::endl;
 		
-	}
+	// }
 	file.read(buf, 1023);
 	if (file.gcount() > 0 && this->readed) {
-	// if (file.gcount() > 0) {
 		std::cout << "statuscode: " << this->status << std::endl;
 		std::stringstream ss;
         ss << std::hex << file.gcount();
@@ -311,56 +330,83 @@ void	Response::chunk(Request& req) {
 		std::cout << "Sockeeeeeeet-->: " << this->socket << std::endl;
 		std::cout << "File: ----->" << this->chunkSize.c_str() << std::endl;
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
-		// this->readed = true;
 		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
 	else if (file.gcount() == 0 && this->readed) {
 		std::cout << "STRING/ " << std::endl;
 		std::cout << "Here = Empty" << std::endl;
-		// std::string test = 
         write(this->socket, "0\r\n\r\n", 5);
-		// close(this->socket);
         file.close();
 		this->finish = true;
 	}
 }
 
-void Response::setAutoIndex(bool value) {
-    this->autoIndex = value;
-}
+// void Response::setAutoIndex(bool value) {
+//     this->autoIndex = value;
+// }
 
-void	Response::checkPath() {
-	if (isDirectory(this->path)) {
-		//need to check auto index;
-		// if (!this->autoIndex) {
-		// 	this->status = 403;
+int	Response::checkPath() {
+	// if (isDirectory(this->path)) {
+	// 	//need to check auto index;
+	// 	// if (!this->autoIndex) {
+	// 	// 	this->status = 403;
+	// 	// 	return ;
+	// 	// }
+	// 	if (this->path.back() != '/') {
+	// 		this->status = 301;
+	// 		this->path += '/';
+	// 		setHeader();
+	// 		return ;
+	// 	}
+	// }
+	// if (isRegularFile(this->path)) {
+		std::cout << "Here-------------->che <----------Here" << std::endl;
+		if (!this->readed) {
+			std::cout << "Here-------------->check if open <----------Here" << std::endl;
+			// exit(15);
+			file.open(this->path, std::ios::binary);
+			if (!file.good()) {
+				std::cout << "Here--------------> <----------Here" << std::endl;
+				if (access(this->path.c_str(), R_OK) != -1) {
+					std::cout << "don't have access" << std::endl;
+					this->status = 403;
+					// exit(12);
+					this->path = "./error/403.html";
+				}
+				else {
+					std::cout << "file not found" << std::endl;
+					this->status = 404;
+					this->path = "./error/error.html";
+				}
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+			}
+			else {
+				this->readed = true;
+			}
+
+		}
+		// if (!file.is_open()) {
+		// 	std::cout << "Here = didn't open" << std::endl;
+		// 	this->status = 404;
+		// 	// setHeader();
+		// 	write(this->socket, "404 Not Found", strlen("404 Not Found"));
 		// 	return ;
 		// }
-		if (this->path.back() != '/') {
-			this->status = 301;
-			this->path += '/';
-			setHeader();
-			return ;
-		}
-	}
-	if (isRegularFile(this->path)) {
-		file.open(this->path, std::ios::binary);
-		if (!file.good()) {
-			if (access(this->path.c_str(), F_OK) != -1)
-				this->status = 403;
-			else
-				this->status = 404;
-		}
-		else {
-			getContentType(this->path);
-			setHeader();
-			return ;
-		}
-	}
-	else {
-		this->status = 404;
-		setHeader();
-	}
+		// }
+		// else {
+		// 	// setHeader();
+		// }
+	// }
+	// else {
+	// 	// exit(1);
+	// 	// this->status = 404;
+	// 	// setHeader();
+	// 	// this->path = "./error/error.html";
+	// 	// write(this->socket, "404 Not Found", strlen("404 Not Found"));
+	// 	// return ;
+	// }
+	return (1);
 }
 
 

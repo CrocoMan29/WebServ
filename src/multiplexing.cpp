@@ -50,9 +50,9 @@ void webServ::acceptConnexion(int epoll_fd){
 	std::cout << _fdsinfo.size() << std::endl;
 }
 
-void webServ::setUpServer(){
+void webServ::setUpServer() {
 	Request request;
-	// Response response;
+	Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -176,12 +176,13 @@ void webServ::setUpServer(){
 					// request.requestParser(buffer);
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
-					// if(!request.getStatus()){
-						// response.sendResp(request, events[i].data.fd);
-						// if (response.finish == true) {
-						// 	std::cout << "finished-------:" << std::endl;
-						// 	close(events[i].data.fd);
-						// }
+					// if(!request.getStatus() ){
+						response.sendResp(request, events[i].data.fd);
+						if (response.finish == true) {
+							std::cout << "finished-------:" << std::endl;
+							close(events[i].data.fd);
+						}
+					// }
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
