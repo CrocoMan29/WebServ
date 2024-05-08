@@ -70,7 +70,7 @@ class Request
         std::map<std::string , std::string> _requestInfos;
         std::vector<std::string>            _uriParts;
         std::string                         _headers;
-        std::string                         _body;
+        std::vector<char>                   _body;
         Location                            _location;
         size_t                              _bodySize;
         bool                                _bodyParsed;
@@ -83,16 +83,17 @@ class Request
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
         void RequestLineParser(const std::string& requestLine);
-        void requestParser(std::string request,std::vector<Location> &locations);
+        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
-        void splitingHeaderBody(std::string &request);
+        void splitingHeaderBody(const char* request, size_t readBytes);
         void pathInCannonicalForm();
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
         void bodyHandler();
-        void readingBody(const std::string &request);
+        void readingBody(const char* request, size_t readBytes);
+        void setChunkedBody(const char *body, size_t readBytes);
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             if (contentType == "text/html")
