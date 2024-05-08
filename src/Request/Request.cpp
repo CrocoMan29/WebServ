@@ -20,9 +20,9 @@ bool caseInsensitiveStringCompare(const std::string& str1, const std::string& st
     return toLowercase(str1) == toLowercase(str2);
 }
 
-std::string Request::getBody() const{
-    return _body;
-}
+// std::string Request::getBody() const{
+//     return _body;
+// }
 
 void Request::collectData(){
     int         lineNumber = 0;
@@ -55,9 +55,9 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(std::string request,std::vector<Location> &locations){
+void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
-        splitingHeaderBody(request);
+        splitingHeaderBody(request, readBytes);
         if(_headersParsed) {
             if (_headersParsed && _requestLineParsed && !_bodyParsed) {
                 pathInCannonicalForm();
@@ -69,6 +69,8 @@ void Request::requestParser(std::string request,std::vector<Location> &locations
         bodyHandler();
     } catch ( ClientError &e) {
         _status = e;
+        std::cerr << "Error: " << e << std::endl;
+        // go to response
     }
 }
 
@@ -76,22 +78,23 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
     return _requestInfos;
 }
 
-void Request::splitingHeaderBody(std::string &request){
+void Request::splitingHeaderBody(const char *request, size_t readBytes){
     size_t it;
-
+    _body.clear();
     if(_headersParsed){
-        readingBody(request);
+        readingBody(request, readBytes);
     }
     else {
-        it = request.find("\r\n\r\n");
-        if (it != std::string::npos){
-            _headers = request.substr(0, it);
+        if ((it = std::string(request).find("\r\n\r\n")) != std::string::npos){
+            _headers = std::string(request).substr(0, it);
             collectData();
             _headersParsed = true;
-            readingBody(request.substr(it + 4));
+            if(readBytes - it - 4 <= 0)
+                _bodyParsed = true;
+            readingBody(request + it + 4, readBytes - it - 4);
         }
         else {
-            _headers = request;
+            _headers = std::string(request);
             collectData();
         }
     }
@@ -246,32 +249,60 @@ void Request::bodyHandler(){
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/home/yassinelr/Web"+_location.upload_store + "/" + _file;
     std::cout << _location.upload_store << std::endl;
-    std::ofstream ofs(path, std::ios_base::app);
+    std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
-        ofs << _body;
+        ofs.write(_body.data(), _body.size());
         ofs.close();
+        std::cout << _requestInfos["content-length"] << "  "<< this->_bodySize << std::endl;
         std::cout << "File uploaded successfully" << std::endl;
     } else {
         std::cout << "Error opening file" << std::endl;
         perror("Error");
     }
-    std::cout <<"Here is the Body :" <<_body << std::endl;
+    std::cout <<"Here is the Body :" <<_body.data() << std::endl;
 }
 
-void Request::readingBody(const std::string &body){
+void Request::readingBody(const char *body, size_t readBytes){
     if(_requestInfos.find("content-length") != _requestInfos.end()){
-        if(_bodySize < atoi(_requestInfos["content-length"].c_str())){
-            _bodySize += body.length();
-            if(_bodySize > atoi(_requestInfos["content-length"].c_str())){
-                _body = body.substr(0, atoi(_requestInfos["content-length"].c_str()) - _bodySize);
-            }
-            else{
-                _body = body;
-            }
-            if (_bodySize == atoi(_requestInfos["content-length"].c_str())){
-                _bodyParsed = true;
-            }
+        if(_bodySize == 0){
+            _bodySize = std::stoi(_requestInfos["content-length"]);
         }
-        // bodyHandler(_body);
+        if(_body.size() + readBytes >= _bodySize){
+            _body.insert(_body.end(), body, body + _bodySize - _body.size());
+            _bodyParsed = true;
+        }
+        else {
+            _body.insert(_body.end(), body, body + readBytes);
+        }
+    }
+    else if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
+        setChunkedBody(body, readBytes);
+    }
+    else {
+        _bodyParsed = true;
+    }
+}
+
+void Request::setChunkedBody(const char *body, size_t readBytes){
+    std::string chunkedBody(body, readBytes);
+    size_t pos = 0;
+    size_t chunkSize;
+    size_t chunkStart;
+    size_t chunkEnd;
+    while (pos < chunkedBody.size()) {
+        chunkStart = pos;
+        chunkEnd = chunkedBody.find("\r\n", pos);
+        if (chunkEnd == std::string::npos)
+            break;
+        chunkSize = std::stoi(chunkedBody.substr(chunkStart, chunkEnd - chunkStart), 0, 16);
+        if (chunkSize == 0) {
+            _bodyParsed = true;
+            break;
+        }
+        pos = chunkEnd + 2;
+        if (pos + chunkSize > chunkedBody.size())
+            break;
+        _body.insert(_body.end(), chunkedBody.begin() + pos, chunkedBody.begin() + pos + chunkSize);
+        pos += chunkSize + 2;
     }
 }

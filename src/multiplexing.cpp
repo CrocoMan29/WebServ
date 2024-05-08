@@ -52,7 +52,7 @@ void webServ::acceptConnexion(int epoll_fd){
 
 void webServ::setUpServer(){
 	Request request;
-	Response response;
+	// Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -132,12 +132,13 @@ void webServ::setUpServer(){
 						std::cout << "Connection closed by client." << std::endl;
 						// close(client_socket);
 					} else {
+						buffer[bytes_received] = '\0';
 						std::cout << "Received: " << buffer << std::endl;
 						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
 						// Request request;
-						request.requestParser(buffer, _serv[i]._locations);
+						request.requestParser(buffer, _serv[i]._locations, bytes_received);
 						// if(!request.getStatus()){
 						// 	Response response;
 						// 	if (request.getMethod() == "post")
@@ -176,11 +177,11 @@ void webServ::setUpServer(){
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus()){
-						response.sendResp(request, events[i].data.fd);
-						if (response.finish == true) {
-							std::cout << "finished-------:" << std::endl;
-							close(events[i].data.fd);
-						}
+						// response.sendResp(request, events[i].data.fd);
+						// if (response.finish == true) {
+						// 	std::cout << "finished-------:" << std::endl;
+						// 	close(events[i].data.fd);
+						// }
 					// 	if (request.getMethod() == "post")
 					// 	{
 					// 		response.postResponse(request, _serv[i]._locations[0]);
