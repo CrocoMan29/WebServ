@@ -179,7 +179,6 @@ void Request::pathInCannonicalForm(){
 
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
     while (token){
-
         std::string stoken(token);
 
         if(stoken== ".") {
@@ -247,7 +246,7 @@ void Request::bodyHandler(){
         return;
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/home/yassinelr/Web"+_location.upload_store + "/" + _file;
+    std::string path = "/home/ylarhris/WebServ"+_location.upload_store + "/" + _file;
     std::cout << _location.upload_store << std::endl;
     std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
@@ -289,20 +288,42 @@ void Request::setChunkedBody(const char *body, size_t readBytes){
     size_t chunkSize;
     size_t chunkStart;
     size_t chunkEnd;
-    while (pos < chunkedBody.size()) {
-        chunkStart = pos;
-        chunkEnd = chunkedBody.find("\r\n", pos);
-        if (chunkEnd == std::string::npos)
-            break;
-        chunkSize = std::stoi(chunkedBody.substr(chunkStart, chunkEnd - chunkStart), 0, 16);
-        if (chunkSize == 0) {
-            _bodyParsed = true;
-            break;
-        }
-        pos = chunkEnd + 2;
-        if (pos + chunkSize > chunkedBody.size())
-            break;
-        _body.insert(_body.end(), chunkedBody.begin() + pos, chunkedBody.begin() + pos + chunkSize);
-        pos += chunkSize + 2;
+    char   *line;
+    // line = strtok(body, "\r\n");
+    // while (line) {
+        // switch (_chunckState)
+        // {
+        //     case false:
+        //         chunkSize = isChunkSize(line);
+        //         break;
+        //     case true:
+        //         readChunk(line, chunkSize);
+        //     default:
+        //         break;
+        // }
+        // body = strtok(NULL , "\r\n");
+    // }
+}
+
+size_t Request::isChunkSize(char *line){
+    size_t chunkSize;
+    std::string chunkSizeStr(line);
+    chunkSize = std::stoul(chunkSizeStr, 0, 16);
+    if(chunkSize == 0){
+        _bodyParsed = true;
     }
+    _chunckState = true;
+    return chunkSize;
+}
+
+void Request::readChunk(char *line, size_t chunkSize){
+    // if(_body.size() + strlen(line) >= chunkSize){
+    //     _body.insert(_body.end(), line, line + chunkSize - _body.size());
+    //     _bodyParsed = true;
+    //     _chunckState = false;
+    // }
+    // else {
+        _body.insert(_body.end(), line, line + strlen(line));
+        _chunckState = false;
+    // }
 }

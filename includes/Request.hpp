@@ -76,6 +76,7 @@ class Request
         bool                                _bodyParsed;
         bool                                _headersParsed;
         std::string                         _file;
+        bool                                _chunckState;
     public:
         int                                 _status;
         bool                                _requestLineParsed;
@@ -94,6 +95,8 @@ class Request
         void bodyHandler();
         void readingBody(const char* request, size_t readBytes);
         void setChunkedBody(const char *body, size_t readBytes);
+        void readChunk(char *line, size_t chunkSize);
+        size_t isChunkSize(char *line);
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             if (contentType == "text/html")
@@ -116,6 +119,12 @@ class Request
                 extension = ".xml";
             else if (contentType == "text/plain")
                 extension = ".txt";
+            else if (contentType == "application/pdf")
+                extension = ".pdf";
+            else if (contentType == "application/zip")
+                extension = ".zip";
+            else if (contentType == "video/webm")
+                extension = ".webm";
             return extension;
         };
         std::string getHeader() const {
