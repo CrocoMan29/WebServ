@@ -46,7 +46,6 @@ class Response {
 		void postResponse(Request &request, Location &location);
 		void setHeader();
 		void chunk(Request& req);
-		void setResponse(Request &req, int socket);
 		int checkPath();
 };
 

@@ -16,8 +16,8 @@ void Response::sendResp(Request req, int socket)
 		this->socket = socket;
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
-		// this->path = req.getRequestInfo()["path"];
-		this->path = "./WWW/index.html";
+		this->path = "./WWW" + req.getRequestInfo()["path"];
+		// this->path = "./WWW/index.html";
 		// this->path = "./error/error.html";
 		// this->path = "./WWW/aelbouaa.jpg";
 		this->method = req.getRequestInfo()["method"];
@@ -42,35 +42,12 @@ void Response::sendResp(Request req, int socket)
 		else if (this->isError && !this->readed) {
 			this->readed = true;
 			if (this->readed) {
-				// file.open(this->path, std::ios::binary);
 				setHeader();
 			}
-			// this->isError = false;
-			// chunk(req);
-			// exit(10);
 		}
 		chunk(req);
 	}
-	// chunk(req);
 }
-
-// Response::Response(Request req, int socket) {
-// 	std::cout << "==========================Rspsonse started..... ?=================================" << std::endl;
-// 	this->socket = socket;
-// 	std::cout << "sock/ : " << this->socket << std::endl;
-// 	// this->path = req.getRequestInfo()["path"];
-// 	this->path = "./WWW/index.html";
-// 	this->method = req.getRequestInfo()["method"];
-// 	// this->method = req._requestInfos["method"];
-// 	if (!req._status)
-// 		// this->status = req._status;
-// 		this->status = 200;	
-// 	readed = false;
-// 	std::cout << "Path: " << this->path << std::endl;
-// 	std::cout << "Method: " << this->method << std::endl;
-// 	std::cout << "stat: " << this->status << std::endl;
-// 	// exit(10);
-// }
 
 // Response::Response(const Response& copy) {
 //     this->type = copy.type;
@@ -288,7 +265,6 @@ void    Response::setHeader() {
 	this->header += "connection: close\r\n\r\n";
 	std::cout << "===========Head=======\n" << this->header << std::endl;
 	write(this->socket, this->header.c_str(), this->header.length());
-	// close(this->socket);
 	std::cout << "socket: " << this->socket << std::endl;
 	std::cout << "=================================HEADER END================================" << std::endl;
 }
@@ -298,26 +274,6 @@ void	Response::chunk(Request& req) {
 	// std::cout << "content-length----->" << std::endl;
 	std::cout << "path: ---->" << this->path << std::endl;
 	std::cout <<"File/    :" << this->path << std::endl;
-	// this->status = 200;
-	// header();
-	// if (!this->readed) {
-	// 	if (this->readed)
-	// 		exit(5);
-	// 	// file.open(this->path, std::ios::binary); //binary mode
-	// 	// checkPath();
-	// 	// if (!file.is_open()) {
-	// 	// 	std::cout << "Here = didn't open" << std::endl;
-	// 	// 	this->status = 404;
-	// 	// 	setHeader();
-	// 	// 	write(this->socket, "404 Not Found", strlen("404 Not Found"));
-	// 	// 	return ;
-	// 	// }
-	// 	std::cout << "here-=========>: " << std::endl;
-	// 	// setHeader();
-	// 	this->readed = true;
-	// 	std::cout << "FLAG: " << this->readed << std::endl;
-		
-	// }
 	file.read(buf, 1023);
 	if (file.gcount() > 0 && this->readed) {
 		std::cout << "statuscode: " << this->status << std::endl;
@@ -333,6 +289,7 @@ void	Response::chunk(Request& req) {
 		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
 	else if (file.gcount() == 0 && this->readed) {
+		std::cout << "Gcout========" << file.gcount() << std::endl; 
 		std::cout << "STRING/ " << std::endl;
 		std::cout << "Here = Empty" << std::endl;
         write(this->socket, "0\r\n\r\n", 5);
@@ -346,28 +303,33 @@ void	Response::chunk(Request& req) {
 // }
 
 int	Response::checkPath() {
-	// if (isDirectory(this->path)) {
-	// 	//need to check auto index;
-	// 	// if (!this->autoIndex) {
-	// 	// 	this->status = 403;
-	// 	// 	return ;
-	// 	// }
-	// 	if (this->path.back() != '/') {
-	// 		this->status = 301;
-	// 		this->path += '/';
-	// 		setHeader();
-	// 		return ;
-	// 	}
-	// }
-	// if (isRegularFile(this->path)) {
-		std::cout << "Here-------------->che <----------Here" << std::endl;
+	if (isDirectory(this->path)) {
+		std::cout << "is Directory -------->" << std::endl;
+		if (this->path.back() != '/') {
+			std::cout << "search for '/' -------->" << std::endl;	
+			this->status = 301;
+			this->path += '/';
+			setHeader();
+			exit(11);
+		}
+		// exit(11);
+		//need to check auto index;
+		// if (!this->autoIndex) {
+		// 	this->status = 403;
+		// 	return ;
+		// }
+	}
+	else if (isRegularFile(this->path)) {
+		std::cout << "is Regular file: " << std::endl;
+		// exit(15);
 		if (!this->readed) {
 			std::cout << "Here-------------->check if open <----------Here" << std::endl;
 			// exit(15);
 			file.open(this->path, std::ios::binary);
 			if (!file.good()) {
 				std::cout << "Here--------------> <----------Here" << std::endl;
-				if (access(this->path.c_str(), R_OK) != -1) {
+				// if (access(this->path.c_str(), R_OK) != -1) {
+				if (access(this->path.c_str(), F_OK) != -1) {
 					std::cout << "don't have access" << std::endl;
 					this->status = 403;
 					// exit(12);
@@ -386,31 +348,13 @@ int	Response::checkPath() {
 			}
 
 		}
-		// if (!file.is_open()) {
-		// 	std::cout << "Here = didn't open" << std::endl;
-		// 	this->status = 404;
-		// 	// setHeader();
-		// 	write(this->socket, "404 Not Found", strlen("404 Not Found"));
-		// 	return ;
-		// }
-		// }
-		// else {
-		// 	// setHeader();
-		// }
-	// }
-	// else {
-	// 	// exit(1);
-	// 	// this->status = 404;
-	// 	// setHeader();
-	// 	// this->path = "./error/error.html";
-	// 	// write(this->socket, "404 Not Found", strlen("404 Not Found"));
-	// 	// return ;
-	// }
+	}
+	else {
+		std::cout << "Not found-------<" << std::endl;
+		this->status = 404;
+		this->path = "./error/error.html";
+		this->isError = true;
+		file.open(this->path, std::ios::binary);
+	}
 	return (1);
-}
-
-
-void	Response::setResponse(Request &req, int socket) {
-	chunk(req);
-	// exit(1);
 }
