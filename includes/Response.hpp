@@ -11,6 +11,7 @@
 #include <sys/stat.h>   
 # include "../includes/Request.hpp"
 # include "./parseConfigFile.hpp"
+#include <dirent.h>
 # define BUFFERSIZE 1024
 
 class Response {
@@ -24,7 +25,7 @@ class Response {
 		std::string chunkSize;
 		std::string method;
 		std::ifstream file;
-		std::string autoIndex;
+		// std::string autoIndex;
 		int status;
 		int socket;
 		bool readed;
@@ -47,6 +48,7 @@ class Response {
 		void setHeader();
 		void chunk(Request& req);
 		int checkPath();
+		bool directoryHasFiles(const std::string& directoryPath);
 };
 
 #endif

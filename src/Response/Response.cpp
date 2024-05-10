@@ -250,8 +250,6 @@ std::string	Response::getStatus(int stat) {
 }
 
 void    Response::setHeader() {
-
-
 	std::cout << "=================================HEADER================================" << std::endl;
 	std::cout << "Status code: " << this->status << std::endl;
 	this->header += "HTTP/1.1 " + getStatus(this->status) + "\r\n";
@@ -298,10 +296,6 @@ void	Response::chunk(Request& req) {
 	}
 }
 
-// void Response::setAutoIndex(bool value) {
-//     this->autoIndex = value;
-// }
-
 int	Response::checkPath() {
 	if (isDirectory(this->path)) {
 		std::cout << "is Directory -------->" << std::endl;
@@ -311,6 +305,13 @@ int	Response::checkPath() {
 			this->path += '/';
 			setHeader();
 			exit(11);
+		}
+		else if (this->path.back() == '/') {
+			std::cout << "find: ====  '/' -------->" << std::endl;
+			if (directoryHasFiles(this->path)) {
+				std::cout << "DIr has files:  -------->" << std::endl;
+				exit(1);
+			}
 		}
 		// exit(11);
 		//need to check auto index;
@@ -358,3 +359,20 @@ int	Response::checkPath() {
 	}
 	return (1);
 }
+
+bool Response::directoryHasFiles(const std::string& directoryPath) {
+    DIR* dir = opendir(directoryPath.c_str());
+    if (dir == NULL) 
+        return false;
+    std::vector<std::string> files;
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            files.push_back(entry->d_name);
+        }
+    }
+    closedir(dir);
+    return (!files.empty());
+}
+
+std::string Response::checkFiles()
