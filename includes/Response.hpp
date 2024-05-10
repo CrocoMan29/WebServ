@@ -30,6 +30,7 @@ class Response {
 		int socket;
 		bool readed;
 		bool isError;
+		bool valueOfAutoIndex;
 		Request req;
 	public:
 		bool finish;
@@ -49,6 +50,7 @@ class Response {
 		void chunk(Request& req);
 		int checkPath();
 		bool directoryHasFiles(const std::string& directoryPath);
+		bool directoryHasIndexFile(const std::string& directoryPath);
 };
 
 #endif

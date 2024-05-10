@@ -46,7 +46,6 @@ class Server
 {
 	public:
 		std::vector<std::string> r_server;
-
 		std::vector<int>ports;
 		std::vector<std::string> server_name;
 		std::string host;

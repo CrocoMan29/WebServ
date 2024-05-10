@@ -9,6 +9,7 @@ Response::Response() : status(0), socket(0), readed(false), isError(false),finis
 
 void Response::sendResp(Request req, int socket)
 {
+	// Location loc;
 	if (!this->readed) {
 		// exit(1);
 		std::cout << "==========================2Rspsonse started2..... ?=================================" << std::endl;
@@ -25,11 +26,13 @@ void Response::sendResp(Request req, int socket)
 		if (!req._status)
 			// this->status = req._status;
 			this->status = 200;
-		// this->readed = false;	
+		// this->readed = false;
+		// this->valueOfAutoIndex = loc.autoIndex;
 		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
+		// std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
 		// setHeader();
 	}
 	if (checkPath()) {
@@ -310,15 +313,27 @@ int	Response::checkPath() {
 			std::cout << "find: ====  '/' -------->" << std::endl;
 			if (directoryHasFiles(this->path)) {
 				std::cout << "DIr has files:  -------->" << std::endl;
-				exit(1);
+				if (directoryHasIndexFile(this->path)) {
+					std::cout << "has files:  -------->" << std::endl;
+					if (!valueOfAutoIndex) {
+						std::cout << " FOrbidden:  -------->" << std::endl;
+						this->path = "./error/403.html";
+						this->isError = true;
+						file.open(this->path, std::ios::binary);
+					}
+					// else if (valueOfAutoIndex) {
+					// 	std::cout << " Read from the file:  -------->" << std::endl;
+					// 	exit(2);
+					// 	//should list dir
+					// }
+				}
+				// exit(1);
+			}
+			else {
+				std::cout << "No files:  -------->" << std::endl;
+				exit(12);
 			}
 		}
-		// exit(11);
-		//need to check auto index;
-		// if (!this->autoIndex) {
-		// 	this->status = 403;
-		// 	return ;
-		// }
 	}
 	else if (isRegularFile(this->path)) {
 		std::cout << "is Regular file: " << std::endl;
@@ -375,4 +390,17 @@ bool Response::directoryHasFiles(const std::string& directoryPath) {
     return (!files.empty());
 }
 
-std::string Response::checkFiles()
+bool Response::directoryHasIndexFile(const std::string& directoryPath) {
+    DIR* dir = opendir(directoryPath.c_str());
+    if (dir == NULL)
+        return (false);
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, "index.html") == 0 || strcmp(entry->d_name, "index.htm") == 0) {
+            closedir(dir);
+            return (true);
+        }
+    }
+    closedir(dir);
+    return (false);
+}
