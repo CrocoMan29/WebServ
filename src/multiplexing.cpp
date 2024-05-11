@@ -177,6 +177,7 @@ void webServ::setUpServer() {
 					// Request request;
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus() ){
+						//  server[i].index;
 						response.sendResp(request, events[i].data.fd);
 						if (response.finish == true) {
 							std::cout << "finished-------:" << std::endl;

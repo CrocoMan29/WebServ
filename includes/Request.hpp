@@ -71,13 +71,13 @@ class Request
         std::vector<std::string>            _uriParts;
         std::string                         _headers;
         std::vector<char>                   _body;
-        Location                            _location;
         size_t                              _bodySize;
         bool                                _bodyParsed;
         bool                                _headersParsed;
         std::string                         _file;
         bool                                _chunckState;
     public:
+        Location                            _location;
         int                                 _status;
         bool                                _requestLineParsed;
         Request();

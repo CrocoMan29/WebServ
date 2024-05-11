@@ -9,7 +9,6 @@ Response::Response() : status(0), socket(0), readed(false), isError(false),finis
 
 void Response::sendResp(Request req, int socket)
 {
-	// Location loc;
 	if (!this->readed) {
 		// exit(1);
 		std::cout << "==========================2Rspsonse started2..... ?=================================" << std::endl;
@@ -27,12 +26,13 @@ void Response::sendResp(Request req, int socket)
 			// this->status = req._status;
 			this->status = 200;
 		// this->readed = false;
-		// this->valueOfAutoIndex = loc.autoIndex;
+		this->valueOfAutoIndex = req._location.autoIndex;
 		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
-		// std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
+		std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
+		// exit(1);
 		// setHeader();
 	}
 	if (checkPath()) {
@@ -315,17 +315,18 @@ int	Response::checkPath() {
 				std::cout << "DIr has files:  -------->" << std::endl;
 				if (directoryHasIndexFile(this->path)) {
 					std::cout << "has files:  -------->" << std::endl;
+					std::cout << "has files:  -------->"<< this->path << std::endl;
 					if (!valueOfAutoIndex) {
 						std::cout << " FOrbidden:  -------->" << std::endl;
 						this->path = "./error/403.html";
 						this->isError = true;
 						file.open(this->path, std::ios::binary);
 					}
-					// else if (valueOfAutoIndex) {
-					// 	std::cout << " Read from the file:  -------->" << std::endl;
-					// 	exit(2);
-					// 	//should list dir
-					// }
+					else if (valueOfAutoIndex) {
+						std::cout << " Read from the file:  -------->" << std::endl;
+						exit(2);
+						//should list dir
+					}
 				}
 				// exit(1);
 			}
