@@ -16,7 +16,8 @@ void Response::sendResp(Request req, int socket)
 		this->socket = socket;
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
-		this->path = "./WWW" + req.getRequestInfo()["path"];
+		this->path = "./WWW" + req.getRequestInfo()["path"] + "/";
+		// this->path = req.getRequestInfo()["path"];
 		// this->path = "./WWW/index.html";
 		// this->path = "./error/error.html";
 		// this->path = "./WWW/aelbouaa.jpg";
@@ -314,7 +315,7 @@ int	Response::checkPath() {
 			if (directoryHasFiles(this->path)) {
 				std::cout << "DIr has files:  -------->" << std::endl;
 				if (directoryHasIndexFile(this->path)) {
-					std::cout << "has files:  -------->" << std::endl;
+					// std::cout << "has files:  -------->" << std::endl;
 					std::cout << "has files:  -------->"<< this->path << std::endl;
 					if (!valueOfAutoIndex) {
 						std::cout << " FOrbidden:  -------->" << std::endl;
@@ -324,8 +325,8 @@ int	Response::checkPath() {
 					}
 					else if (valueOfAutoIndex) {
 						std::cout << " Read from the file:  -------->" << std::endl;
-						exit(2);
-						//should list dir
+						listDir();
+						// exit(2);
 					}
 				}
 				// exit(1);
@@ -404,4 +405,28 @@ bool Response::directoryHasIndexFile(const std::string& directoryPath) {
     }
     closedir(dir);
     return (false);
+}
+
+void	Response::listDir() {
+	DIR	*dir = opendir(this->path.c_str());
+	if (dir) {
+		struct dirent* entry;
+		std::string name;
+		std::string body = "<html><head></head><body><ul>";
+		while ((entry = readdir(dir)) != NULL) {
+			name = entry->d_name;
+			std::cout << "Name---->: " << name << std::endl;
+			// exit(21);
+			body += "<li><a href='"+ name  +"'>"  + name +"</a></li>";
+		}
+		closedir(dir);
+		this->type = "text/html";
+		std::stringstream ss;
+        setHeader();
+        ss << std::hex << body.length();
+        this->body += ss.str() + "\r\n";
+        this->body += body + "\r\n";
+        this->body += "0\r\n\r\n";
+        write(this->socket, this->body.c_str(),  this->body.length());
+	}
 }

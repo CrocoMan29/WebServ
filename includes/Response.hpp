@@ -25,7 +25,7 @@ class Response {
 		std::string chunkSize;
 		std::string method;
 		std::ifstream file;
-		// std::string autoIndex;
+		std::string body;
 		int status;
 		int socket;
 		bool readed;
@@ -51,6 +51,7 @@ class Response {
 		int checkPath();
 		bool directoryHasFiles(const std::string& directoryPath);
 		bool directoryHasIndexFile(const std::string& directoryPath);
+		void listDir();
 };
 
 #endif
