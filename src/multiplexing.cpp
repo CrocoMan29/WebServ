@@ -157,7 +157,7 @@ void webServ::setUpServer() {
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
 				// Server *server = fd_to_server[events[i].data.fd];
-				client_socket = events[i].data.fd;
+				// client_socket = events[i].data.fd;
 				// char buffer[1024] = {0};
 				// int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
 				// if (bytes_received == -1) {
@@ -178,11 +178,11 @@ void webServ::setUpServer() {
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus() ){
 						//  server[i].index;
-						response.sendResp(request, events[i].data.fd);
-						if (response.finish == true) {
-							std::cout << "finished-------:" << std::endl;
-							close(events[i].data.fd);
-						}
+						// response.sendResp(request, events[i].data.fd);
+						// if (response.finish == true) {
+						// 	std::cout << "finished-------:" << std::endl;
+						// 	close(events[i].data.fd);
+						// }
 					// }
 					// 	if (request.getMethod() == "post")
 					// 	{

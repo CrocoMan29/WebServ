@@ -59,7 +59,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     try{
         splitingHeaderBody(request, readBytes);
         if(_headersParsed) {
-            if (_headersParsed && _requestLineParsed && !_bodyParsed) {
+            if (_headersParsed && _requestLineParsed) {
                 pathInCannonicalForm();
                 matchingLocation(locations);
                 isallowedMethod();
@@ -70,7 +70,6 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     } catch ( ClientError &e) {
         _status = e;
         std::cerr << "Error: " << e << std::endl;
-        // go to response
     }
 }
 
@@ -206,15 +205,36 @@ void Request::matchingLocation(std::vector<Location> &locations){
     std::vector<Location>::iterator   lIt;
     bool                              found = false;
 
-    for (std::vector<Location>::iterator   lIt = locations.begin(); lIt != locations.end(); lIt++) {
-        std::string checks = _requestInfos["path"].substr(0, (*lIt).name.length());
-        if ((*lIt).name == checks){
-            found = true;
-            this->_location = *lIt;
+    std::cout << "Matching location" << std::endl;
+    std::vector<Location>::iterator it = locations.begin();
+    std::string upper;
+
+    for(;it != locations.end();it++)
+    {
+        std::string pattern = (*it).name;
+        if (_requestInfos["path"].length() <  pattern.length())
+            continue ;
+        std::string lower = _requestInfos["path"].substr(0, pattern.length());
+        if (pattern == "/" || (pattern == lower && (_requestInfos["path"][pattern.length()] == '\0' || _requestInfos["path"][pattern.length()] == '/')))
+        {
+            if (upper.empty())
+            {
+                upper = lower;
+                this->_location = *it;
+            }
+            else
+            {
+                if (lower.length() > upper.length())
+                {
+                    upper = lower;
+                    this->_location = *it;
+                }
+            }
         }
     }
-    if (!found)
-        throw NOTFOUND;
+    if (upper.empty())
+        this->_status = NOTFOUND;
+
 }
 
 void Request::isallowedMethod(){
@@ -274,21 +294,21 @@ void Request::readingBody(const char *body, size_t readBytes){
             _body.insert(_body.end(), body, body + readBytes);
         }
     }
-    else if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
-        setChunkedBody(body, readBytes);
-    }
+    // else if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
+    //     setChunkedBody(body, readBytes);
+    // }
     else {
         _bodyParsed = true;
     }
 }
 
-void Request::setChunkedBody(const char *body, size_t readBytes){
-    std::string chunkedBody(body, readBytes);
-    size_t pos = 0;
-    size_t chunkSize;
-    size_t chunkStart;
-    size_t chunkEnd;
-    char   *line;
+// void Request::setChunkedBody(const char *body, size_t readBytes){
+//     std::string chunkedBody(body, readBytes);
+//     size_t pos = 0;
+//     size_t chunkSize;
+//     size_t chunkStart;
+//     size_t chunkEnd;
+//     char   *line;
     // line = strtok(body, "\r\n");
     // while (line) {
         // switch (_chunckState)
@@ -303,27 +323,27 @@ void Request::setChunkedBody(const char *body, size_t readBytes){
         // }
         // body = strtok(NULL , "\r\n");
     // }
-}
+// }
 
-size_t Request::isChunkSize(char *line){
-    size_t chunkSize;
-    std::string chunkSizeStr(line);
-    chunkSize = std::stoul(chunkSizeStr, 0, 16);
-    if(chunkSize == 0){
-        _bodyParsed = true;
-    }
-    _chunckState = true;
-    return chunkSize;
-}
+// size_t Request::isChunkSize(char *line){
+//     size_t chunkSize;
+//     std::string chunkSizeStr(line);
+//     chunkSize = std::stoul(chunkSizeStr, 0, 16);
+//     if(chunkSize == 0){
+//         _bodyParsed = true;
+//     }
+//     _chunckState = true;
+//     return chunkSize;
+// }
 
-void Request::readChunk(char *line, size_t chunkSize){
-    // if(_body.size() + strlen(line) >= chunkSize){
-    //     _body.insert(_body.end(), line, line + chunkSize - _body.size());
-    //     _bodyParsed = true;
-    //     _chunckState = false;
-    // }
-    // else {
-        _body.insert(_body.end(), line, line + strlen(line));
-        _chunckState = false;
-    // }
-}
+// void Request::readChunk(char *line, size_t chunkSize){
+//     // if(_body.size() + strlen(line) >= chunkSize){
+//     //     _body.insert(_body.end(), line, line + chunkSize - _body.size());
+//     //     _bodyParsed = true;
+//     //     _chunckState = false;
+//     // }
+//     // else {
+//         _body.insert(_body.end(), line, line + strlen(line));
+//         _chunckState = false;
+//     // }
+// }
