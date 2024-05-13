@@ -99,6 +99,8 @@ class Request
         size_t isChunkSize(char *line);
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
+            
+            std::cout << "content type: " << contentType << std::endl;
             if (contentType == "text/html")
                 extension = ".html";
             else if (contentType == "text/css")
@@ -125,6 +127,8 @@ class Request
                 extension = ".zip";
             else if (contentType == "video/webm")
                 extension = ".webm";
+            std::cout << "extension: " << extension << std::endl;
+
             return extension;
         };
         std::string getHeader() const {

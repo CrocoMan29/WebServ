@@ -66,6 +66,8 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 checkingBadRequests();
             }
         }
+        for (std::map<std::string, std::string>::iterator it = _requestInfos.begin(); it != _requestInfos.end(); ++it)
+            std::cout << it->first << " => " << it->second << std::endl;
         bodyHandler();
     } catch ( ClientError &e) {
         _status = e;
@@ -206,26 +208,20 @@ void Request::matchingLocation(std::vector<Location> &locations){
     bool                              found = false;
 
     std::cout << "Matching location" << std::endl;
-    std::vector<Location>::iterator it = locations.begin();
     std::string upper;
 
-    for(;it != locations.end();it++)
-    {
+    for(std::vector<Location>::iterator it = locations.begin();it != locations.end();it++){
         std::string pattern = (*it).name;
         if (_requestInfos["path"].length() <  pattern.length())
             continue ;
         std::string lower = _requestInfos["path"].substr(0, pattern.length());
-        if (pattern == "/" || (pattern == lower && (_requestInfos["path"][pattern.length()] == '\0' || _requestInfos["path"][pattern.length()] == '/')))
-        {
-            if (upper.empty())
-            {
+        if (pattern == "/" || (pattern == lower && (_requestInfos["path"][pattern.length()] == '\0' || _requestInfos["path"][pattern.length()] == '/'))) {
+            if (upper.empty()) {
                 upper = lower;
                 this->_location = *it;
             }
-            else
-            {
-                if (lower.length() > upper.length())
-                {
+            else {
+                if (lower.length() > upper.length()) {
                     upper = lower;
                     this->_location = *it;
                 }
@@ -234,7 +230,6 @@ void Request::matchingLocation(std::vector<Location> &locations){
     }
     if (upper.empty())
         this->_status = NOTFOUND;
-
 }
 
 void Request::isallowedMethod(){
@@ -266,8 +261,9 @@ void Request::bodyHandler(){
         return;
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/home/ylarhris/WebServ"+_location.upload_store + "/" + _file;
+    std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::cout << _location.upload_store << std::endl;
+    std::cout << "Path : " << path << std::endl;
     std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
