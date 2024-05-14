@@ -130,7 +130,10 @@ void webServ::setUpServer() {
 					// exit(EXIT_FAILURE);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
-						// close(client_socket);
+						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_socket, NULL) < 0) {
+       						perror("epoll_ctl");
+						}
+						close(client_socket);
 					} else {
 						buffer[bytes_received] = '\0';
 						std::cout << "Received: " << buffer << std::endl;
