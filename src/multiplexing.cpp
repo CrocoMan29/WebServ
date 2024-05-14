@@ -133,12 +133,12 @@ void webServ::setUpServer() {
 						// close(client_socket);
 					} else {
 						buffer[bytes_received] = '\0';
-						std::cout << "Received: " << buffer << std::endl;
+						// std::cout << "Received: " << buffer << std::endl;
 						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
 						// Request request;
-						request.requestParser(buffer, _serv[i]._locations, bytes_received);
+						request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath);
 						// if(!request.getStatus()){
 						// 	Response response;
 						// 	if (request.getMethod() == "post")

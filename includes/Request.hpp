@@ -76,6 +76,7 @@ class Request
         bool                                _headersParsed;
         std::string                         _file;
         bool                                _chunckState;
+        std::string                         _rootPath;
     public:
         Location                            _location;
         int                                 _status;
@@ -84,11 +85,11 @@ class Request
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
         void RequestLineParser(const std::string& requestLine);
-        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes);
+        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes, std::string root);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
-        void splitingHeaderBody(const char* request, size_t readBytes);
+        void splitingHeaderBody(const char* request, size_t readBytes, std::string root);
         void pathInCannonicalForm();
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
