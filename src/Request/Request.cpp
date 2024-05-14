@@ -55,9 +55,9 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
+void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes , std::string root){
     try{
-        splitingHeaderBody(request, readBytes);
+        splitingHeaderBody(request, readBytes, root);
         if(_headersParsed) {
             if (_headersParsed && _requestLineParsed) {
                 pathInCannonicalForm();
@@ -66,8 +66,6 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 checkingBadRequests();
             }
         }
-        for (std::map<std::string, std::string>::iterator it = _requestInfos.begin(); it != _requestInfos.end(); ++it)
-            std::cout << it->first << " => " << it->second << std::endl;
         bodyHandler();
     } catch ( ClientError &e) {
         _status = e;
@@ -79,7 +77,7 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
     return _requestInfos;
 }
 
-void Request::splitingHeaderBody(const char *request, size_t readBytes){
+void Request::splitingHeaderBody(const char *request, size_t readBytes, std::string rootPath){
     size_t it;
     _body.clear();
     if(_headersParsed){
@@ -89,6 +87,7 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes){
         if ((it = std::string(request).find("\r\n\r\n")) != std::string::npos){
             _headers = std::string(request).substr(0, it);
             collectData();
+            _rootPath = rootPath;
             _headersParsed = true;
             if(readBytes - it - 4 <= 0)
                 _bodyParsed = true;
@@ -160,10 +159,8 @@ void Request::checkingBadRequests(){
     {
         std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
         if(it != _requestInfos.end() && it->second.compare("chunked"))
-            throw BADREQUEST;
+            throw NOTIMPLEMENTED;
         if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
-            throw BADREQUEST;
-        if (_requestInfos.find("transfer-encoding") == _requestInfos.end() && _requestInfos.find("content-length") ==_requestInfos.end() && !_requestInfos["method"].compare("post"))
             throw BADREQUEST;
         if(!_requestInfos["method"].compare("post") && 
             _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
@@ -193,14 +190,13 @@ void Request::pathInCannonicalForm(){
         }
         token = strtok(NULL, "/");
     }
-    if(_uriParts.size() == 0)
-        _uriParts.push_back("");
     for(auto p : _uriParts){
         path.append("/");
         path.append(p);
         std::cout << p << std::endl;
     }
-    this->_requestInfos["path"] = path;
+    this->_requestInfos["path"] = _rootPath + path;
+    std::cout << "Path : " << this->_requestInfos["path"] << std::endl;
 }
 
 void Request::matchingLocation(std::vector<Location> &locations){
@@ -262,13 +258,11 @@ void Request::bodyHandler(){
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
-    std::cout << _location.upload_store << std::endl;
-    std::cout << "Path : " << path << std::endl;
     std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
         ofs.close();
-        std::cout << _requestInfos["content-length"] << "  "<< this->_bodySize << std::endl;
+        // std::cout << _requestInfos["content-length"] << "  "<< this->_bodySize << std::endl;
         std::cout << "File uploaded successfully" << std::endl;
     } else {
         std::cout << "Error opening file" << std::endl;
