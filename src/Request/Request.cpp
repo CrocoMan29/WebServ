@@ -1,7 +1,7 @@
 # include "../../includes/Request.hpp"
 #include <cstring>
 
-Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0) {
+Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false){
 
 }
 
@@ -59,11 +59,12 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     try{
         splitingHeaderBody(request, readBytes, root);
         if(_headersParsed) {
-            if (_headersParsed && _requestLineParsed) {
+            if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
                 pathInCannonicalForm();
                 matchingLocation(locations);
                 isallowedMethod();
                 checkingBadRequests();
+                std::cout << "HERE IS THE PATH : " << _requestInfos["path"] << std::endl;
             }
         }
         bodyHandler();
@@ -168,6 +169,7 @@ void Request::checkingBadRequests(){
                 throw BADREQUEST;
         if(_requestInfos["path"].length() >= 2048)
             throw REQUESTURITOOLONG;
+        _checkingRequestInfo = true;
     }
 }
 
@@ -190,10 +192,11 @@ void Request::pathInCannonicalForm(){
         }
         token = strtok(NULL, "/");
     }
-    for(auto p : _uriParts){
-        path.append("/");
-        path.append(p);
-        std::cout << p << std::endl;
+    for(size_t i = 0; i < _uriParts.size(); i++){
+        if(i == 0)
+            path = _uriParts[i];
+        else
+            path += "/" + _uriParts[i];
     }
     this->_requestInfos["path"] = _rootPath + path;
     std::cout << "Path : " << this->_requestInfos["path"] << std::endl;
@@ -273,15 +276,14 @@ void Request::bodyHandler(){
 
 void Request::readingBody(const char *body, size_t readBytes){
     if(_requestInfos.find("content-length") != _requestInfos.end()){
-        if(_bodySize == 0){
-            _bodySize = std::stoi(_requestInfos["content-length"]);
-        }
-        if(_body.size() + readBytes >= _bodySize){
-            _body.insert(_body.end(), body, body + _bodySize - _body.size());
+        if(_bodySize + readBytes >= stoi(_requestInfos["content-length"])){
+            _body.insert(_body.end(), body, body + _requestInfos["content-length"].size() - _body.size());
+            _bodySize = stoi(_requestInfos["content-length"]);
             _bodyParsed = true;
         }
         else {
             _body.insert(_body.end(), body, body + readBytes);
+            _bodySize += readBytes;
         }
     }
     // else if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){

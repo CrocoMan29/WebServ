@@ -77,6 +77,7 @@ class Request
         std::string                         _file;
         bool                                _chunckState;
         std::string                         _rootPath;
+        bool                                _checkingRequestInfo;
     public:
         Location                            _location;
         int                                 _status;

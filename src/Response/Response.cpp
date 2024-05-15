@@ -16,7 +16,7 @@ void Response::sendResp(Request req, int socket)
 		this->socket = socket;
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
-		this->path = "./WWW" + req.getRequestInfo()["path"] + "/";
+		this->path = req.getRequestInfo()["path"] + "/";
 		// this->path = req.getRequestInfo()["path"];
 		// this->path = "./WWW/index.html";
 		// this->path = "./error/error.html";
