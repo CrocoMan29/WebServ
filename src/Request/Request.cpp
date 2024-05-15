@@ -176,7 +176,10 @@ void Request::checkingBadRequests(){
 void Request::pathInCannonicalForm(){
     std::string                 path;
     char                        *token;
+    bool                        finishWithSlash = false;
 
+    if (_requestInfos["path"][_requestInfos["path"].length() - 1] == '/')
+        finishWithSlash = true;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
     while (token){
         std::string stoken(token);
@@ -199,7 +202,9 @@ void Request::pathInCannonicalForm(){
             path += "/" + _uriParts[i];
     }
     this->_requestInfos["path"] = _rootPath + path;
-    std::cout << "Path : " << this->_requestInfos["path"] << std::endl;
+    if (finishWithSlash)
+        this->_requestInfos["path"] += "/";
+    std::cout << "Path in cannonical form: " << this->_requestInfos["path"] << std::endl;
 }
 
 void Request::matchingLocation(std::vector<Location> &locations){
@@ -275,6 +280,9 @@ void Request::bodyHandler(){
 }
 
 void Request::readingBody(const char *body, size_t readBytes){
+    // if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
+    //     setChunkedBody(body, readBytes);
+    // }
     if(_requestInfos.find("content-length") != _requestInfos.end()){
         if(_bodySize + readBytes >= stoi(_requestInfos["content-length"])){
             _body.insert(_body.end(), body, body + _requestInfos["content-length"].size() - _body.size());
@@ -286,56 +294,57 @@ void Request::readingBody(const char *body, size_t readBytes){
             _bodySize += readBytes;
         }
     }
-    // else if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
-    //     setChunkedBody(body, readBytes);
-    // }
     else {
         _bodyParsed = true;
     }
 }
 
-// void Request::setChunkedBody(const char *body, size_t readBytes){
-//     std::string chunkedBody(body, readBytes);
-//     size_t pos = 0;
-//     size_t chunkSize;
-//     size_t chunkStart;
-//     size_t chunkEnd;
-//     char   *line;
-    // line = strtok(body, "\r\n");
-    // while (line) {
-        // switch (_chunckState)
-        // {
-        //     case false:
-        //         chunkSize = isChunkSize(line);
-        //         break;
-        //     case true:
-        //         readChunk(line, chunkSize);
-        //     default:
-        //         break;
-        // }
-        // body = strtok(NULL , "\r\n");
+void Request::setChunkedBody(const char *body, size_t readBytes){
+    std::string chunkedBody(body, readBytes);
+    size_t pos = 0;
+    size_t chunkSize;
+    size_t chunkStart;
+    size_t chunkEnd;
+    char   *line;
+    line = strtok((char *)body, "\r\n");
+    while (line) {
+        std::cout << "line: " << line << std::endl;
+        if (!_chunckState){
+            chunkSize = isChunkSize(line);
+            break;
+
+        } else {
+            readChunk(line, chunkSize);
+            break;
+        }
+        line = strtok(NULL , "\r\n");
+    }
+}
+
+
+size_t Request::isChunkSize(char *line){
+    size_t chunkSize;
+    std::string chunkSizeStr(line);
+
+    std::cout << "chunkSizeStr: " << chunkSizeStr << std::endl;
+    chunkSize = std::stoul(chunkSizeStr, 0, 16);
+    std::cout << "chunkSize: " << chunkSize << std::endl;
+    if(chunkSize == 0){
+        _bodyParsed = true;
+    }
+    _chunckState = true;
+    return chunkSize;
+}
+
+void Request::readChunk(char *line, size_t chunkSize){
+    // if(_body.size() + strlen(line) >= chunkSize){
+    //     _body.insert(_body.end(), line, line + chunkSize - _body.size());
+    //     _bodyParsed = true;
+    //     _chunckState = false;
     // }
-// }
-
-// size_t Request::isChunkSize(char *line){
-//     size_t chunkSize;
-//     std::string chunkSizeStr(line);
-//     chunkSize = std::stoul(chunkSizeStr, 0, 16);
-//     if(chunkSize == 0){
-//         _bodyParsed = true;
-//     }
-//     _chunckState = true;
-//     return chunkSize;
-// }
-
-// void Request::readChunk(char *line, size_t chunkSize){
-//     // if(_body.size() + strlen(line) >= chunkSize){
-//     //     _body.insert(_body.end(), line, line + chunkSize - _body.size());
-//     //     _bodyParsed = true;
-//     //     _chunckState = false;
-//     // }
-//     // else {
-//         _body.insert(_body.end(), line, line + strlen(line));
-//         _chunckState = false;
-//     // }
-// }
+    // else {
+    std::cout << "read line: " << line << std::endl;
+        _body.insert(_body.end(), line, line + chunkSize - 1);
+        _chunckState = false;
+    // }
+}
