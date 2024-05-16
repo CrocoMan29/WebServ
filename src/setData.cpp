@@ -25,6 +25,15 @@ void Server::setServerName(std::vector<std::string> &info)
 	}
 }
 
+void Server::setIndex(std::vector<std::string> &info)
+{
+	for(std::vector<std::string>::iterator it = info.begin() + 1; it != info.end(); it++)
+	{
+		if (std::find(this->index.begin(), this->index.end(), *it) == this->index.end())
+			this->index.push_back(*it);
+	}
+}
+
 void Server::setHost(std::vector<std::string> &info)
 {
 	if (!this->host.empty())

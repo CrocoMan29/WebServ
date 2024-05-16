@@ -80,16 +80,17 @@ void Server::enterData(std::vector<std::string> &info)
 		else
 			throw std::invalid_argument("ERROR: root path is missing");
 	}
-	else if (info.size() > 1 && info[0] == "index")
+	else if (info.size() >= 2 && info[0] == "index")
 	{
-		if (info.size() == 2)
-		{
-			if (!this->index.empty())
-				throw std::invalid_argument("ERROR");
-			this->index = info[1];
-		}
-		else
-			throw std::invalid_argument("Syntax Error: wrong number of arguments");
+		setIndex(info);
+		// if (info.size() == 2)
+		// {
+		// 	if (!this->index.empty())
+		// 		throw std::invalid_argument("ERROR");
+		// 	this->index = info[1];
+		// }
+		// else
+		// 	throw std::invalid_argument("Syntax Error: wrong number of arguments");
 	}
 	else if (info.size() > 1 && info[0] == "client_max_body_size")
 		setClientMaxBodySize(info);

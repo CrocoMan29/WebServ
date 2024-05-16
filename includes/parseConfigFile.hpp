@@ -50,7 +50,7 @@ class Server
 		std::vector<std::string> server_name;
 		std::string host;
 		std::string rootPath;
-		std::string index;
+		std::vector<std::string> index;
 		std::string returnPath;
 		long client_max_body_size;
 		bool is_duplicate;
@@ -70,6 +70,7 @@ class Server
 		void enterData(std::vector<std::string> &info);
 		void setPorts(std::vector<std::string> &info);
 		void setServerName(std::vector<std::string> &info);
+		void setIndex(std::vector<std::string> &info);
 		void setHost(std::vector<std::string> &info);
 		void setErrorPage(std::vector<std::string> &info);
 		void setClientMaxBodySize(std::vector<std::string> &info);

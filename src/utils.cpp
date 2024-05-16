@@ -143,7 +143,14 @@ std::ostream &operator<<(std::ostream &os, const Conf &obj)
 		}
 		os << "host: " << obj._servers[i].host << std::endl;
 		os << "root: " << obj._servers[i].rootPath << std::endl;
-		os << "index: " << obj._servers[i].index << std::endl;
+		os << "index: ";
+		for (std::vector<std::string>::const_iterator iter = obj._servers[i].index.begin(); iter != obj._servers[i].index.end(); iter++)
+		{
+			if (iter != obj._servers[i].index.end() - 1)
+				os << *iter << " ,";
+			else
+				os << *iter << "." << std::endl;
+		}
 		os << "returnPath: " << obj._servers[i].returnPath << std::endl;
 		os << "client_max_body_size: " << obj._servers[i].client_max_body_size << std::endl;
 		if (obj._servers[i].is_duplicate == true)
