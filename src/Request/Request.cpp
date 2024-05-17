@@ -55,11 +55,12 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes , std::string root){
+void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes , std::string root, std::vector<std::string> index){
     try{
         splitingHeaderBody(request, readBytes, root);
         if(_headersParsed) {
             if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
+                _index = index;
                 pathInCannonicalForm();
                 matchingLocation(locations);
                 isallowedMethod();

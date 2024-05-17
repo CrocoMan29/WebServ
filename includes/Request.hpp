@@ -78,6 +78,7 @@ class Request
         bool                                _chunckState;
         std::string                         _rootPath;
         bool                                _checkingRequestInfo;
+        std::vector<std::string>            _index;
     public:
         Location                            _location;
         int                                 _status;
@@ -86,7 +87,7 @@ class Request
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
         void RequestLineParser(const std::string& requestLine);
-        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes, std::string root);
+        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes, std::string root, std::vector<std::string> index);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
@@ -136,6 +137,9 @@ class Request
         std::string getHeader() const {
             return _headers;
         };
+        std::vector<std::string> getIndexes() const {
+            return _index;
+        }
 
         bool isRequestParsed() const {
             std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
