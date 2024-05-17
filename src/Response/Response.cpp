@@ -16,7 +16,9 @@ void Response::sendResp(Request req, int socket)
 		this->socket = socket;
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
-		this->path = req.getRequestInfo()["path"] + "/";
+		// this->path = req.getRequestInfo()["path"] + "/";
+		this->path = req.getRequestInfo()["path"];
+		this->absolutPath = req.getRequestInfo()["path"];
 		// this->path = req.getRequestInfo()["path"];
 		// this->path = "./WWW/index.html";
 		// this->path = "./error/error.html";
@@ -28,6 +30,7 @@ void Response::sendResp(Request req, int socket)
 			this->status = 200;
 		// this->readed = false;
 		this->valueOfAutoIndex = req._location.autoIndex;
+		// this->indexFile = ;
 		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
@@ -314,9 +317,11 @@ int	Response::checkPath() {
 			std::cout << "find: ====  '/' -------->" << std::endl;
 			if (directoryHasFiles(this->path)) {
 				std::cout << "DIr has files:  -------->" << std::endl;
+				// exit(2);
 				if (directoryHasIndexFile(this->path)) {
 					// std::cout << "has files:  -------->" << std::endl;
 					std::cout << "has files:  -------->"<< this->path << std::endl;
+					// checkIndexFiles();
 					if (!valueOfAutoIndex) {
 						std::cout << " FOrbidden:  -------->" << std::endl;
 						this->path = "./error/403.html";
@@ -326,7 +331,7 @@ int	Response::checkPath() {
 					else if (valueOfAutoIndex) {
 						std::cout << " Read from the file:  -------->" << std::endl;
 						listDir();
-						// exit(2);
+						this->isError = true;
 					}
 				}
 				// exit(1);
@@ -419,6 +424,7 @@ void	Response::listDir() {
 			// exit(21);
 			body += "<li><a href='"+ name  +"'>"  + name +"</a></li>";
 		}
+		// body += "</ul></body></html>";
 		closedir(dir);
 		this->type = "text/html";
 		std::stringstream ss;
@@ -429,4 +435,44 @@ void	Response::listDir() {
         this->body += "0\r\n\r\n";
         write(this->socket, this->body.c_str(),  this->body.length());
 	}
+}
+
+void	Response::checkIndexFiles() {
+	for (size_t i = 0; i < this->indexFile.size(); i++) {
+		std::string newPath = this->path + this->indexFile[i];
+		this->file.open(newPath.c_str(), std::ios::binary);
+		if (file.is_open()) {
+			this->path = newPath;
+			this->status = 200;
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+		}
+	}
+}
+
+int	fillEnv() {
+	this->env = new char* [9];
+	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
+	env[1] = strdup(("QUERY_STRING=" +));
+	env[2] = strdup("REDIRECT_STATUS=200");
+	env[3] = strdup(("PATH_INFO=" + this->absolutPath).c_str());
+	env[4] = strdup(("SCRIPT_FILENAME=" + this->absolutPath).c_str());
+	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
+	if (this->_method == "GET") 
+		env[6] = strdup("CONTENT_LENGTH=0");
+	else {
+
+	}
+	env[7] = strdup(("HTTP_COOKIE=" + ));
+	env[8] = NULL;
+	for(int i = 0; i < 8; i++) {
+		if (env[i] == NULL) {
+		for (int j = 0; j < i; j++) {
+				free(env[j]);
+			}
+			delete[] (env);
+			return (-1);
+		}
+	}
+	return(1);
 }

@@ -18,7 +18,7 @@ class Response {
 	private:
 		std::map<int, std::string> code;
 		std::map<std::string, std::string> mimetypes;
-		// std::vector<std::string> autoindex;
+		std::vector<std::string> indexFile;
 		std::string type;
 		std::string header;
 		std::string path;
@@ -26,6 +26,8 @@ class Response {
 		std::string method;
 		std::ifstream file;
 		std::string body;
+		char **env;
+		std::string absolutPath;
 		int status;
 		int socket;
 		bool readed;
@@ -52,6 +54,6 @@ class Response {
 		bool directoryHasFiles(const std::string& directoryPath);
 		bool directoryHasIndexFile(const std::string& directoryPath);
 		void listDir();
+		void checkIndexFiles();
 };
-
 #endif
