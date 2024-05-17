@@ -78,8 +78,8 @@ class Request
         bool                                _chunckState;
         std::string                         _rootPath;
         bool                                _checkingRequestInfo;
-        std::vector<std::string>            _index;
     public:
+        std::vector<std::string>            _index;
         Location                            _location;
         int                                 _status;
         bool                                _requestLineParsed;

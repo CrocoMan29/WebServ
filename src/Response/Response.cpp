@@ -30,7 +30,11 @@ void Response::sendResp(Request req, int socket)
 			this->status = 200;
 		// this->readed = false;
 		this->valueOfAutoIndex = req._location.autoIndex;
-		// this->indexFile = ;
+		this->indexFile = req._index;
+		for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
+			std::cout << "index File:  " << *it << std::endl;
+		}
+		// exit(23);
 		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
@@ -321,7 +325,7 @@ int	Response::checkPath() {
 				if (directoryHasIndexFile(this->path)) {
 					// std::cout << "has files:  -------->" << std::endl;
 					std::cout << "has files:  -------->"<< this->path << std::endl;
-					// checkIndexFiles();
+					checkIndexFiles();
 					if (!valueOfAutoIndex) {
 						std::cout << " FOrbidden:  -------->" << std::endl;
 						this->path = "./error/403.html";
@@ -338,7 +342,10 @@ int	Response::checkPath() {
 			}
 			else {
 				std::cout << "No files:  -------->" << std::endl;
-				exit(12);
+				this->path = "./error/error.html";
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+				// exit(12);
 			}
 		}
 	}
@@ -440,39 +447,42 @@ void	Response::listDir() {
 void	Response::checkIndexFiles() {
 	for (size_t i = 0; i < this->indexFile.size(); i++) {
 		std::string newPath = this->path + this->indexFile[i];
+		std::cout << "new path1/: " << this->path << std::endl;
 		this->file.open(newPath.c_str(), std::ios::binary);
 		if (file.is_open()) {
 			this->path = newPath;
+			std::cout << "new path/->>>>>>: " << this->path << std::endl;
 			this->status = 200;
 			this->isError = true;
-			file.open(this->path, std::ios::binary);
+			return ;
+			// file.open(this->path, std::ios::binary);
 		}
 	}
 }
 
-int	fillEnv() {
-	this->env = new char* [9];
-	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
-	env[1] = strdup(("QUERY_STRING=" +));
-	env[2] = strdup("REDIRECT_STATUS=200");
-	env[3] = strdup(("PATH_INFO=" + this->absolutPath).c_str());
-	env[4] = strdup(("SCRIPT_FILENAME=" + this->absolutPath).c_str());
-	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
-	if (this->_method == "GET") 
-		env[6] = strdup("CONTENT_LENGTH=0");
-	else {
+// int		Response::fillEnv() {
+// 	this->env = new char* [9];
+// 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
+// 	env[1] = strdup(("QUERY_STRING=" +));
+// 	env[2] = strdup("REDIRECT_STATUS=200");
+// 	env[3] = strdup(("PATH_INFO=" + this->absolutPath).c_str());
+// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->absolutPath).c_str());
+// 	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
+// 	if (this->_method == "GET") 
+// 		env[6] = strdup("CONTENT_LENGTH=0");
+// 	else {
 
-	}
-	env[7] = strdup(("HTTP_COOKIE=" + ));
-	env[8] = NULL;
-	for(int i = 0; i < 8; i++) {
-		if (env[i] == NULL) {
-		for (int j = 0; j < i; j++) {
-				free(env[j]);
-			}
-			delete[] (env);
-			return (-1);
-		}
-	}
-	return(1);
-}
+// 	}
+// 	env[7] = strdup(("HTTP_COOKIE=" + ));
+// 	env[8] = NULL;
+// 	for(int i = 0; i < 8; i++) {
+// 		if (env[i] == NULL) {
+// 		for (int j = 0; j < i; j++) {
+// 				free(env[j]);
+// 			}
+// 			delete[] (env);
+// 			return (-1);
+// 		}
+// 	}
+// 	return(1);
+// }
