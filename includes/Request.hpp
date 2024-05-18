@@ -72,14 +72,16 @@ class Request
         std::string                         _headers;
         std::vector<char>                   _body;
         size_t                              _bodySize;
+        size_t                              _chunkSize;
         bool                                _bodyParsed;
         bool                                _headersParsed;
         std::string                         _file;
         bool                                _chunckState;
+
         std::string                         _rootPath;
         bool                                _checkingRequestInfo;
-    public:
         std::vector<std::string>            _index;
+    public:
         Location                            _location;
         int                                 _status;
         bool                                _requestLineParsed;
