@@ -30,7 +30,7 @@ void Response::sendResp(Request req, int socket)
 			this->status = 200;
 		// this->readed = false;
 		this->valueOfAutoIndex = req._location.autoIndex;
-		this->indexFile = req._index;
+		// this->indexFile = req._index;
 		for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			std::cout << "index File:  " << *it << std::endl;
 		}
