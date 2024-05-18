@@ -1,7 +1,7 @@
 # include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
 
-Response::Response() : status(0), socket(0), readed(false), isError(false),finish(false) {
+Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false) {
     // path = "";
     // method = "";
 }
@@ -298,9 +298,8 @@ void	Response::chunk(Request& req) {
 		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
 	}
 	else if (file.gcount() == 0 && this->readed) {
-		std::cout << "Gcout========" << file.gcount() << std::endl; 
-		std::cout << "STRING/ " << std::endl;
-		std::cout << "Here = Empty" << std::endl;
+		std::cout << "Gcout========" << file.gcount() << std::endl;
+		std::cout << "path= " << this->path << std::endl;
         write(this->socket, "0\r\n\r\n", 5);
         file.close();
 		this->finish = true;
@@ -379,6 +378,26 @@ int	Response::checkPath() {
 
 		}
 	}
+	// else if ((this->path.rfind(".py") || this->path.rfind(".php") && !this->isCGI)) {
+	// 	std::cout << "CGI----</ " << std::endl;
+	// 	std::ifstream file;
+	// 	file.open(this->path.c_str(), std::ios::binary);
+	// 	if (file.is_open() && (this->isCGI == false)){
+	// 		std::cout << "cgi file opened->: " << std::endl;
+	// 		exit(23);
+	// 	}
+	// 	else {
+	// 		std::cout << "cgi file Not found-------<" << std::endl;
+	// 		this->status = 404;
+	// 		this->path = "./error/error.html";
+	// 		this->isError = true;
+	// 		this->readed = false;
+	// 		file.open(this->path, std::ios::binary);
+	// 		this->isCGI = true;
+	// 		std::cout << "CGI path= " << this->path << std::endl;
+	// 	}
+	// 	// exit(2);
+	// }
 	else {
 		std::cout << "Not found-------<" << std::endl;
 		this->status = 404;

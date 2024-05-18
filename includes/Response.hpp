@@ -32,6 +32,7 @@ class Response {
 		int socket;
 		bool readed;
 		bool isError;
+		bool isCGI;
 		bool valueOfAutoIndex;
 		Request req;
 	public:
