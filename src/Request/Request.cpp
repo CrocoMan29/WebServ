@@ -39,6 +39,16 @@ void Request::collectData(){
     }
 }
 
+void Request::extractingQuerryString(){
+    size_t  it;
+
+    it = _requestInfos["path"].find("?");
+    if(it != std::string::npos){
+        _requestInfos["path"] = _requestInfos["path"].substr(0, it);
+        _requestInfos.insert(std::pair<std::string , std::string>("query", _requestInfos["path"].substr(it + 1)));
+    }
+}
+
 void Request::collector(std::string &token){
     std::size_t separatorPos;
 
@@ -173,6 +183,7 @@ void Request::pathInCannonicalForm(){
     char                        *token;
     bool                        finishWithSlash = false;
 
+    extractingQuerryString();
     if (_requestInfos["path"][_requestInfos["path"].length() - 1] == '/')
         finishWithSlash = true;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
@@ -254,8 +265,10 @@ std::string randomFileGenerator() {
 
 void Request::bodyHandler(){
 
-    if(_requestInfos["method"].compare("post"))
+    if(_requestInfos["method"].compare("post") || !_location.upload_enable){
+        _bodyParsed = true;
         return;
+    }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
@@ -268,6 +281,13 @@ void Request::bodyHandler(){
         std::cout << "Error opening file" << std::endl;
         perror("Error");
     }
+}
+
+void Request::postChecker(){
+    if(_requestInfos["method"].compare("post"))
+        return;
+    if(_requestInfos.find("content-type") == _requestInfos.end())
+        throw BADREQUEST;
 }
 
 void Request::readingBody(const char *body, size_t readBytes){
