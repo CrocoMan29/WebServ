@@ -1,11 +1,9 @@
 # include "../../includes/Request.hpp"
 
 Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0){
-
 }
 
 Request::~Request(){
-
 }
 
 std::string toLowercase(std::string str) {
@@ -205,11 +203,9 @@ void Request::pathInCannonicalForm(){
 }
 
 void Request::matchingLocation(std::vector<Location> &locations){
-    std::vector<Location>::iterator   lIt;
-    bool                              found = false;
-
-    // std::cout << "Matching location" << std::endl;
-    std::string upper;
+    std::vector<Location>::iterator     lIt;
+    bool                                found = false;
+    std::string                         upper;
 
     for(std::vector<Location>::iterator it = locations.begin();it != locations.end();it++){
         std::string pattern = (*it).name;
@@ -267,13 +263,11 @@ void Request::bodyHandler(){
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
         ofs.close();
-        // std::cout << _requestInfos["content-length"] << "  "<< this->_bodySize << std::endl;
         std::cout << "File uploaded successfully" << std::endl;
     } else {
         std::cout << "Error opening file" << std::endl;
         perror("Error");
     }
-    std::cout <<"Here is the Body :" <<_body.data() << std::endl;
 }
 
 void Request::readingBody(const char *body, size_t readBytes){
@@ -296,61 +290,15 @@ void Request::readingBody(const char *body, size_t readBytes){
     }
 }
 
-// void Request::setChunkedBody(const char *body, size_t readBytes){
-//     std::string strBody(body);
-//     size_t pos = 0;
-//     // size_t savedBodySize = _body.size();
-
-
-//     std::cout << "------------------- chunks ----------------------" << std::endl;
-
-//     // std::cout << "_body Before: " << _body.data() << std::endl;
-//     handlingBodySize:
-//         if (_bodyParsed || (_chunkSize == 0 && strBody.find("\r\n") == std::string::npos))
-//             return;
-//         if(!_chunkSize){
-//             std::cout << "------------------ finding chunk size -----------------" << std::endl;
-//             pos = strBody.find("\r\n");
-//             if(pos != std::string::npos){
-//                 _chunkSize = std::stoul(strBody.substr(0, pos), 0, 16);
-//                 pos += 2;
-//                 body = body + pos;
-//                 strBody = strBody.substr(pos);
-//             }
-//         }
-//     hadlingBody:
-//         if(_chunkSize){
-//             std::cout << "------------------ reading chunk -----------------" << std::endl;
-//             if(_body.size() + readBytes - pos >= _chunkSize){
-//                 std::cout << "------------------_body.size() + readBytes - (pos + 2) >= _chunkSize ---------------------" << std::endl;
-//                 _body.insert(_body.end(), body, body + _chunkSize);
-//                 _chunkSize = 0;
-//             }
-//             else {
-//                 std::cout << "------------------_body.size() + readBytes - (pos + 2) < _chunkSize ---------------------" << std::endl;
-//                 _body.insert(_body.end(), body, body + readBytes);
-//                 _chunkSize -= readBytes;
-//             }
-//             if (strBody.rfind("\r\n0\r\n\r\n") != std::string::npos)
-//                 _bodyParsed = true;
-//             if (_chunkSize == 0)
-//                 goto handlingBodySize;
-//         }
-//     // std::cout << "_body After: " << _body.data() << std::endl;
-// }
-
 void Request::setChunkedBody(const char *body, size_t readBytes) {
     std::string strBody(body, readBytes);
     size_t pos = 0;
 
     std::cout << "------------------- chunks ----------------------" << std::endl;
-
     while (true) {
-        // Handle chunk size
         if (_chunkSize == 0) {
             pos = strBody.find("\r\n");
             if (pos == std::string::npos) {
-                // No complete chunk size found
                 return;
             }
             try {
@@ -361,23 +309,17 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             }
             strBody = strBody.substr(pos + 2);
             pos = 0;
-
-            // If chunk size is 0, it means we are done
             if (_chunkSize == 0) {
                 _bodyParsed = true;
                 return;
             }
         }
-
-        // Handle chunk data
         if (_chunkSize > 0) {
             if (strBody.size() >= _chunkSize + 2) {
-                // Enough data to complete the current chunk
                 _body.insert(_body.end(), strBody.begin(), strBody.begin() + _chunkSize);
-                strBody = strBody.substr(_chunkSize + 2); // Skip chunk data and trailing "\r\n"
+                strBody = strBody.substr(_chunkSize + 2);
                 _chunkSize = 0;
             } else {
-                // Not enough data to complete the current chunk
                 _body.insert(_body.end(), strBody.begin(), strBody.end());
                 _chunkSize -= strBody.size();
                 return;
