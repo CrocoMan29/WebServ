@@ -98,10 +98,10 @@ class Request
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();
         void bodyHandler();
+        void extractingQuerryString();
         void readingBody(const char* request, size_t readBytes);
         void setChunkedBody(const char *body, size_t readBytes);
-        void readChunk(char *line, size_t chunkSize);
-        size_t isChunkSize(char *line);
+        void postChecker();
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             
