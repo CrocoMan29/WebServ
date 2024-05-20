@@ -16,25 +16,18 @@ void Response::sendResp(Request req, int socket)
 		this->socket = socket;
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
-		// this->path = req.getRequestInfo()["path"] + "/";
 		this->path = req.getRequestInfo()["path"];
 		this->absolutPath = req.getRequestInfo()["path"];
-		// this->path = req.getRequestInfo()["path"];
-		// this->path = "./WWW/index.html";
-		// this->path = "./error/error.html";
-		// this->path = "./WWW/aelbouaa.jpg";
 		this->method = req.getRequestInfo()["method"];
-		// this->method = req._requestInfos["method"];
 		if (!req._status)
 			// this->status = req._status;
 			this->status = 200;
 		// this->readed = false;
 		this->valueOfAutoIndex = req._location.autoIndex;
-		// this->indexFile = req._index;
+		this->indexFile = req.getIndexes();
 		for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			std::cout << "index File:  " << *it << std::endl;
 		}
-		// exit(23);
 		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
@@ -380,7 +373,7 @@ int	Response::checkPath() {
 	}
 	else if ((this->path.rfind(".py") || this->path.rfind(".php") && !this->isCGI)) {
 		std::cout << "CGI----</ " << std::endl;
-		std::ifstream file;
+		// std::ifstream file;
 		file.open(this->path.c_str(), std::ios::binary);
 		if (file.is_open() && (this->isCGI == false)){
 			std::cout << "cgi file opened->: " << std::endl;
@@ -391,7 +384,6 @@ int	Response::checkPath() {
 			this->status = 404;
 			this->path = "./error/error.html";
 			this->isError = true;
-			this->readed = false;
 			file.open(this->path, std::ios::binary);
 			this->isCGI = true;
 			std::cout << "CGI path= " << this->path << std::endl;
