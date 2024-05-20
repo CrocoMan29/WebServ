@@ -4,6 +4,7 @@
 Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false) {
     // path = "";
     // method = "";
+	this->count = 0;
 }
 
 
@@ -17,7 +18,7 @@ void Response::sendResp(Request req, int socket)
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
 		this->path = req.getRequestInfo()["path"];
-		this->absolutPath = req.getRequestInfo()["path"];
+		// this->absolutPath = req.getRequestInfo()["path"];
 		this->method = req.getRequestInfo()["method"];
 		if (!req._status)
 			// this->status = req._status;
@@ -201,7 +202,7 @@ std::string Response::getContentType(std::string& path) {
 	this->mimetypes[".3gpp"] = "video/3gpp";
 	this->mimetypes[".3gp"] = "video/3gpp";
 	this->mimetypes[".ts"] = "video/mp2t";
-	this->mimetypes[".video/mp4"] = "mp4";
+	this->mimetypes[".mp4"] = "video/mp4";
 	this->mimetypes[".mpg"] = "video/mpeg";
 	this->mimetypes[".mpeg"] = "video/mpeg";
 	this->mimetypes[".video/quicktime"] = "mov";
@@ -211,8 +212,8 @@ std::string Response::getContentType(std::string& path) {
 	this->mimetypes[".mng"] = "video/x-mng";
 	this->mimetypes[".asx"] = "video/x-ms-asf";
 	this->mimetypes[".asf"] = "video/x-ms-asf";
-	this->mimetypes[".wmv"] = "video/x-ms-wmv";
 	this->mimetypes[".avi"] = "video/x-msvideo";
+	this->mimetypes[".wmv"] = "video/x-ms-wmv";
 	
 	size_t found = path.rfind('.');
 	if (found != std::string::npos) {
@@ -221,7 +222,7 @@ std::string Response::getContentType(std::string& path) {
 		if (it != this->mimetypes.end())
 			return (it->second);
 	}
-	return  ("text/plain");
+	return  ("text/html");
 }
 
 
@@ -275,10 +276,11 @@ void	Response::chunk(Request& req) {
 	char buf[BUFFERSIZE] = {0};
 	// std::cout << "content-length----->" << std::endl;
 	std::cout << "path: ---->" << this->path << std::endl;
-	std::cout <<"File/    :" << this->path << std::endl;
 	file.read(buf, 1023);
+	this->count+= file.gcount();
+	std::cout << "isze file: " << this->count << std::endl; 
 	if (file.gcount() > 0 && this->readed) {
-		std::cout << "statuscode: " << this->status << std::endl;
+		// std::cout << "statuscode: " << this->status << std::endl;
 		std::stringstream ss;
         ss << std::hex << file.gcount();
 		std::cout << "buffer size: " << ss.str() << std::endl;
@@ -292,7 +294,7 @@ void	Response::chunk(Request& req) {
 	}
 	else if (file.gcount() == 0 && this->readed) {
 		std::cout << "Gcout========" << file.gcount() << std::endl;
-		std::cout << "path= " << this->path << std::endl;
+		// std::cout << "path= " << this->path << std::endl;
         write(this->socket, "0\r\n\r\n", 5);
         file.close();
 		this->finish = true;
@@ -330,14 +332,6 @@ int	Response::checkPath() {
 						this->isError = true;
 					}
 				}
-				// exit(1);
-			}
-			else {
-				std::cout << "No files:  -------->" << std::endl;
-				this->path = "./error/error.html";
-				this->isError = true;
-				file.open(this->path, std::ios::binary);
-				// exit(12);
 			}
 		}
 	}
@@ -346,7 +340,6 @@ int	Response::checkPath() {
 		// exit(15);
 		if (!this->readed) {
 			std::cout << "Here-------------->check if open <----------Here" << std::endl;
-			// exit(15);
 			file.open(this->path, std::ios::binary);
 			if (!file.good()) {
 				std::cout << "Here--------------> <----------Here" << std::endl;
@@ -354,18 +347,21 @@ int	Response::checkPath() {
 				if (access(this->path.c_str(), F_OK) != -1) {
 					std::cout << "don't have access" << std::endl;
 					this->status = 403;
-					// exit(12);
 					this->path = "./error/403.html";
+					// file.open(this->path, std::ios::binary);
+					// exit(12);
 				}
 				else {
 					std::cout << "file not found" << std::endl;
 					this->status = 404;
 					this->path = "./error/error.html";
 				}
-				this->isError = true;
 				file.open(this->path, std::ios::binary);
+				this->isError = true;
 			}
 			else {
+				// std::cout << "Here--------------> <----------Here" << std::endl;
+				// exit(15);
 				this->readed = true;
 			}
 
@@ -375,6 +371,10 @@ int	Response::checkPath() {
 		std::cout << "CGI----</ " << std::endl;
 		// std::ifstream file;
 		file.open(this->path.c_str(), std::ios::binary);
+		std::cout << "CGI PATH" << this->path << std::endl;
+		this->scriptfile = this->path.substr(6);
+		std::cout << "Script file name: " << this->scriptfile << std::endl;
+		// exit(2);
 		if (file.is_open() && (this->isCGI == false)){
 			std::cout << "cgi file opened->: " << std::endl;
 			exit(23);
@@ -407,9 +407,9 @@ bool Response::directoryHasFiles(const std::string& directoryPath) {
     std::vector<std::string> files;
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+        // if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             files.push_back(entry->d_name);
-        }
+        // }
     }
     closedir(dir);
     return (!files.empty());
@@ -421,10 +421,10 @@ bool Response::directoryHasIndexFile(const std::string& directoryPath) {
         return (false);
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (strcmp(entry->d_name, "index.html") == 0 || strcmp(entry->d_name, "index.htm") == 0) {
-            closedir(dir);
+        // if (strcmp(entry->d_name, "index.html") == 0 || strcmp(entry->d_name, "index.htm") == 0) {
+            // closedir(dir);
             return (true);
-        }
+        // }
     }
     closedir(dir);
     return (false);
@@ -442,9 +442,7 @@ void	Response::listDir() {
 			// exit(21);
 			body += "<li><a href='"+ name  +"'>"  + name +"</a></li>";
 		}
-		// body += "</ul></body></html>";
 		closedir(dir);
-		this->type = "text/html";
 		std::stringstream ss;
         setHeader();
         ss << std::hex << body.length();
@@ -466,25 +464,24 @@ void	Response::checkIndexFiles() {
 			this->status = 200;
 			this->isError = true;
 			return ;
-			// file.open(this->path, std::ios::binary);
 		}
 	}
 }
 
-// int		Response::fillEnv() {
+// int		Response::fillEnv(Request req) {
 // 	this->env = new char* [9];
 // 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
-// 	env[1] = strdup(("QUERY_STRING=" +));
+// 	env[1] = strdup(("QUERY_STRING=" + req.extractingQuerryString()));
 // 	env[2] = strdup("REDIRECT_STATUS=200");
-// 	env[3] = strdup(("PATH_INFO=" + this->absolutPath).c_str());
-// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->absolutPath).c_str());
+// 	env[3] = strdup(("PATH_INFO=" + this->path).c_str());
+// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile ).c_str());
 // 	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
 // 	if (this->_method == "GET") 
 // 		env[6] = strdup("CONTENT_LENGTH=0");
 // 	else {
 
 // 	}
-// 	env[7] = strdup(("HTTP_COOKIE=" + ));
+// 	env[7] = strdup(("HTTP_COOKIE=" + req.getRequestInfo()["cookies"]));
 // 	env[8] = NULL;
 // 	for(int i = 0; i < 8; i++) {
 // 		if (env[i] == NULL) {

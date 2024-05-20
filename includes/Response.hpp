@@ -28,6 +28,7 @@ class Response {
 		std::string body;
 		char **env;
 		std::string absolutPath;
+		std::string scriptfile;
 		int status;
 		int socket;
 		bool readed;
@@ -35,6 +36,7 @@ class Response {
 		bool isCGI;
 		bool valueOfAutoIndex;
 		Request req;
+		int count;
 	public:
 		bool finish;
 		Response();
