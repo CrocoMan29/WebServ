@@ -517,7 +517,7 @@ std::string Response::toString(long long nb) {
 // 	this->isCGI = true;
 // 	this->start = clock();
 // 	srand(time(NULL));
-// 	this->generatedtPath = "./WWW/cgi" + toString(rand());
+// 	this->generatedtPath = "./WWW/CGI" + toString(rand());
 // 	fillEnv(req);
 // 	int fd[2];
 // 	if (pipe[fd] == -1) {
