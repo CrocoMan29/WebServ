@@ -27,11 +27,14 @@ class Response {
 		std::string path;
 		std::string chunkSize;
 		std::string method;
+		std::string querry;
+		std::string cookies;
 		std::ifstream file;
 		std::string body;
-		char **env;
 		std::string generatedtPath;
 		std::string scriptfile;
+		std::string pathCgi;
+		char **env;
 		int status;
 		int socket;
 		bool readed;
@@ -42,6 +45,7 @@ class Response {
 		int count;
 		double start;
 		double end;
+		int	pid;
 	public:
 		bool finish;
 		Response();
@@ -64,5 +68,6 @@ class Response {
 		void listDir();
 		void checkIndexFiles();
 		std::string toString(long long nb);
+		int	fillEnv(Request req);
 };
 #endif

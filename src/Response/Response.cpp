@@ -22,6 +22,8 @@ void Response::sendResp(Request req, int socket)
 		this->path = req.getRequestInfo()["path"];
 		// this->absolutPath = req.getRequestInfo()["path"];
 		this->method = req.getRequestInfo()["method"];
+		this->querry = req.getRequestInfo()["query"];
+		// this->cookies = req.getRequestInfo()["cookies"];
 		if (!req._status)
 			// this->status = req._status;
 			this->status = 200;
@@ -36,6 +38,8 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
 		std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
+		std::cout << "QUERRY: " << this->querry << std::endl;
+		// exit(2);
 		// exit(1);
 		// setHeader();
 	}
@@ -279,8 +283,8 @@ void	Response::chunk(Request& req) {
 	// std::cout << "content-length----->" << std::endl;
 	std::cout << "path: ---->" << this->path << std::endl;
 	file.read(buf, 1023);
-	this->count+= file.gcount();
-	std::cout << "isze file: " << this->count << std::endl; 
+	this->count += file.gcount();
+	std::cout << "size file: " << this->count << std::endl; 
 	if (file.gcount() > 0 && this->readed) {
 		// std::cout << "statuscode: " << this->status << std::endl;
 		std::stringstream ss;
@@ -377,8 +381,14 @@ int	Response::checkPath() {
 		this->scriptfile = this->path.substr(4);
 		std::cout << "Script file name: " << this->scriptfile << std::endl;
 		// exit(2);
-		if (file.is_open() && (this->isCGI == false)){
+		if (file.is_open() && (this->isCGI == false)) { 
 			std::cout << "cgi file opened->: " << std::endl;
+			file.close();
+            if (this->path.rfind(".php") != std::string::npos)
+                this->pathCgi = "/usr/bin/php-cgi";
+            else
+                this->pathCgi = "/usr/bin/python3";
+			std::cout << "CGI path:  " << this->pathCgi << std::endl;
 			exit(23);
 		}
 		else {
@@ -473,45 +483,61 @@ void	Response::checkIndexFiles() {
 // int		Response::fillEnv(Request req) {
 // 	this->env = new char* [9];
 // 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
-// 	env[1] = strdup(("QUERY_STRING=" + req.extractingQuerryString()));
+// 	env[1] = strdup(("QUERY_STRING=" + this->querry));
 // 	env[2] = strdup("REDIRECT_STATUS=200");
 // 	env[3] = strdup(("PATH_INFO=" + this->path).c_str());
-// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile ).c_str());
+// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile).c_str());
 // 	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
-// 	if (this->_method == "GET") 
+// 	if (this->method == "GET") 
 // 		env[6] = strdup("CONTENT_LENGTH=0");
-// 	else {
+// 	// else {
 
-// 	}
-// 	env[7] = strdup(("HTTP_COOKIE=" + req.getRequestInfo()["cookies"]));
+// 	// }
+// 	env[7] = strdup(("HTTP_COOKIE=" + this->cookies));
 // 	env[8] = NULL;
-// 	for(int i = 0; i < 8; i++) {
-// 		if (env[i] == NULL) {
-// 		for (int j = 0; j < i; j++) {
-// 				free(env[j]);
-// 			}
-// 			delete[] (env);
-// 			return (-1);
-// 		}
-// 	}
+// 	// for(int i = 0; i < 8; i++) {
+// 	// 	if (env[i] == NULL) {
+// 	// 	for (int j = 0; j < i; j++) {
+// 	// 			free(env[j]);
+// 	// 		}
+// 	// 		delete[] (env);
+// 	// 		return (-1);
+// 	// 	}
+// 	// }
 // 	return(1);
 // }
 
-// std::string Response::toString(long long nb) {
-// 	std::stringstream ss;
-// 	ss << nb;
-// 	return (ss.str());
-// }
+std::string Response::toString(long long nb) {
+	std::stringstream ss;
+	ss << nb;
+	return (ss.str());
+}
 
 // Void Response::executeCgi(Request req) {
 // 	this->isCGI = true;
 // 	this->start = clock();
 // 	srand(time(NULL));
-// 	this->generatedtPath = "/tmp/" + toString(rand());
+// 	this->generatedtPath = "./WWW/cgi" + toString(rand());
 // 	fillEnv(req);
 // 	int fd[2];
 // 	if (pipe[fd] == -1) {
 // 		perror("pipe");
 // 		return ;
+// 	}
+// 	this->pid = fork();
+// 	if (this->pid == -1) 
+// 	perror("fork");
+// 	return ;
+// 	if (this->pid == 0) {
+// 		const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
+// 		close(fd[0]);
+// 		freopen(this->genethis->generatedtPath.c_str(), "w", stdout);
+// 		if (this->method == "GET")
+// 			close(STDIN_FILENO);
+// 		else
+// 			freopen(this->scriptfile,"r", stdin);
+// 		execve(av[0], av, this->env);
+// 		perror("execve");
+// 		exit(127);
 // 	}
 // }
