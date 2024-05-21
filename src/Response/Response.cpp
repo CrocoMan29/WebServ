@@ -5,8 +5,8 @@ Response::Response() : status(0), socket(0), readed(false), isCGI(false), isErro
     // path = "";
     // method = "";
 	this->count = 0;
-	this->start = 0;
-	this->end = 0;
+// 	this->start = 0;
+// 	this->end = 0;
 }
 
 
@@ -369,12 +369,12 @@ int	Response::checkPath() {
 
 		}
 	}
-	else if ((this->path.rfind(".py") || this->path.rfind(".php") && !this->isCGI)) {
+	else if (((this->path.rfind(".py") != std::string::npos|| this->path.rfind(".php")  != std::string::npos) && !this->isCGI)) {
 		std::cout << "CGI----</ " << std::endl;
 		// std::ifstream file;
 		file.open(this->path.c_str(), std::ios::binary);
-		std::cout << "CGI PATH" << this->path << std::endl;
-		this->scriptfile = this->path.substr(6);
+		std::cout << "CGI PATH = " << this->path << std::endl;
+		this->scriptfile = this->path.substr(4);
 		std::cout << "Script file name: " << this->scriptfile << std::endl;
 		// exit(2);
 		if (file.is_open() && (this->isCGI == false)){
@@ -497,8 +497,21 @@ void	Response::checkIndexFiles() {
 // 	return(1);
 // }
 
+// std::string Response::toString(long long nb) {
+// 	std::stringstream ss;
+// 	ss << nb;
+// 	return (ss.str());
+// }
+
 // Void Response::executeCgi(Request req) {
 // 	this->isCGI = true;
 // 	this->start = clock();
 // 	srand(time(NULL));
+// 	this->generatedtPath = "/tmp/" + toString(rand());
+// 	fillEnv(req);
+// 	int fd[2];
+// 	if (pipe[fd] == -1) {
+// 		perror("pipe");
+// 		return ;
+// 	}
 // }

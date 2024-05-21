@@ -30,7 +30,7 @@ class Response {
 		std::ifstream file;
 		std::string body;
 		char **env;
-		std::string absolutPath;
+		std::string generatedtPath;
 		std::string scriptfile;
 		int status;
 		int socket;
@@ -40,8 +40,8 @@ class Response {
 		bool valueOfAutoIndex;
 		Request req;
 		int count;
-		double start:
-		double end:
+		double start;
+		double end;
 	public:
 		bool finish;
 		Response();
@@ -63,5 +63,6 @@ class Response {
 		bool directoryHasIndexFile(const std::string& directoryPath);
 		void listDir();
 		void checkIndexFiles();
+		std::string toString(long long nb);
 };
 #endif
