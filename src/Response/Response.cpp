@@ -5,6 +5,8 @@ Response::Response() : status(0), socket(0), readed(false), isCGI(false), isErro
     // path = "";
     // method = "";
 	this->count = 0;
+	this->start = 0;
+	this->end = 0;
 }
 
 
@@ -493,4 +495,10 @@ void	Response::checkIndexFiles() {
 // 		}
 // 	}
 // 	return(1);
+// }
+
+// Void Response::executeCgi(Request req) {
+// 	this->isCGI = true;
+// 	this->start = clock();
+// 	srand(time(NULL));
 // }

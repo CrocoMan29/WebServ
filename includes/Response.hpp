@@ -12,6 +12,9 @@
 # include "../includes/Request.hpp"
 # include "./parseConfigFile.hpp"
 #include <dirent.h>
+#include <ctime>
+#include <sys/wait.h>
+#include <fcntl.h>
 # define BUFFERSIZE 1024
 
 class Response {
@@ -37,6 +40,8 @@ class Response {
 		bool valueOfAutoIndex;
 		Request req;
 		int count;
+		double start:
+		double end:
 	public:
 		bool finish;
 		Response();
