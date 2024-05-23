@@ -117,8 +117,8 @@ void webServ::setUpServer() {
 			}
 			if (events[i].events & EPOLLIN)
 			{
-				std::cout << "epoll in event fd : " << events[i].data.fd << ";" << std::endl;
-				std::cout << "epoll in socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
+				// std::cout << "epoll in event fd : " << events[i].data.fd << ";" << std::endl;
+				// std::cout << "epoll in socket fd : " << _serv[i].socket_fd << " ]" << std::endl;
 				// else
 					// Server *server = fd_to_server[events[i].data.fd];
 					// std::cout << "hellooooooooooooooooooo" << std::endl;
@@ -136,7 +136,7 @@ void webServ::setUpServer() {
 						close(client_socket);
 					} else {
 						buffer[bytes_received] = '\0';
-						std::cout << "Received: " << buffer << std::endl;
+						// std::cout << "Received: " << buffer << std::endl;
 						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
@@ -181,11 +181,11 @@ void webServ::setUpServer() {
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus() ){
 						//  server[i].index;
-						response.sendResp(request, events[i].data.fd);
-						if (response.finish == true) {
-							std::cout << "finished-------:" << std::endl;
-							close(events[i].data.fd);
-						}
+						// response.sendResp(request, events[i].data.fd);
+						// if (response.finish == true) {
+						// 	std::cout << "finished-------:" << std::endl;
+						// 	close(events[i].data.fd);
+						// } 3935 4959
 					// }
 				// }
 				// std::cout << "EPOLLOUT: " << i << std::endl;
