@@ -43,7 +43,7 @@ void Response::sendResp(Request req, int socket)
 		// exit(1);
 		// setHeader();
 	}
-	if (checkPath()) {
+	if (checkPath(req)) {
 		std::cout << "checkPath---------========>" << std::endl;
 		std::cout << "Error Flag====>" << this->isError << std::endl;
 		if (this->readed && !this->isError) {
@@ -307,7 +307,7 @@ void	Response::chunk(Request& req) {
 	}
 }
 
-int	Response::checkPath() {
+int	Response::checkPath(Request req) {
 	if (isDirectory(this->path)) {
 		std::cout << "is Directory -------->" << std::endl;
 		if (this->path.back() != '/') {
@@ -341,6 +341,40 @@ int	Response::checkPath() {
 			}
 		}
 	}
+	// else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php")  != std::string::npos))) {
+	else if (getExt() && !this->isCGI) {
+		std::cout << "CGI----</ " << std::endl;
+		// exit(2);
+		// std::ifstream file;
+		file.open(this->path.c_str(), std::ios::binary);
+		std::cout << "CGI PATH = " << this->path << std::endl;
+		this->scriptfile = this->path.substr(4);
+		std::cout << "Script file name: " << this->scriptfile << std::endl;
+		if (file.is_open() && (this->isCGI == false)) { 
+			std::cout << "cgi file opened->: " << std::endl;
+			file.close();
+            if (this->path.rfind(".php") != std::string::npos)
+                this->pathCgi = "/usr/bin/php-cgi";
+            else
+                this->pathCgi = "/usr/bin/python3";
+			std::cout << "CGI path:  " << this->pathCgi << std::endl;
+			executeCgi(req);
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+			this->isCGI = true;
+			// exit(23);
+		}
+		else {
+			std::cout << "cgi file Not found-------<" << std::endl;
+			this->status = 404;
+			this->path = "./error/error.html";
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+			this->isCGI = true;
+			std::cout << "CGI path= " << this->path << std::endl;
+		}
+		// exit(2);
+	}
 	else if (isRegularFile(this->path)) {
 		std::cout << "is Regular file: " << std::endl;
 		// exit(15);
@@ -373,35 +407,6 @@ int	Response::checkPath() {
 
 		}
 	}
-	else if (((this->path.rfind(".py") != std::string::npos|| this->path.rfind(".php")  != std::string::npos) && !this->isCGI)) {
-		std::cout << "CGI----</ " << std::endl;
-		// std::ifstream file;
-		file.open(this->path.c_str(), std::ios::binary);
-		std::cout << "CGI PATH = " << this->path << std::endl;
-		this->scriptfile = this->path.substr(4);
-		std::cout << "Script file name: " << this->scriptfile << std::endl;
-		// exit(2);
-		if (file.is_open() && (this->isCGI == false)) { 
-			std::cout << "cgi file opened->: " << std::endl;
-			file.close();
-            if (this->path.rfind(".php") != std::string::npos)
-                this->pathCgi = "/usr/bin/php-cgi";
-            else
-                this->pathCgi = "/usr/bin/python3";
-			std::cout << "CGI path:  " << this->pathCgi << std::endl;
-			exit(23);
-		}
-		else {
-			std::cout << "cgi file Not found-------<" << std::endl;
-			this->status = 404;
-			this->path = "./error/error.html";
-			this->isError = true;
-			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
-			std::cout << "CGI path= " << this->path << std::endl;
-		}
-		// exit(2);
-	}
 	else {
 		std::cout << "Not found-------<" << std::endl;
 		this->status = 404;
@@ -411,7 +416,11 @@ int	Response::checkPath() {
 	}
 	return (1);
 }
-
+bool	Response::getExt() {
+	if ((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos))
+		return (true);
+	return (false);
+}
 bool Response::directoryHasFiles(const std::string& directoryPath) {
     DIR* dir = opendir(directoryPath.c_str());
     if (dir == NULL) 
@@ -480,31 +489,29 @@ void	Response::checkIndexFiles() {
 	}
 }
 
-// int		Response::fillEnv(Request req) {
-// 	this->env = new char* [9];
-// 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
-// 	env[1] = strdup(("QUERY_STRING=" + this->querry));
-// 	env[2] = strdup("REDIRECT_STATUS=200");
-// 	env[3] = strdup(("PATH_INFO=" + this->path).c_str());
-// 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile).c_str());
-// 	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
-// 	if (this->method == "GET") 
-// 		env[6] = strdup("CONTENT_LENGTH=0");
-// 	// else {
+int		Response::fillEnv(Request req) {
+	this->env = new char* [9];
+	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
+	// env[1] = strdup(("QUERY_STRING=" + this->querry));
+	env[2] = strdup("REDIRECT_STATUS=200");
+	env[3] = strdup(("PATH_INFO=" + this->path).c_str());
+	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile).c_str());
+	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
+	if (this->method == "GET") 
+		env[6] = strdup("CONTENT_LENGTH=0");
+	// else {
 
-// 	// }
-// 	env[7] = strdup(("HTTP_COOKIE=" + this->cookies));
-// 	env[8] = NULL;
-// 	// for(int i = 0; i < 8; i++) {
-// 	// 	if (env[i] == NULL) {
-// 	// 	for (int j = 0; j < i; j++) {
-// 	// 			free(env[j]);
-// 	// 		}
-// 	// 		delete[] (env);
-// 	// 		return (-1);
-// 	// 	}
-// 	// }
-// 	return(1);
+	// }
+	// env[7] = strdup(("HTTP_COOKIE=" + this->cookies));
+	env[8] = NULL;
+	return(1);
+}
+
+// void	Response::ft_free(char **env) {
+// 	for (int i = 0; env[i]; i++) {
+// 		free(env[i]);
+// 	}
+// 	delete[] env;
 // }
 
 std::string Response::toString(long long nb) {
@@ -513,31 +520,44 @@ std::string Response::toString(long long nb) {
 	return (ss.str());
 }
 
-// Void Response::executeCgi(Request req) {
-// 	this->isCGI = true;
-// 	this->start = clock();
-// 	srand(time(NULL));
-// 	this->generatedtPath = "./WWW/CGI" + toString(rand());
-// 	fillEnv(req);
-// 	int fd[2];
-// 	if (pipe[fd] == -1) {
-// 		perror("pipe");
-// 		return ;
-// 	}
-// 	this->pid = fork();
-// 	if (this->pid == -1) 
-// 	perror("fork");
-// 	return ;
-// 	if (this->pid == 0) {
-// 		const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
-// 		close(fd[0]);
-// 		freopen(this->genethis->generatedtPath.c_str(), "w", stdout);
-// 		if (this->method == "GET")
-// 			close(STDIN_FILENO);
-// 		else
-// 			freopen(this->scriptfile,"r", stdin);
-// 		execve(av[0], av, this->env);
-// 		perror("execve");
-// 		exit(127);
-// 	}
-// }
+void Response::executeCgi(Request req) {
+	this->isCGI = true;
+	this->start = clock();
+	srand(time(NULL));
+	this->generatedtPath = "./WWW/CGI/" + toString(rand());
+	fillEnv(req);
+	int fd[2];
+	if (pipe(fd) == -1) {
+		perror("pipe");
+		return ;
+	}
+	this->pid = fork();
+	if (this->pid == -1) {
+		perror("fork");
+		return ;
+	}
+	// exit(55);
+	if (this->pid == 0) {
+		const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
+		std::cout << "THis CGI path : " << this->pathCgi << std::endl;
+		std::cout << "THis path : " << this->path << std::endl;
+		// exit(2);
+		close(fd[0]);
+		std::cout << "THis generated path : " << this->generatedtPath << std::endl;
+		freopen(this->generatedtPath.c_str(), "w", stdout);
+		if (this->method == "GET")
+			close(STDIN_FILENO);
+		else {
+			freopen(this->scriptfile.c_str(),"r", stdin);
+			std::cout << "THis file name : " << this->scriptfile << std::endl;
+		}
+		execve(av[0], (char* const*)av, this->env);
+		perror("execve");
+		exit(127);
+	}
+	else
+		waitpid(this->pid, &status, WNOHANG);
+	// pid_t pidWait = waitpid(this->pid, &status, WNOHANG);
+	// this->end = clock();
+	// double processTime = (this->end - this->start) / CLOCKS_PER_SEC;
+}

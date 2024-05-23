@@ -76,13 +76,11 @@ class Request
         bool                                _bodyParsed;
         bool                                _headersParsed;
         std::string                         _file;
-        std::string                         _partialChunkSize;
-        std::string                         _partialChunkData;
         bool                                _chunckState;
+
         std::string                         _rootPath;
         bool                                _checkingRequestInfo;
         std::vector<std::string>            _index;
-        bool                                _chunkCRLF;
     public:
         Location                            _location;
         int                                 _status;
@@ -134,8 +132,6 @@ class Request
                 extension = ".zip";
             else if (contentType == "video/webm")
                 extension = ".webm";
-            else if (contentType == "video/mp4")
-                extension = ".mp4";
             std::cout << "extension: " << extension << std::endl;
 
             return extension;

@@ -33,6 +33,8 @@ class webServ{
 		std::vector<FdsInfo> _fdsinfo;
 		int client_socket;
 		std::map<int, Server*> fd_to_server;
+		std::map<int, Server*> fd_to_response;
+		std::map<int, Server*> fd_to_request;
 	public:
 		webServ(std::vector<Server> servers);
 		void setUpServer();

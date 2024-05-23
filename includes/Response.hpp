@@ -15,6 +15,7 @@
 #include <ctime>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <cstdio> 
 # define BUFFERSIZE 1024
 
 class Response {
@@ -45,7 +46,7 @@ class Response {
 		int count;
 		double start;
 		double end;
-		int	pid;
+		pid_t	pid;
 	public:
 		bool finish;
 		Response();
@@ -62,12 +63,15 @@ class Response {
 		void postResponse(Request &request, Location &location);
 		void setHeader();
 		void chunk(Request& req);
-		int checkPath();
+		int checkPath(Request req);
 		bool directoryHasFiles(const std::string& directoryPath);
 		bool directoryHasIndexFile(const std::string& directoryPath);
 		void listDir();
 		void checkIndexFiles();
 		std::string toString(long long nb);
 		int	fillEnv(Request req);
+		void	ft_free(char **env);
+		void executeCgi(Request req);
+		bool	getExt();
 };
 #endif
