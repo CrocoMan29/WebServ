@@ -1,6 +1,6 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0){
+Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false){
 }
 
 Request::~Request(){
@@ -296,7 +296,7 @@ void Request::readingBody(const char *body, size_t readBytes){
     }
     else if(_requestInfos.find("content-length") != _requestInfos.end()){
         if(_bodySize + readBytes >= stoi(_requestInfos["content-length"])){
-            _body.insert(_body.end(), body, body + _requestInfos["content-length"].size() - _body.size());
+            _body.insert(_body.end(), body, body + stoi(_requestInfos["content-length"]) - _bodySize);
             _bodySize = stoi(_requestInfos["content-length"]);
             _bodyParsed = true;
         }
@@ -310,38 +310,51 @@ void Request::readingBody(const char *body, size_t readBytes){
     }
 }
 
+
 void Request::setChunkedBody(const char *body, size_t readBytes) {
     std::string strBody(body, readBytes);
     size_t pos = 0;
 
-    std::cout << "------------------- chunks ----------------------" << std::endl;
     while (true) {
-        if (_chunkSize == 0) {
+        if (_chunkSize == 0 && !_chunkCRLF) {
+            if (!_partialChunkSize.empty()) {
+                strBody = _partialChunkSize + strBody;
+                _partialChunkSize.clear();
+            }
             pos = strBody.find("\r\n");
             if (pos == std::string::npos) {
+                _partialChunkSize.append(strBody);
                 return;
             }
+
+            std::string chunkSizeStr = strBody.substr(0, pos);
             try {
-                _chunkSize = std::stoul(strBody.substr(0, pos), 0, 16);
+                _chunkSize = std::stoul(chunkSizeStr, NULL, 16);
+                std::cout << "Parsed chunk size: " << _chunkSize << " from string: " << chunkSizeStr << std::endl;
             } catch (const std::exception &e) {
-                std::cerr << "Invalid chunk size" << std::endl;
+                std::cerr << "Invalid chunk size: " << chunkSizeStr << " Error: " << e.what() << std::endl;
                 return;
             }
+            _chunkCRLF = true;
             strBody = strBody.substr(pos + 2);
-            pos = 0;
             if (_chunkSize == 0) {
                 _bodyParsed = true;
+                std::cout << "Chunk size 0 detected, marking body as parsed." << std::endl;
                 return;
             }
         }
-        if (_chunkSize > 0) {
+
+        if (_chunkSize > 0 || _chunkCRLF) {
             if (strBody.size() >= _chunkSize + 2) {
                 _body.insert(_body.end(), strBody.begin(), strBody.begin() + _chunkSize);
+                std::cout << "Chunk data added: " << std::string(strBody.begin(), strBody.begin() + _chunkSize) << std::endl;
                 strBody = strBody.substr(_chunkSize + 2);
                 _chunkSize = 0;
+                _chunkCRLF = false;
             } else {
                 _body.insert(_body.end(), strBody.begin(), strBody.end());
                 _chunkSize -= strBody.size();
+                std::cout << "Not enough data for the full chunk, remaining chunk size: " << _chunkSize << std::endl;
                 return;
             }
         }
