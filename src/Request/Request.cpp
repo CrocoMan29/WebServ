@@ -267,6 +267,8 @@ void Request::bodyHandler(){
 
     if(_requestInfos["method"].compare("post") || !_location.upload_enable){
         _bodyParsed = true;
+        if (!_location.upload_enable)
+            _status = FORBIDDEN;
         return;
     }
     if(_file.empty())
@@ -278,6 +280,7 @@ void Request::bodyHandler(){
         ofs.close();
         std::cout << "File uploaded successfully" << std::endl;
     } else {
+        _status = NOTFOUND;
         std::cout << "Error opening file" << std::endl;
         perror("Error");
     }
@@ -340,6 +343,7 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             _chunckState = true;
             if (_chunkSize == 0) {
                 _bodyParsed = true;
+                _status = CREATED;
                 return;
             }
         }
