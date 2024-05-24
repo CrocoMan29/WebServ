@@ -13,6 +13,9 @@
 # include <cstring>
 # include <sys/epoll.h>
 #include <fcntl.h>
+// # include "../includes/Request.hpp"
+// # include "../includes/Response.hpp"
+
 
 
 class Server;
@@ -33,8 +36,8 @@ class webServ{
 		std::vector<FdsInfo> _fdsinfo;
 		int client_socket;
 		std::map<int, Server*> fd_to_server;
-		std::map<int, Server*> fd_to_response;
-		std::map<int, Server*> fd_to_request;
+		// std::map<int, Request> fd_to_request;
+		// std::map<int, Response> fd_to_response;
 	public:
 		webServ(std::vector<Server> servers);
 		void setUpServer();

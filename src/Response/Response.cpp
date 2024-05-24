@@ -104,10 +104,6 @@ bool Response::isRegularFile(const std::string& path) {
 	return (false);
 }
 
-bool Response::validPath(std::string& path, std::string& root) {
-	return (path.find(root) != std::string::npos);
-}
-
 std::string Response::getContentType(std::string& path) {
 
 	this->mimetypes[".html"] = "text/html";
@@ -507,12 +503,12 @@ int		Response::fillEnv(Request req) {
 	return(1);
 }
 
-// void	Response::ft_free(char **env) {
-// 	for (int i = 0; env[i]; i++) {
-// 		free(env[i]);
-// 	}
-// 	delete[] env;
-// }
+void	Response::ft_free(char **env) {
+	for (int i = 0; env[i]; i++) {
+		free(env[i]);
+	}
+	delete[] env;
+}
 
 std::string Response::toString(long long nb) {
 	std::stringstream ss;
@@ -560,4 +556,26 @@ void Response::executeCgi(Request req) {
 	// pid_t pidWait = waitpid(this->pid, &status, WNOHANG);
 	// this->end = clock();
 	// double processTime = (this->end - this->start) / CLOCKS_PER_SEC;
+	// if (pidWait == -1 || pidWait > 0 || processTime > 5) {
+	// 	char buf[1024];
+	// 	std::string str;
+	// 	std::stringstream ss;
+	// 	this->path = this->generatedtPath;
+	// 	this->file.open(this->path.c_str(), ios::in | ios::binary);
+	// 	int status;
+	// 	if (status != 0 || processTime > 5)
+    //     {
+    //         if (status != 0)
+    //             this->status = 500;
+    //         else {
+    //             kill(this->pid, SIGKILL);
+    //             waitpid(pid, 0, 0);
+    //             this->status = 504;
+    //         }
+    //         file.close();
+	// 		ft_free(this->env);
+	// 		remove(this->path.c_str());
+	// 		remove(scriptfile.c_str());
+    //     }
+	// }
 }
