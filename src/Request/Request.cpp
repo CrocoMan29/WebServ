@@ -1,6 +1,6 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(0),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false){
+Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false){
 }
 
 Request::~Request(){
