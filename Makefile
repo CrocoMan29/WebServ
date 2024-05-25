@@ -6,7 +6,7 @@ RM			=	rm -rf
 SRCS		=	main.cpp src/parseConfigFile.cpp src/parseLocation.cpp \
 				src/utils.cpp src/setData.cpp src/setDataLocation.cpp \
 				src/dataValidity.cpp src/multiplexing.cpp src/Request/Request.cpp \
-				src/Response/Response.cpp  #src/Response/Post.cpp 
+				src/Response/Response.cpp
 				
 
 

@@ -1,6 +1,6 @@
 #include "../includes/webServer.hpp"
 #include "../includes/Request.hpp"
-# include "../includes/Response.hpp"
+// # include "../includes/Response.hpp"
 
 
 // std::map<int, Server*> fd_to_server;
@@ -52,7 +52,7 @@ void webServ::acceptConnexion(int epoll_fd){
 
 void webServ::setUpServer() {
 	Request request;
-	Response response;
+	// Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -181,11 +181,11 @@ void webServ::setUpServer() {
 					// request.requestParser(buffer, _serv[i]._locations);
 					// if(!request.getStatus() ){
 						//  server[i].index;
-						response.sendResp(request, events[i].data.fd);
-						if (response.finish == true) {
-							std::cout << "finished-------:" << std::endl;
-							close(events[i].data.fd);
-						}
+						// response.sendResp(request, events[i].data.fd);
+						// if (response.finish == true) {
+						// 	std::cout << "finished-------:" << std::endl;
+						// 	close(events[i].data.fd);
+						// }
 					// }
 				// }
 				// std::cout << "EPOLLOUT: " << i << std::endl;
