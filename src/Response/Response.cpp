@@ -5,6 +5,7 @@ Response::Response() : status(0), socket(0), readed(false), isCGI(false), isErro
     // path = "";
     // method = "";
 	this->count = 0;
+	this->env = NULL;
 // 	this->start = 0;
 // 	this->end = 0;
 }
@@ -338,7 +339,7 @@ int	Response::checkPath(Request req) {
 		}
 	}
 	// else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php")  != std::string::npos))) {
-	else if (getExt() && !this->isCGI) {
+	else if (getExt() ) {
 		std::cout << "CGI----</ " << std::endl;
 		// exit(2);
 		// std::ifstream file;
@@ -346,7 +347,7 @@ int	Response::checkPath(Request req) {
 		std::cout << "CGI PATH = " << this->path << std::endl;
 		this->scriptfile = this->path.substr(4);
 		std::cout << "Script file name: " << this->scriptfile << std::endl;
-		if (file.is_open() && (this->isCGI == false)) { 
+		if (file.is_open() && !this->isCGI) { 
 			std::cout << "cgi file opened->: " << std::endl;
 			file.close();
             if (this->path.rfind(".php") != std::string::npos)
@@ -356,20 +357,22 @@ int	Response::checkPath(Request req) {
 			std::cout << "CGI path:  " << this->pathCgi << std::endl;
 			executeCgi(req);
 			this->isError = true;
+			std::cout << "PATH OPENED BY CGI: " << this->path << std::endl;
+			// exit(2);
 			file.open(this->path, std::ios::binary);
 			this->isCGI = true;
 			// exit(23);
 		}
-		else {
+		else if (!file.is_open() && !this->isCGI){
 			std::cout << "cgi file Not found-------<" << std::endl;
+			// exit(2);
 			this->status = 404;
 			this->path = "./error/error.html";
 			this->isError = true;
 			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
+			// this->isCGI = true;
 			std::cout << "CGI path= " << this->path << std::endl;
 		}
-		// exit(2);
 	}
 	else if (isRegularFile(this->path)) {
 		std::cout << "is Regular file: " << std::endl;
@@ -478,9 +481,18 @@ void	Response::checkIndexFiles() {
 		if (file.is_open()) {
 			this->path = newPath;
 			std::cout << "new path/->>>>>>: " << this->path << std::endl;
-			this->status = 200;
-			this->isError = true;
-			return ;
+			if (getExt()) {
+				file.close();
+				if (this->path.rfind(".php") != std::string::npos)
+					this->pathCgi = "/usr/bin/php-cgi";
+				else
+					this->pathCgi = "/usr/bin/python3";
+			}
+			else {
+				this->status = 200;
+				this->isError = true;
+				return ;
+			}
 		}
 	}
 }
@@ -522,7 +534,7 @@ void Response::executeCgi(Request req) {
 	srand(time(NULL));
 	this->generatedtPath = "./WWW/CGI/" + toString(rand());
 	fillEnv(req);
-	int fd[2];
+	int fd[2]; 	
 	if (pipe(fd) == -1) {
 		perror("pipe");
 		return ;
@@ -532,27 +544,40 @@ void Response::executeCgi(Request req) {
 		perror("fork");
 		return ;
 	}
-	// exit(55);
+	std::cout << "PID " << this->pid << std::endl;
 	if (this->pid == 0) {
+		// exit(55);
 		const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
 		std::cout << "THis CGI path : " << this->pathCgi << std::endl;
 		std::cout << "THis path : " << this->path << std::endl;
-		// exit(2);
 		close(fd[0]);
 		std::cout << "THis generated path : " << this->generatedtPath << std::endl;
-		freopen(this->generatedtPath.c_str(), "w", stdout);
+		std::cout << "THis file name1 : " << this->scriptfile << std::endl;
+		std::cout << "av[0]: " << av[0] << std::endl;
+		// exit(21);
+		freopen(this->generatedtPath.c_str(), "w", stdout);	
+		fclose(stdout);
+		std::cout << "Execve: " << std::endl;
 		if (this->method == "GET")
-			close(STDIN_FILENO);
+			close(STDIN_FILENO);	
 		else {
 			freopen(this->scriptfile.c_str(),"r", stdin);
 			std::cout << "THis file name : " << this->scriptfile << std::endl;
 		}
-		execve(av[0], (char* const*)av, this->env);
-		perror("execve");
-		exit(127);
+		if (execve(av[0], (char* const*)av, this->env) < 0) {
+			perror("execve");
+			exit(127);
+		}
 	}
-	else
-		waitpid(this->pid, &status, WNOHANG);
+	else {
+		std::cout << "Parent process: " << std::endl;
+		std::cout << "ENV: " << this->env << std::endl;
+		// exit(20);
+		int stat;
+		waitpid(this->pid, &stat, WNOHANG);
+		// waitpid(this->pid, &status, WEXITED);
+
+	}
 	// pid_t pidWait = waitpid(this->pid, &status, WNOHANG);
 	// this->end = clock();
 	// double processTime = (this->end - this->start) / CLOCKS_PER_SEC;
