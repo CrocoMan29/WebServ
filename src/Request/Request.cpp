@@ -72,6 +72,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
             }
         }
         bodyHandler();
+        std::cout << "Status : " << _status << std::endl;
     } catch ( ClientError &e) {
         _status = e;
         std::cerr << "Error: " << e << std::endl;
@@ -288,7 +289,7 @@ void Request::bodyHandler(){
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
-    std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
+    std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
     std::cout << "Path: " << path << std::endl;
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
@@ -313,9 +314,9 @@ void Request::readingBody(const char *body, size_t readBytes){
         setChunkedBody(body, readBytes);
     }
     else if(_requestInfos.find("content-length") != _requestInfos.end()){
-        if(_bodySize + readBytes >= stoi(_requestInfos["content-length"])){
-            _body.insert(_body.end(), body, body + stoi(_requestInfos["content-length"]) - _bodySize);
-            _bodySize = stoi(_requestInfos["content-length"]);
+        if(_bodySize + readBytes >= atol(_requestInfos["content-length"].c_str())){
+            _body.insert(_body.end(), body, body + atol(_requestInfos["content-length"].c_str()) - _bodySize);
+            _bodySize = atol(_requestInfos["content-length"].c_str());
             _bodyParsed = true;
         }
         else {
@@ -349,7 +350,7 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             }
             std::string chunkSizeStr = strBody.substr(0, pos);
             try {
-                _chunkSize = std::stoul(chunkSizeStr, NULL, 16);
+                _chunkSize = std::strtoul(chunkSizeStr.c_str(), NULL, 16);
             } catch (const std::exception &e) {
                 std::cerr << "Invalid chunk size: " << chunkSizeStr << " Error: " << e.what() << std::endl;
                 return;
@@ -381,4 +382,21 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             }
         }
     }
+}
+
+void Request::requestCleaner(){
+    _requestInfos.clear();
+    _uriParts.clear();
+    _headers.clear();
+    _body.clear();
+    _bodySize = 0;
+    _chunkSize = 0;
+    _bodyParsed = false;
+    _headersParsed = false;
+    _requestLineParsed = false;
+    _file.clear();
+    _partialChunkSize.clear();
+    _chunckState = false;
+    _checkingRequestInfo = false;
+    _chunkCRLF = false;
 }

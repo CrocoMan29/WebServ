@@ -103,6 +103,7 @@ class Request
         void readingBody(const char* request, size_t readBytes);
         void setChunkedBody(const char *body, size_t readBytes);
         void postChecker();
+        void requestCleaner();
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             
