@@ -213,31 +213,42 @@ void Request::pathInCannonicalForm(){
     std::cout << "Path in cannonical form: " << this->_requestInfos["path"] << std::endl;
 }
 
-void Request::matchingLocation(std::vector<Location> &locations){
-    std::vector<Location>::iterator     lIt;
-    bool                                found = false;
-    std::string                         upper;
+void Request::matchingLocation(std::vector<Location>& locations) {
+    std::string bestMatch;
+    bool found = false;
+    std::string path = _requestInfos["path"];
+    size_t pos = path.find("/");
+    
+    if (pos != std::string::npos)
+        path = path.substr(pos);
+    std::cout << "Path:: " << path << std::endl;
+    for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
+        std::string pattern = it->name;
 
-    for(std::vector<Location>::iterator it = locations.begin();it != locations.end();it++){
-        std::string pattern = (*it).name;
-        if (_requestInfos["path"].length() <  pattern.length())
-            continue ;
-        std::string lower = _requestInfos["path"].substr(0, pattern.length());
-        if (pattern == "/" || (pattern == lower && (_requestInfos["path"][pattern.length()] == '\0' || _requestInfos["path"][pattern.length()] == '/'))) {
-            if (upper.empty()) {
-                upper = lower;
-                this->_location = *it;
-            }
-            else {
-                if (lower.length() > upper.length()) {
-                    upper = lower;
-                    this->_location = *it;
-                }
-            }
+        if (path.length() < pattern.length()) {
+            continue;
+        }
+        std::string lower = path.substr(0, pattern.length());
+        if (lower == pattern) {
+            bestMatch = pattern;
+            this->_location = *it;
+            found = true;
+            break;
         }
     }
-    if (upper.empty())
-        this->_status = NOTFOUND;
+
+    if (!found) {
+        for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
+            if (it->name == "/") {
+                this->_location = *it;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            throw NOTFOUND;
+        }
+    }
 }
 
 void Request::isallowedMethod(){
@@ -267,20 +278,24 @@ void Request::bodyHandler(){
 
     if(_requestInfos["method"].compare("post") || !_location.upload_enable){
         _bodyParsed = true;
-        if (!_location.upload_enable)
-            _status = FORBIDDEN;
+        _body.clear();
+        if (!_location.upload_enable){
+            _bodyParsed = true;
+            throw FORBIDDEN;
+        }
         return;
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path, std::ios_base::app | std::ios::binary);
+    std::cout << "Path: " << path << std::endl;
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
         ofs.close();
         std::cout << "File uploaded successfully" << std::endl;
     } else {
-        _status = NOTFOUND;
+        throw NOTFOUND;
         std::cout << "Error opening file" << std::endl;
         perror("Error");
     }

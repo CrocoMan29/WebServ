@@ -77,7 +77,6 @@ class Request
         bool                                _headersParsed;
         std::string                         _file;
         std::string                         _partialChunkSize;
-        std::string                         _partialChunkData;
         bool                                _chunckState;
         std::string                         _rootPath;
         bool                                _checkingRequestInfo;
@@ -148,7 +147,7 @@ class Request
         }
 
         bool isRequestParsed() const {
-            std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
+            // std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
         std::string getBody() const;

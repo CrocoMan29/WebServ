@@ -136,7 +136,7 @@ void webServ::setUpServer() {
 						close(client_socket);
 					} else {
 						buffer[bytes_received] = '\0';
-						std::cout << "Received: " << buffer << std::endl;
+						// std::cout << "Received: " << buffer << std::endl;
 						// send(client_socket, buffer, strlen(buffer), 0);
 						// Request request;
 						// request.requestParser(buffer);
@@ -155,7 +155,7 @@ void webServ::setUpServer() {
 				std::cout << "request finished: " << request._requestLineParsed << std::endl;
 			}
 			// else if (events[i].events & EPOLLOUT )
-			else if (request._requestLineParsed == true && events[i].events & EPOLLOUT )
+			else if (request.isRequestParsed() && events[i].events & EPOLLOUT )
 			{
 				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
