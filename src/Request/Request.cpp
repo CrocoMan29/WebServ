@@ -68,15 +68,15 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 matchingLocation(locations);
                 isallowedMethod();
                 checkingBadRequests();
-                std::cout << "HERE IS THE PATH : " << _requestInfos["path"] << std::endl;
             }
         }
         bodyHandler();
-        std::cout << "Status : " << _status << std::endl;
     } catch ( ClientError &e) {
         _status = e;
-        std::cerr << "Error: " << e << std::endl;
+    } catch (ServerError &e) {
+        _status = e;
     }
+    std::cout << "Status : " << _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -135,7 +135,7 @@ void Request::RequestLineParser(const std::string& requestLine) {
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
         if (parts[0] == *it) {
             startsWithMethod = true;
-            _requestInfos.insert(std::make_pair("method", toLowercase(*it)));
+            _requestInfos.insert(std::make_pair("method", *it));
             break;
         }
     }
@@ -145,7 +145,7 @@ void Request::RequestLineParser(const std::string& requestLine) {
     for (std::vector<std::string>::const_iterator it = versions.begin(); it != versions.end(); ++it) {
         if (parts[2] == *it) {
             endsWithVersion = true;
-            _requestInfos.insert(std::make_pair("version", toLowercase(*it)));
+            _requestInfos.insert(std::make_pair("version", *it));
             break;
         }
     }
@@ -169,7 +169,7 @@ void Request::checkingBadRequests(){
             throw NOTIMPLEMENTED;
         if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
             throw BADREQUEST;
-        if(!_requestInfos["method"].compare("post") && 
+        if(!_requestInfos["method"].compare("POST") && 
             _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
             _requestInfos.find("content-length") == _requestInfos.end())
                 throw BADREQUEST;
@@ -222,7 +222,6 @@ void Request::matchingLocation(std::vector<Location>& locations) {
     
     if (pos != std::string::npos)
         path = path.substr(pos);
-    std::cout << "Path:: " << path << std::endl;
     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
         std::string pattern = it->name;
 
@@ -277,7 +276,7 @@ std::string randomFileGenerator() {
 
 void Request::bodyHandler(){
 
-    if(_requestInfos["method"].compare("post") || !_location.upload_enable){
+    if(_requestInfos["method"].compare("POST") || !_location.upload_enable){
         _bodyParsed = true;
         _body.clear();
         if (!_location.upload_enable){
@@ -303,7 +302,7 @@ void Request::bodyHandler(){
 }
 
 void Request::postChecker(){
-    if(_requestInfos["method"].compare("post"))
+    if(_requestInfos["method"].compare("POST"))
         return;
     if(_requestInfos.find("content-type") == _requestInfos.end())
         throw BADREQUEST;
