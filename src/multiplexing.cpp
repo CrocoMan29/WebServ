@@ -152,7 +152,7 @@ void webServ::setUpServer() {
 					}
 				
 				std::cout << "EPOLLIN: " << i << std::endl;
-				std::cout << "request finished: " << request._requestLineParsed << std::endl;
+				std::cout << "request finished: " << request.isRequestParsed() << std::endl;
 			}
 			// else if (events[i].events & EPOLLOUT )
 			else if (request.isRequestParsed() && events[i].events & EPOLLOUT )
