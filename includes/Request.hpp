@@ -155,7 +155,6 @@ class Request
             // std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
-        std::string getBody() const;
         std::string getMethod() const {
             return this->_requestInfos.at("method");
         };
