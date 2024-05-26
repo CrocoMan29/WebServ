@@ -68,15 +68,18 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 matchingLocation(locations);
                 isallowedMethod();
                 checkingBadRequests();
-                std::cout << "HERE IS THE PATH : " << _requestInfos["path"] << std::endl;
             }
         }
         bodyHandler();
-        std::cout << "Status : " << _status << std::endl;
     } catch ( ClientError &e) {
         _status = e;
-        std::cerr << "Error: " << e << std::endl;
+    } catch (ServerError &e) {
+        _status = e;
+    } catch (std::exception &e) {
+        _status = INTERNALSERVERERROR;
+        std::cout << e.what() << std::endl;
     }
+    std::cout << "Status : " << _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -135,17 +138,17 @@ void Request::RequestLineParser(const std::string& requestLine) {
     for (std::vector<std::string>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
         if (parts[0] == *it) {
             startsWithMethod = true;
-            _requestInfos.insert(std::make_pair("method", toLowercase(*it)));
+            _requestInfos.insert(std::make_pair("method", *it));
             break;
         }
     }
     if (!startsWithMethod)
-        throw BADREQUEST;
+        throw METHODNOTALLOWED;
     bool endsWithVersion = false;
     for (std::vector<std::string>::const_iterator it = versions.begin(); it != versions.end(); ++it) {
         if (parts[2] == *it) {
             endsWithVersion = true;
-            _requestInfos.insert(std::make_pair("version", toLowercase(*it)));
+            _requestInfos.insert(std::make_pair("version", *it));
             break;
         }
     }
@@ -169,12 +172,13 @@ void Request::checkingBadRequests(){
             throw NOTIMPLEMENTED;
         if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
             throw BADREQUEST;
-        if(!_requestInfos["method"].compare("post") && 
+        if(!_requestInfos["method"].compare("POST") && 
             _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
             _requestInfos.find("content-length") == _requestInfos.end())
                 throw BADREQUEST;
         if(_requestInfos["path"].length() >= 2048)
             throw REQUESTURITOOLONG;
+        postChecker();
         _checkingRequestInfo = true;
     }
 }
@@ -192,7 +196,7 @@ void Request::pathInCannonicalForm(){
         std::string stoken(token);
 
         if(stoken== ".") {
-            // do nothing 
+            // chill do nothing 
         } else if(stoken== "..") {
             if(_uriParts.size() > 1){
                 _uriParts.pop_back();
@@ -222,7 +226,6 @@ void Request::matchingLocation(std::vector<Location>& locations) {
     
     if (pos != std::string::npos)
         path = path.substr(pos);
-    std::cout << "Path:: " << path << std::endl;
     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
         std::string pattern = it->name;
 
@@ -277,7 +280,7 @@ std::string randomFileGenerator() {
 
 void Request::bodyHandler(){
 
-    if(_requestInfos["method"].compare("post") || !_location.upload_enable){
+    if(_requestInfos["method"].compare("POST") || !_location.upload_enable){
         _bodyParsed = true;
         _body.clear();
         if (!_location.upload_enable){
@@ -303,7 +306,7 @@ void Request::bodyHandler(){
 }
 
 void Request::postChecker(){
-    if(_requestInfos["method"].compare("post"))
+    if(_requestInfos["method"].compare("POST"))
         return;
     if(_requestInfos.find("content-type") == _requestInfos.end())
         throw BADREQUEST;
@@ -349,12 +352,9 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
                 return;
             }
             std::string chunkSizeStr = strBody.substr(0, pos);
-            try {
-                _chunkSize = std::strtoul(chunkSizeStr.c_str(), NULL, 16);
-            } catch (const std::exception &e) {
-                std::cerr << "Invalid chunk size: " << chunkSizeStr << " Error: " << e.what() << std::endl;
-                return;
-            }
+            if(chunkSizeStr.find_first_not_of("0123456789abcdef") != std::string::npos || chunkSizeStr.empty())
+                throw std::runtime_error("Invalid Chunk Size");    
+            _chunkSize = std::strtoul(chunkSizeStr.c_str(), NULL, 16);
             strBody = strBody.substr(pos + 2);
             _chunckState = true;
             if (_chunkSize == 0) {

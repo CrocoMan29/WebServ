@@ -82,10 +82,10 @@ class Request
         bool                                _checkingRequestInfo;
         std::vector<std::string>            _index;
         bool                                _chunkCRLF;
-    public:
         Location                            _location;
         int                                 _status;
         bool                                _requestLineParsed;
+    public:
         Request();
         ~Request();
         std::map<std::string , std::string> getRequestInfo() const;
@@ -104,6 +104,12 @@ class Request
         void setChunkedBody(const char *body, size_t readBytes);
         void postChecker();
         void requestCleaner();
+        Location getLocation() const {
+            return _location;
+        };
+        int getStatus() const {
+            return _status;
+        };
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             
@@ -136,8 +142,6 @@ class Request
                 extension = ".webm";
             else if (contentType == "video/mp4")
                 extension = ".mp4";
-            std::cout << "extension: " << extension << std::endl;
-
             return extension;
         };
         std::string getHeader() const {
@@ -151,7 +155,6 @@ class Request
             // std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
-        std::string getBody() const;
         std::string getMethod() const {
             return this->_requestInfos.at("method");
         };

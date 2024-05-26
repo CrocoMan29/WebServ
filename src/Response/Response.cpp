@@ -25,11 +25,11 @@ void Response::sendResp(Request req, int socket)
 		this->method = req.getRequestInfo()["method"];
 		this->querry = req.getRequestInfo()["query"];
 		// this->cookies = req.getRequestInfo()["cookies"];
-		if (!req._status)
+		if (!req.getStatus())
 			// this->status = req._status;
 			this->status = 200;
 		// this->readed = false;
-		this->valueOfAutoIndex = req._location.autoIndex;
+		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
 		for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			std::cout << "index File:  " << *it << std::endl;
