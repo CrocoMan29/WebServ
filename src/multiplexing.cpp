@@ -141,17 +141,17 @@ void webServ::setUpServer() {
 						// Request request;
 						// request.requestParser(buffer);
 						// Request request;
-						// if (_serv[i].requestMap.find(client_socket) == _serv[i].requestMap.end()) {
-						// 	Request newRequest;
-						// 	newRequest.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
-						// 	_serv[i].requestMap[client_socket] = newRequest;
-						// 	// Response newResponse;
-						// 	// _serv[i].responseMap[client_socket] = newResponse;
-						// } else {
-						// 	_serv[i].requestMap[client_socket].requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
-						// 	// _serv[i].responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
-						// }
-						request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
+						if (_serv[i].requestMap.find(client_socket) == _serv[i].requestMap.end()) {
+							Request newRequest;
+							newRequest.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
+							_serv[i].requestMap[client_socket] = newRequest;
+							// Response newResponse;
+							// _serv[i].responseMap[client_socket] = newResponse;
+						} else {
+							_serv[i].requestMap[client_socket].requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
+							// _serv[i].responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
+						}
+						// request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
 						std::cout << "Received: " << buffer << std::endl;
 						// if(!request.getStatus()){
 							// Response response;
