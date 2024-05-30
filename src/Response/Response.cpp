@@ -61,30 +61,30 @@ void Response::sendResp(Request req, int socket)
 	}
 }
 
-// Response::Response(const Response& copy) {
-//     this->type = copy.type;
-//     this->header = copy.header;
-//     this->path = copy.path;
-//     this->chunkSize = copy.chunkSize;
-//     this->method = copy.method;
-//     this->status = copy.status;
-//     this->socket = copy.socket;
-//     this->readed = copy.readed;
-// }
+Response::Response(const Response& copy) {
+    this->type = copy.type;
+    this->header = copy.header;
+    this->path = copy.path;
+    this->chunkSize = copy.chunkSize;
+    this->method = copy.method;
+    this->status = copy.status;
+    this->socket = copy.socket;
+    this->readed = copy.readed;
+}
 
-// Response& Response::operator=(const Response& rhs) {
-//     if (this != &rhs) {
-//         this->type = rhs.type;
-//         this->header = rhs.header;
-//         this->path = rhs.path;
-//         this->chunkSize = rhs.chunkSize;
-//         this->method = rhs.method;
-//         this->status = rhs.status;
-//         this->socket = rhs.socket;
-//         this->readed = rhs.readed;
-//     }   
-//     return (*this);
-// }
+Response& Response::operator=(const Response& rhs) {
+    if (this != &rhs) {
+        this->type = rhs.type;
+        this->header = rhs.header;
+        this->path = rhs.path;
+        this->chunkSize = rhs.chunkSize;
+        this->method = rhs.method;
+        this->status = rhs.status;
+        this->socket = rhs.socket;
+        this->readed = rhs.readed;
+    }   
+    return (*this);
+}
 
 
 Response::~Response() {

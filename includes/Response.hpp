@@ -18,6 +18,8 @@
 #include <cstdio> 
 # define BUFFERSIZE 1024
 
+
+
 class Response {
 	private:
 		std::map<int, std::string> code;
@@ -52,8 +54,8 @@ class Response {
 		Response();
 		Response(Request req, int socket);
 		void sendResp(Request req, int socket);
-		// Response(const Response& copy);
-		// Response& operator=(const Response& rhs);
+		Response(const Response& copy);
+		Response& operator=(const Response& rhs);
 		~Response();
 		std::string	getStatus(int code);
 		std::string getContentType(std::string& path);
