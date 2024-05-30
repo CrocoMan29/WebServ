@@ -91,15 +91,16 @@ class Request
     public:
         Request();
         ~Request();
+        Request(std::string root, std::vector<std::string> index);
         Request(const Request &copy);
         Request &operator=(const Request &rhs);
         std::map<std::string , std::string> getRequestInfo() const;
         void RequestLineParser(const std::string& requestLine);
-        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes, std::string root, std::vector<std::string> index);
+        void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes);
         void collectData();
         void collector(std::string &request);
         void checkingBadRequests();
-        void splitingHeaderBody(const char* request, size_t readBytes, std::string root);
+        void splitingHeaderBody(const char* request, size_t readBytes);
         void pathInCannonicalForm();
         void matchingLocation(std::vector<Location> &locations);
         void isallowedMethod();

@@ -6,6 +6,10 @@ Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_reques
 Request::~Request(){
 }
 
+Request::Request(std::string root, std::vector<std::string> index):_rootPath(root), _index(index), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+}
+
+
 Request &Request::operator=(const Request &rhs){
     if(this != &rhs){
         _requestInfos = rhs._requestInfos;
@@ -85,16 +89,14 @@ void Request::collector(std::string &token){
     }
 }
 
-void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes , std::string root, std::vector<std::string> index){
+void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
-        splitingHeaderBody(request, readBytes, root);
+        splitingHeaderBody(request, readBytes);
         if(_headersParsed) {
             if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
-                _index = index;
                 pathInCannonicalForm();
                 matchingLocation(locations);
                 isallowedMethod();
-                std::cout << "Here :" << std::endl;
                 checkingBadRequests();
             }
         }
@@ -114,7 +116,7 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
     return _requestInfos;
 }
 
-void Request::splitingHeaderBody(const char *request, size_t readBytes, std::string rootPath){
+void Request::splitingHeaderBody(const char *request, size_t readBytes){
     size_t it;
 
     _body.clear();
@@ -125,7 +127,6 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes, std::str
         if ((it = std::string(request).find("\r\n\r\n")) != std::string::npos){
             _headers = std::string(request).substr(0, it);
             collectData();
-            _rootPath = rootPath;
             _headersParsed = true;
             if(readBytes - it - 4 <= 0)
                 _bodyParsed = true;
@@ -140,8 +141,8 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes, std::str
 
 void Request::RequestLineParser(const std::string& requestLine) {
     
-    // if(_requestLineParsed)
-    //     return;
+    if(_requestLineParsed)
+        return;
     std::vector<std::string> methods;
     methods.push_back("GET");
     methods.push_back("POST");
@@ -262,7 +263,7 @@ void Request::matchingLocation(std::vector<Location>& locations) {
         path = path.substr(pos);
     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
         std::string pattern = it->name;
-
+        std::cout << "Pattern: " << pattern << std::endl;  
         if (path.length() < pattern.length()) {
             continue;
         }
