@@ -88,6 +88,8 @@ class Request
     public:
         Request();
         ~Request();
+        Request(const Request &copy);
+        Request &operator=(const Request &rhs);
         std::map<std::string , std::string> getRequestInfo() const;
         void RequestLineParser(const std::string& requestLine);
         void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes, std::string root, std::vector<std::string> index);
@@ -152,11 +154,19 @@ class Request
         }
 
         bool isRequestParsed() const {
-            // std::cout << "Request parsed: " << _headersParsed << _bodyParsed << _requestLineParsed << std::endl;
             return _headersParsed && _bodyParsed && _requestLineParsed;
         };
         std::string getMethod() const {
             return this->_requestInfos.at("method");
+        };
+        std::string getPath() const {
+            return this->_requestInfos.at("path");
+        };
+        std::string getVersion() const {
+            return this->_requestInfos.at("version");
+        };
+        void setStatusCode(int status) {
+            _status = status;
         };
 };
 
