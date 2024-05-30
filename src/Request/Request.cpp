@@ -1,6 +1,6 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false){
+Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }
 
 Request::~Request(){
@@ -156,11 +156,8 @@ void Request::RequestLineParser(const std::string& requestLine) {
 
     std::istringstream iss(requestLine.c_str());
     std::vector<std::string> parts;
-    if (parts.size() == 2 && requestLine.length() == 1024){
-        
-    }
-    
     std::string part;
+   
     while (std::getline(iss, part, ' ')) {
         parts.push_back(part);
     }
@@ -277,7 +274,6 @@ void Request::matchingLocation(std::vector<Location>& locations) {
             break;
         }
     }
-
     if (!found) {
         for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
             if (it->name == "/") {
@@ -290,6 +286,14 @@ void Request::matchingLocation(std::vector<Location>& locations) {
             throw NOTFOUND;
         }
     }
+    if(!_location.root.empty())
+        _rootPath = _location.root;
+    for (std::vector<std::string>::iterator it = _location.allowMethods.begin(); it != _location.allowMethods.end(); ++it) {
+        if (_requestInfos["method"].compare(*it) == 0) {
+            return;
+        }
+    }
+    throw METHODNOTALLOWED;
 }
 
 void Request::isallowedMethod(){

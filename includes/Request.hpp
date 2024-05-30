@@ -87,6 +87,7 @@ class Request
         Location                            _location;
         int                                 _status;
         bool                                _requestLineParsed;
+        bool                                _isPathSet;
     public:
         Request();
         ~Request();
