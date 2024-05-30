@@ -141,16 +141,17 @@ void webServ::setUpServer() {
 						// Request request;
 						// request.requestParser(buffer);
 						// Request request;
-						if (_serv[i].requestMap.find(client_socket) == _serv[i].requestMap.end()) {
-							Request newRequest;
-							newRequest.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
-							_serv[i].requestMap[client_socket] = newRequest;
-							Response newResponse;
-							_serv[i].responseMap[client_socket] = newResponse;
-						} else {
-							_serv[i].requestMap[client_socket].requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
-							_serv[i].responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
-						}
+						// if (_serv[i].requestMap.find(client_socket) == _serv[i].requestMap.end()) {
+						// 	Request newRequest;
+						// 	newRequest.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
+						// 	_serv[i].requestMap[client_socket] = newRequest;
+						// 	// Response newResponse;
+						// 	// _serv[i].responseMap[client_socket] = newResponse;
+						// } else {
+						// 	_serv[i].requestMap[client_socket].requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
+						// 	// _serv[i].responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
+						// }
+						request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
 						std::cout << "Received: " << buffer << std::endl;
 						// if(!request.getStatus()){
 							// Response response;
@@ -200,15 +201,15 @@ void webServ::setUpServer() {
 				// }
 				// std::cout << "EPOLLOUT: " << i << std::endl;
 			}
-			else if (event[i].event & EPOLLERR)
-			{
-				std::cout << "epollerr work as expected" std::endl;
-				close(events[i].data.fd);
-				epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-				fd_to_server.erase(events[i].data.fd);
-				server->requestMap.erase(events[i].data.fd);
-				server->responseMap.erase(events[i].data.fd);
-			}
+			// else if (events[i].events & EPOLLERR)
+			// {
+			// 	std::cout << "epollerr work as expected" << std::endl;
+			// 	close(events[i].data.fd);
+			// 	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+			// 	fd_to_server.erase(events[i].data.fd);
+			// 	server->requestMap.erase(events[i].data.fd);
+			// 	// server->responseMap.erase(events[i].data.fd);
+			// }
 		}
 	}
 	// std::cout << "connexion accepted" << std::endl;

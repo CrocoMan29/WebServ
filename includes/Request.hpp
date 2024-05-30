@@ -10,9 +10,11 @@
 # include <string>
 # include <time.h>
 # include <sstream>
-# include "./parseConfigFile.hpp"
+// # include "parseConfigFile.hpp"
 # include "./webServer.hpp"
 # include "./parseConfigFile.hpp"
+
+// class Location;
 
 enum ClientError{
     BADREQUEST = 400,
