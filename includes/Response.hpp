@@ -72,5 +72,6 @@ class Response {
 		void	ft_free(char **env);
 		void executeCgi(Request req);
 		bool	getExt();
+		void Delete(Request &req, const std::string &path);
 };
 #endif

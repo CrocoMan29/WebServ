@@ -6,6 +6,33 @@ Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_reques
 Request::~Request(){
 }
 
+Request &Request::operator=(const Request &rhs){
+    if(this != &rhs){
+        _requestInfos = rhs._requestInfos;
+        _uriParts = rhs._uriParts;
+        _headers = rhs._headers;
+        _body = rhs._body;
+        _bodySize = rhs._bodySize;
+        _chunkSize = rhs._chunkSize;
+        _bodyParsed = rhs._bodyParsed;
+        _headersParsed = rhs._headersParsed;
+        _file = rhs._file;
+        _partialChunkSize = rhs._partialChunkSize;
+        _chunckState = rhs._chunckState;
+        _rootPath = rhs._rootPath;
+        _checkingRequestInfo = rhs._checkingRequestInfo;
+        _index = rhs._index;
+        _chunkCRLF = rhs._chunkCRLF;
+        _location = rhs._location;
+        _status = rhs._status;
+        _requestLineParsed = rhs._requestLineParsed;
+    }
+    return *this;
+}
+
+Request::Request(const Request &copy){
+    *this = copy;
+}
 std::string toLowercase(std::string str) {
     std::string newStr(str);
     for (size_t i = 0; i < str.length(); ++i)
@@ -67,6 +94,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 pathInCannonicalForm();
                 matchingLocation(locations);
                 isallowedMethod();
+                std::cout << "Here :" << std::endl;
                 checkingBadRequests();
             }
         }
@@ -111,8 +139,9 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes, std::str
 }
 
 void Request::RequestLineParser(const std::string& requestLine) {
-    if(_requestLineParsed)
-        return;
+    
+    // if(_requestLineParsed)
+    //     return;
     std::vector<std::string> methods;
     methods.push_back("GET");
     methods.push_back("POST");
@@ -127,6 +156,10 @@ void Request::RequestLineParser(const std::string& requestLine) {
 
     std::istringstream iss(requestLine.c_str());
     std::vector<std::string> parts;
+    if (parts.size() == 2 && requestLine.length() == 1024){
+        
+    }
+    
     std::string part;
     while (std::getline(iss, part, ' ')) {
         parts.push_back(part);
@@ -167,17 +200,21 @@ void isValidUri(std::string uri){
 void Request::checkingBadRequests(){
     if (_headersParsed == true)
     {
+        std::cout << "Here :" << std::endl;
         std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
+        if(_requestInfos["path"].length() >= 2048){
+            throw REQUESTURITOOLONG;
+        }
         if(it != _requestInfos.end() && it->second.compare("chunked"))
             throw NOTIMPLEMENTED;
+        if(_requestInfos.find("host") == _requestInfos.end())
+            throw BADREQUEST;
         if(_requestInfos["version"].compare("HTTP/1.1") && _requestInfos.find("host") == _requestInfos.end())
             throw BADREQUEST;
         if(!_requestInfos["method"].compare("POST") && 
             _requestInfos.find("transfer-encoding") == _requestInfos.end() &&
             _requestInfos.find("content-length") == _requestInfos.end())
                 throw BADREQUEST;
-        if(_requestInfos["path"].length() >= 2048)
-            throw REQUESTURITOOLONG;
         postChecker();
         _checkingRequestInfo = true;
     }

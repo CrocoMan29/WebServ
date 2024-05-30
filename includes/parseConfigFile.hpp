@@ -8,7 +8,11 @@
 #include <algorithm>
 #include <string.h>
 #include <netinet/in.h>
+#include "Request.hpp"
+#include "Response.hpp"
 
+class Request;
+class Response;
 class ErrorPage{
 	public:
 		int status_code;
@@ -57,6 +61,8 @@ class Server
 		std::vector<int> dup_port;
 		std::vector<Location> _locations;
 		std::vector<ErrorPage>error_page;
+		std::map<int, Request> requestMap;
+		std::map<int, Response> responseMap;
 
 		int _port;
         int socket_fd;
