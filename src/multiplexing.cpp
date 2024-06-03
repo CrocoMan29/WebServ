@@ -146,7 +146,7 @@ void webServ::setUpServer() {
 						// request.requestParser(buffer);
 						// Request request;
 						if (server->requestMap.find(client_socket) == server->requestMap.end()) {
-							server->requestMap.insert(std::pair<int, Request>(client_socket, Request(server->rootPath, server->index)));
+							server->requestMap.insert(std::pair<int, Request>(client_socket, Request(server->rootPath, server->index, server->client_max_body_size)));
 							server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
 							
 							// Response newResponse;
