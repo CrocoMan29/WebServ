@@ -1,12 +1,12 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request():_status(200),_headersParsed(false),_bodyParsed(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }
 
 Request::~Request(){
 }
 
-Request::Request(std::string root, std::vector<std::string> index):_rootPath(root), _index(index), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }
 
 
@@ -30,6 +30,7 @@ Request &Request::operator=(const Request &rhs){
         _location = rhs._location;
         _status = rhs._status;
         _requestLineParsed = rhs._requestLineParsed;
+        _clientMaxBodySize = rhs._clientMaxBodySize;
     }
     return *this;
 }
@@ -198,7 +199,6 @@ void isValidUri(std::string uri){
 void Request::checkingBadRequests(){
     if (_headersParsed == true)
     {
-        std::cout << "Here :" << std::endl;
         std::map<std::string, std::string>::iterator it = _requestInfos.find("transfer-encoding");
         if(_requestInfos["path"].length() >= 2048){
             throw REQUESTURITOOLONG;
@@ -263,7 +263,6 @@ void Request::matchingLocation(std::vector<Location>& locations) {
         path = path.substr(pos);
     for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); ++it) {
         std::string pattern = it->name;
-        std::cout << "Pattern: " << pattern << std::endl;  
         if (path.length() < pattern.length()) {
             continue;
         }
@@ -352,6 +351,8 @@ void Request::postChecker(){
         return;
     if(_requestInfos.find("content-type") == _requestInfos.end())
         throw BADREQUEST;
+    if(atol(_requestInfos["content-length"].c_str()) > _clientMaxBodySize)
+        throw PAYLOADTOOLARGE;    
 }
 
 void Request::readingBody(const char *body, size_t readBytes){

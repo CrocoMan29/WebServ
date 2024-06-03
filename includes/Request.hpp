@@ -30,7 +30,7 @@ enum ClientError{
     GONE = 410,
     LENGTHREQUIRED = 411,
     PRECONDITIONFAILED = 412,
-    REQUESTENTITYTOOLARGE = 413,
+    PAYLOADTOOLARGE = 413,
     REQUESTURITOOLONG = 414,
     UNSUPORTEDMEDIATYPE = 415,
     REQUESTEDRANGNOTSATISFIABLE = 416,
@@ -88,10 +88,11 @@ class Request
         int                                 _status;
         bool                                _requestLineParsed;
         bool                                _isPathSet;
+        long                                _clientMaxBodySize;
     public:
         Request();
         ~Request();
-        Request(std::string root, std::vector<std::string> index);
+        Request(std::string root, std::vector<std::string> index, long clientMaxBodySize);
         Request(const Request &copy);
         Request &operator=(const Request &rhs);
         std::map<std::string , std::string> getRequestInfo() const;
