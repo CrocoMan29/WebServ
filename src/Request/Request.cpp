@@ -1,4 +1,7 @@
+// #include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
+// #include "../../includes/Request.hpp"
+// #include "../../includes/webServer.hpp"
 
 Request::Request():_status(200),_headersParsed(false),_bodyParsed(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }

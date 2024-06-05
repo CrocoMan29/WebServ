@@ -1,53 +1,21 @@
 #pragma once
 
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <string.h>
 #include <netinet/in.h>
-#include "Location.hpp"
 #include "ErrorPage.hpp"
+#include "Location.hpp"
 #include "Request.hpp"
 // #include "Response.hpp"
 
 class Request;
-// class Response;
-// class ErrorPage{
-// 	public:
-// 		int status_code;
-// 		std::string page;
-// 		std::string path;
-// };
+class Response;
 
-// class Location
-// {
-// 	public:
-// 		std::vector<std::string>r_location;
-// 		std::string name;
-// 		std::string root;
-// 		bool upload_enable;
-// 		std::string upload_store;
-// 		std::vector<std::string>allowMethods;
-// 		bool autoIndex;
-// 		std::string index;
-// 		std::string returnPath;
-// 		std::string fastCgiPass;
-
-// 		void setDataLocation(std::vector<std::string> &info);
-// 		void setUploadEnable(std::vector<std::string> &info);
-// 		void setUploadStore(std::string &info);
-// 		void setRoot(std::vector<std::string> &info);
-// 		void setFastCGIPass(std::vector<std::string> &info);
-// 		void setIndex(std::vector<std::string> &info);
-// 		void setAllowMethodes(std::vector<std::string> &info);
-// 		void setAutoIndex(std::vector<std::string> &info);
-// 		void setReturnPath(std::vector<std::string> &info);
-// 		int	 notTheCode(std::string code);
-// 		void checkfile(std::vector<ErrorPage> &err);
-// };
 class Server 
 {
 	public:
@@ -64,7 +32,7 @@ class Server
 		std::vector<Location> _locations;
 		std::vector<ErrorPage>error_page;
 		std::map<int, Request> requestMap;
-		// std::map<int, Response> responseMap;
+		std::map<int, Response> responseMap;
 
 		int _port;
         int socket_fd;

@@ -1,25 +1,11 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-# include <fstream>
-# include <iostream>
-# include <map>
-# include <vector>
-#include <cstring>
-# include <algorithm>
-# include <sstream>
-#include <sys/stat.h>   
-# include "../includes/Request.hpp"
-# include "./parseConfigFile.hpp"
-#include <dirent.h>
-#include <ctime>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <cstdio> 
 # define BUFFERSIZE 1024
+#include "Request.hpp"
 
 
-
+class Request;
 class Response {
 	private:
 		std::map<int, std::string> code;
@@ -75,5 +61,6 @@ class Response {
 		void executeCgi(Request req);
 		bool	getExt();
 		void Delete(Request &req, const std::string &path);
+		void update(const Request &request);
 };
 #endif

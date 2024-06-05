@@ -149,10 +149,11 @@ void webServ::setUpServer() {
 							server->requestMap.insert(std::pair<int, Request>(client_socket, Request(server->rootPath, server->index, server->client_max_body_size)));
 							server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
 							
-							// Response newResponse;
-							// server->responseMap[client_socket] = newResponse;
+							Response newResponse;
+							server->responseMap[client_socket] = newResponse;
 						} else {
 							server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
+							server->responseMap[client_socket].update(server->requestMap[client_socket]);
 							// server->responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
 						}
 						// request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);

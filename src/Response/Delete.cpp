@@ -1,4 +1,4 @@
-# include "../../includes/Response.hpp"
+# include "../../includes/Request.hpp"
 
 void Response::Delete(Request &req, const std::string &path) {
     struct stat pathStat;

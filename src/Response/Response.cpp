@@ -1,5 +1,5 @@
-# include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
+// # include "../../includes/Response.hpp"
 
 Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false) {
     // path = "";
@@ -603,4 +603,8 @@ void Response::executeCgi(Request req) {
 	// 		remove(scriptfile.c_str());
     //     }
 	// }
+}
+
+void Response::update(const Request &request){
+	this->req = request;
 }
