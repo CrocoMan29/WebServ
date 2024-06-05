@@ -118,6 +118,12 @@ class Request
         void setChunkedBody(const char *body, size_t readBytes);
         void postChecker();
         void requestCleaner();
+        void printAttributes() const {
+        std::cout << "Request Infos: \n";
+            for (const auto &info : _requestInfos) {
+                std::cout << "  " << info.first << ": " << info.second << "\n";
+            }
+        }
         Location getLocation() const {
             return _location;
         };

@@ -335,7 +335,7 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/home/yassinelr/Desktop/WebServ"+_location.upload_store + "/" + _file;
+    std::string path = "/nfs1/homes/ylarhris/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
     std::cout << "Path: " << path << std::endl;
     if (ofs.is_open()) {
