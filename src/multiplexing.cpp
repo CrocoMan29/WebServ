@@ -51,7 +51,6 @@ void webServ::acceptConnexion(int epoll_fd){
 }
 
 void webServ::setUpServer() {
-	// Response response;
 	int noBind = 0;
 	int epoll_fd = epoll_create1(0);
 	struct epoll_event events[MAX_EVENTS];
@@ -93,18 +92,18 @@ void webServ::setUpServer() {
 			{
 				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
 				std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
-				// std::cout << "yassir";
-				// int addlen = sizeof(_serv[i]._address);
-				// std::cout << "addlen = "<< std::endl;
+
 				client_socket = accept(server->socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&_serv[i].addrLen);
 				if (client_socket > 0){
 					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1)
 					{
 						perror("fcntl");
 					}
-					// continue;
 				}
-				// std::cout << "yassssiririririririririirririririri" << std::endl;
+				if (server->requestMap.find(client_socket) == server->requestMap.end()){
+					// goto requsetTreatement;
+
+					std::cout << "key outside :" << client_socket << std::endl;
 				std::cout << "new connection..............." << std::endl;
 				FdsInfo tmp;
 				tmp.event.events =  EPOLLIN | EPOLLOUT;
@@ -113,112 +112,55 @@ void webServ::setUpServer() {
 					continue;
 				_fdsinfo.push_back(tmp);
 				fd_to_server[client_socket] = server;
+					server->requestMap.insert(std::pair<int, Request>(client_socket, Request(server->rootPath, server->index, server->client_max_body_size)));
+					std::cout << "finish" << std::endl;
+				}
+				
 			}
-			if (events[i].events & EPOLLIN)
+			if ((events[i].events & EPOLLIN ))
 			{
 					Server *server = fd_to_server[events[i].data.fd];
-				std::cout << "epoll in event fd : " << events[i].data.fd << ";" << std::endl;
-				std::cout << "epoll in socket fd : " << server->socket_fd << " ]" << std::endl;
-				// else
-					// std::cout << "hellooooooooooooooooooo" << std::endl;
-					client_socket = events[i].data.fd;
+
+				// std::cout << "epoll in event fd : " << events[i].data.fd << ";" << std::endl;
+				// std::cout << "epoll in socket fd : " << server->socket_fd << " ]" << std::endl;
 					char buffer[1024] = {0};
-					int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+					int bytes_received = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
+					std::cout << "key inside :" << server->socket_fd << std::endl;
+					// std::cout << "buffer : "<< buffer << std::endl;
 					if (bytes_received == -1) {
-						// perror("recv");
-					// exit(EXIT_FAILURE);
-						// close(client_socket);
-						// server->requestMap.erase(client_socket);
-						// continue;
+						std::cout << "yassir is here" << std::endl;
+						server->requestMap.erase(server->socket_fd);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
-						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_socket, NULL) < 0) {
+						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
        						perror("epoll_ctl");
 						}
-						close(client_socket);
 						// server->requestMap.erase(client_socket);
-						// continue;
+						close(client_socket);
 					} else {
 						buffer[bytes_received] = '\0';
-						// std::cout << "Received: " << buffer << std::endl;
-						// send(client_socket, buffer, strlen(buffer), 0);
-						// Request request;
-						// request.requestParser(buffer);
-						// Request request;
-						if (server->requestMap.find(client_socket) == server->requestMap.end()) {
-							server->requestMap.insert(std::pair<int, Request>(client_socket, Request(server->rootPath, server->index, server->client_max_body_size)));
-							server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
-							
-							Response newResponse;
-							server->responseMap[client_socket] = newResponse;
-						} else {
-							server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
-							server->responseMap[client_socket].update(server->requestMap[client_socket]);
-							// server->responseMap[client_socket].update(_serv[i].requestMap[client_socket]);
-						}
-						// request.requestParser(buffer, _serv[i]._locations, bytes_received, _serv[i].rootPath, _serv[i].index);
-						// std::cout << "Received: " << buffer << std::endl;
-						// if(!request.getStatus()){
-							// Response response;
-						// 	if (request.getMethod() == "post")
-						// 	{
-						// 		response.postResponse(request, _serv[i]._locations[0]);
-						// 	}
-						// }
+						server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
+						server->requestMap[client_socket].printAttributes();
+						// server->responseMap.insert(std::pair<int, Response>(client_socket, Response()));
 					}
-				
+
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
-			// else if (events[i].events & EPOLLOUT )
 			else if (server->requestMap[client_socket].isRequestParsed() && events[i].events & EPOLLOUT )
 			{
-				// std::cout << "epoll out event fd : " << events[i].data.fd << ";" << std::endl;
-				// std::cout << "epoll out socket fd : " << server->socket_fd << " ]" << std::endl;
-				// Server *server = fd_to_server[events[i].data.fd];
-				// client_socket = events[i].data.fd;
-				// char buffer[1024] = {0};
-				// int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-				// if (bytes_received == -1) {
-				// 	// perror("recv");
-				// 	// exit(EXIT_FAILURE);
-				// } else if (bytes_received == 0) {
-				// 	std::cout << "Connection closed by client." << std::endl;
+				std::cout << "Hello";
+				server->requestMap.erase(client_socket);
+				// server->responseMap[client_socket].sendResp(server->requestMap[client_socket] ,client_socket);
+				// if (server->responseMap[client_socket].finish == true) {
+				// 	std::cout << "finished-------:" << std::endl;
 				// 	close(client_socket);
-				// } else {
-					// std::cout << "Received: " << buffer << std::endl;
-				// 	std::string buffer = "GET / HTTP/1.1\r\n\r\n"; 
-				// 	size_t sended = send(client_socket, buffer.c_str(), strlen(buffer.c_str()), 0);
-				// std::cout << "socketttt ; " << client_socket << std::endl;
-				// std::cout << "bytes send ; " << sended << std::endl;
-					// Request request;
-					// request.requestParser(buffer);
-					// Request request;
-					// request.requestParser(buffer, _serv[i]._locations);
-					// if(!request.getStatus() ){
-						//  server[i].index;
-						// response.sendResp(request, events[i].data.fd);
-						// if (response.finish == true) {
-						// 	std::cout << "finished-------:" << std::endl;
-						// 	close(events[i].data.fd);
-						// }
-					// }
+				// 	// server->responseMap.erase(client_socket);
+				// 	server->responseMap.erase(client_socket);
 				// }
-				// std::cout << "EPOLLOUT: " << i << std::endl;
+
 			}
-			// else if (events[i].events & EPOLLERR)
-			// {
-			// 	std::cout << "epollerr work as expected" << std::endl;
-			// 	close(events[i].data.fd);
-			// 	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-			// 	fd_to_server.erase(events[i].data.fd);
-			// 	server->requestMap.erase(events[i].data.fd);
-			// 	// server->responseMap.erase(events[i].data.fd);
-			// }
 		}
 	}
-	// std::cout << "connexion accepted" << std::endl;
-	// std::cout << _fdsinfo.size() << std::endl;
-	// acceptConnexion(epoll_fd);
 }
 
 int webServ::guard(int n, const char *er){

@@ -25,9 +25,9 @@ void Response::sendResp(Request req, int socket)
 		this->method = req.getRequestInfo()["method"];
 		this->querry = req.getRequestInfo()["query"];
 		// this->cookies = req.getRequestInfo()["cookies"];
-		if (!req.getStatus())
-			// this->status = req._status;
-			this->status = 200;
+		// if (!req.getStatus())
+		this->status = req.getStatus();
+			// this->status = 200;
 		// this->readed = false;
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
