@@ -79,8 +79,9 @@ void Request::extractingQuerryString(){
 
     it = _requestInfos["path"].find("?");
     if(it != std::string::npos){
+        std::string querry = _requestInfos["path"].substr(it + 1);
         _requestInfos["path"] = _requestInfos["path"].substr(0, it);
-        _requestInfos.insert(std::pair<std::string , std::string>("query", _requestInfos["path"].substr(it + 1)));
+        _requestInfos.insert(std::pair<std::string , std::string>("query", querry));
     }
 }
 
