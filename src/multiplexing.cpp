@@ -124,7 +124,7 @@ void webServ::setUpServer() {
 				// std::cout << "client_socket : " << client_socket << std::endl;
 				// std::cout << "epoll in socket fd : " << server->socket_fd << " ]" << std::endl;
 					char buffer[1024] = {0};
-					int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+					int bytes_received = recv(client_socket, buffer, sizeof(buffer) -1, 0);
 					// std::cout << "key inside :" << server->socket_fd << std::endl;
 					// std::cout << "events[i].data.fd : "<< events[i].data.fd << std::endl;
 					// std::cout << "client_socket : "<< client_socket << std::endl;
@@ -143,13 +143,15 @@ void webServ::setUpServer() {
 						}
 						server->requestMap.erase(client_socket);
 						close(client_socket);
-					} else {
+					} else if (bytes_received > 0) {
+						std::cout << "here:   " << bytes_received << std::endl; 
 						buffer[bytes_received] = '\0';
+						// std::cout << buffer << std::endl;
 						server->requestMap[client_socket].requestParser(buffer, server->_locations, bytes_received);
-						// server->requestMap[client_socket].printAttributes();
+						// std::cout << "--hell--" << std::endl;
+						// // server->requestMap[client_socket].printAttributes();
 						server->responseMap.insert(std::pair<int, Response>(client_socket, Response()));
 					}
-
 				std::cout << "EPOLLIN: " << i << std::endl;
 			}
 			else if (server->requestMap[client_socket].isRequestParsed() && events[i].events & EPOLLOUT )
