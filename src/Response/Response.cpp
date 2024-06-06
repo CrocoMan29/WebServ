@@ -1,13 +1,13 @@
-# include "../../includes/Request.hpp"
 // # include "../../includes/Response.hpp"
+# include "../../includes/Request.hpp"
 
 Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false) {
-    // path = "";
-    // method = "";
+	// path = "";
+	// method = "";
 	this->count = 0;
 	this->env = NULL;
-// 	this->start = 0;
-// 	this->end = 0;
+	this->start = 0;
+	this->end = 0;
 }
 
 
@@ -21,28 +21,21 @@ void Response::sendResp(Request req, int socket)
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
 		this->path = req.getRequestInfo()["path"];
-		// this->absolutPath = req.getRequestInfo()["path"];
 		this->method = req.getRequestInfo()["method"];
 		this->querry = req.getRequestInfo()["query"];
 		// this->cookies = req.getRequestInfo()["cookies"];
-		// if (!req.getStatus())
 		this->status = req.getStatus();
-			// this->status = 200;
-		// this->readed = false;
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
 		for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			std::cout << "index File:  " << *it << std::endl;
 		}
-		// vars = true;
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
-		std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
+		// std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
 		std::cout << "QUERRY: " << this->querry << std::endl;
 		// exit(2);
-		// exit(1);
-		// setHeader();
 	}
 	if (checkPath(req)) {
 		std::cout << "checkPath---------========>" << std::endl;
@@ -58,6 +51,7 @@ void Response::sendResp(Request req, int socket)
 			}
 		}
 		chunk(req);
+		// exit(10);
 	}
 }
 
@@ -275,29 +269,31 @@ void    Response::setHeader() {
 	std::cout << "=================================HEADER END================================" << std::endl;
 }
 
-void	Response::chunk(Request& req) {
-	char buf[BUFFERSIZE] = {0};
-	// std::cout << "content-length----->" << std::endl;
-	std::cout << "path: ---->" << this->path << std::endl;
+void	Response::chunk(Request& req) {	
+	char buf[BUFFERSIZE] = {0};	
+	// std::cout << "path: ---->" << this->path << std::endl;
+	// std::cout << "path3: ---->" << this->path << std::endl;
 	file.read(buf, 1023);
-	this->count += file.gcount();
-	std::cout << "size file: " << this->count << std::endl; 
+	// std::cout << "BUFFER: ---->" << buf << std::endl;
+	// this->count += file.gcount();
+	// std::cout << "size file: " << this->count << std::endl; 
+	// std::cout << "Gcout readed : " << file.gcount() << std::endl;
 	if (file.gcount() > 0 && this->readed) {
-		// std::cout << "statuscode: " << this->status << std::endl;
 		std::stringstream ss;
         ss << std::hex << file.gcount();
-		std::cout << "buffer size: " << ss.str() << std::endl;
+		// std::cout << "buffer size: " << ss.str() << std::endl;
 		this->chunkSize = ss.str() + "\r\n";
 		this->chunkSize.append(buf, file.gcount());
         this->chunkSize.append("\r\n", 2);
-		std::cout << "Sockeeeeeeet-->: " << this->socket << std::endl;
-		std::cout << "File: ----->" << this->chunkSize.c_str() << std::endl;
+		// std::cout << "Sockeeeeeeet-->: " << this->socket << std::endl;
+		// std::cout << "File: ----->" << this->chunkSize.c_str() << std::endl;
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
-		std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
+		// std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
+		// exit(55);
 	}
-	else if (file.gcount() == 0 && this->readed) {
-		std::cout << "Gcout========" << file.gcount() << std::endl;
-		// std::cout << "path= " << this->path << std::endl;
+	else if (file.gcount() == 0 && this->readed ) {
+		// std::cout << "Gcout========" << file.gcount() << std::endl;
+		// std::cout << "PATHHHH" << this->path << std::endl;
         write(this->socket, "0\r\n\r\n", 5);
         file.close();
 		this->finish = true;
@@ -338,40 +334,31 @@ int	Response::checkPath(Request req) {
 			}
 		}
 	}
-	// else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php")  != std::string::npos))) {
-	else if (getExt() ) {
+	else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php")  != std::string::npos))) {
+	// else if (getExt() ) {
 		std::cout << "CGI----</ " << std::endl;
-		// exit(2);
-		// std::ifstream file;
-		file.open(this->path.c_str(), std::ios::binary);
-		std::cout << "CGI PATH = " << this->path << std::endl;
-		this->scriptfile = this->path.substr(4);
-		std::cout << "Script file name: " << this->scriptfile << std::endl;
-		if (file.is_open() && !this->isCGI) { 
-			std::cout << "cgi file opened->: " << std::endl;
-			file.close();
-            if (this->path.rfind(".php") != std::string::npos)
-                this->pathCgi = "/usr/bin/php-cgi";
-            else
-                this->pathCgi = "/usr/bin/python3";
-			std::cout << "CGI path:  " << this->pathCgi << std::endl;
-			executeCgi(req);
+		if (this->path.rfind(".php") != std::string::npos)
+			this->pathCgi = "/usr/bin/php-cgi";
+		else
+			this->pathCgi = "/usr/bin/python3";
+		executeCgi(req); 
+		std::cout << "generated path :" << this->generatedtPath << std::endl;
+		this->path = this->generatedtPath;
+		std::cout << "::::> path :" << this->path << std::endl;
+		std::ifstream _file(this->generatedtPath, std::ios::binary);
+		if (_file.good()) {
+			std::cout << "file opened :" << std::endl;
 			this->isError = true;
-			std::cout << "PATH OPENED BY CGI: " << this->path << std::endl;
-			// exit(2);
 			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
-			// exit(23);
+			std::cout << "::::> path2 :" << this->path << std::endl;	
 		}
-		else if (!file.is_open() && !this->isCGI){
-			std::cout << "cgi file Not found-------<" << std::endl;
-			// exit(2);
+		else {
+			std::cout << "not opened :"  << std::endl;
 			this->status = 404;
 			this->path = "./error/error.html";
 			this->isError = true;
 			file.open(this->path, std::ios::binary);
-			// this->isCGI = true;
-			std::cout << "CGI path= " << this->path << std::endl;
+			this->isCGI = true;
 		}
 	}
 	else if (isRegularFile(this->path)) {
@@ -380,6 +367,7 @@ int	Response::checkPath(Request req) {
 		if (!this->readed) {
 			std::cout << "Here-------------->check if open <----------Here" << std::endl;
 			file.open(this->path, std::ios::binary);
+			// exit(99);
 			if (!file.good()) {
 				std::cout << "Here--------------> <----------Here" << std::endl;
 				// if (access(this->path.c_str(), R_OK) != -1) {
@@ -392,6 +380,7 @@ int	Response::checkPath(Request req) {
 				}
 				else {
 					std::cout << "file not found" << std::endl;
+					// exit(1);
 					this->status = 404;
 					this->path = "./error/error.html";
 				}
@@ -399,7 +388,7 @@ int	Response::checkPath(Request req) {
 				this->isError = true;
 			}
 			else {
-				// std::cout << "Here--------------> <----------Here" << std::endl;
+				std::cout << "Here--------------> <----------Here" << std::endl;
 				// exit(15);
 				this->readed = true;
 			}
@@ -408,6 +397,7 @@ int	Response::checkPath(Request req) {
 	}
 	else {
 		std::cout << "Not found-------<" << std::endl;
+		std::cout << "THIS PATH:  " << this->path << std::endl;
 		this->status = 404;
 		this->path = "./error/error.html";
 		this->isError = true;
@@ -421,33 +411,33 @@ bool	Response::getExt() {
 	return (false);
 }
 bool Response::directoryHasFiles(const std::string& directoryPath) {
-    DIR* dir = opendir(directoryPath.c_str());
-    if (dir == NULL) 
-        return false;
-    std::vector<std::string> files;
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-        // if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            files.push_back(entry->d_name);
-        // }
-    }
-    closedir(dir);
-    return (!files.empty());
+	DIR* dir = opendir(directoryPath.c_str());
+	if (dir == NULL) 
+		return false;
+	std::vector<std::string> files;
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		// if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+			files.push_back(entry->d_name);
+		// }
+	}
+	closedir(dir);
+	return (!files.empty());
 }
 
 bool Response::directoryHasIndexFile(const std::string& directoryPath) {
-    DIR* dir = opendir(directoryPath.c_str());
-    if (dir == NULL)
-        return (false);
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-        // if (strcmp(entry->d_name, "index.html") == 0 || strcmp(entry->d_name, "index.htm") == 0) {
-            // closedir(dir);
-            return (true);
-        // }
-    }
-    closedir(dir);
-    return (false);
+	DIR* dir = opendir(directoryPath.c_str());
+	if (dir == NULL)
+		return (false);
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		// if (strcmp(entry->d_name, "index.html") == 0 || strcmp(entry->d_name, "index.htm") == 0) {
+			// closedir(dir);
+			return (true);
+		// }
+	}
+	closedir(dir);
+	return (false);
 }
 
 void	Response::listDir() {
@@ -464,12 +454,12 @@ void	Response::listDir() {
 		}
 		closedir(dir);
 		std::stringstream ss;
-        setHeader();
-        ss << std::hex << body.length();
-        this->body += ss.str() + "\r\n";
-        this->body += body + "\r\n";
-        this->body += "0\r\n\r\n";
-        write(this->socket, this->body.c_str(),  this->body.length());
+		setHeader();
+		ss << std::hex << body.length();
+		this->body += ss.str() + "\r\n";
+		this->body += body + "\r\n";
+		this->body += "0\r\n\r\n";
+		write(this->socket, this->body.c_str(),  this->body.length());
 	}
 }
 
@@ -481,23 +471,23 @@ void	Response::checkIndexFiles() {
 		if (file.is_open()) {
 			this->path = newPath;
 			std::cout << "new path/->>>>>>: " << this->path << std::endl;
-			if (getExt()) {
-				file.close();
-				if (this->path.rfind(".php") != std::string::npos)
-					this->pathCgi = "/usr/bin/php-cgi";
-				else
-					this->pathCgi = "/usr/bin/python3";
-			}
-			else {
+			// if (getExt()) {
+			// 	file.close();
+			// 	if (this->path.rfind(".php") != std::string::npos)
+			// 		this->pathCgi = "/usr/bin/php-cgi";
+			// 	else
+			// 		this->pathCgi = "/usr/bin/python3";
+			// }
+			// else {
 				this->status = 200;
 				this->isError = true;
 				return ;
-			}
+			// }
 		}
 	}
 }
 
-int		Response::fillEnv(Request req) {
+int		Response::fillEnv() {
 	this->env = new char* [9];
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	// env[1] = strdup(("QUERY_STRING=" + this->querry));
@@ -529,58 +519,66 @@ std::string Response::toString(long long nb) {
 }
 
 void Response::executeCgi(Request req) {
-	this->isCGI = true;
-	this->start = clock();
-	srand(time(NULL));
-	this->generatedtPath = "./WWW/CGI/" + toString(rand());
-	fillEnv(req);
-	int fd[2]; 	
-	if (pipe(fd) == -1) {
-		perror("pipe");
-		return ;
-	}
-	this->pid = fork();
-	if (this->pid == -1) {
-		perror("fork");
-		return ;
-	}
-	std::cout << "PID " << this->pid << std::endl;
-	if (this->pid == 0) {
-		// exit(55);
-		const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
-		std::cout << "THis CGI path : " << this->pathCgi << std::endl;
-		std::cout << "THis path : " << this->path << std::endl;
-		close(fd[0]);
-		std::cout << "THis generated path : " << this->generatedtPath << std::endl;
-		std::cout << "THis file name1 : " << this->scriptfile << std::endl;
-		std::cout << "av[0]: " << av[0] << std::endl;
-		// exit(21);
-		freopen(this->generatedtPath.c_str(), "w", stdout);	
-		fclose(stdout);
-		std::cout << "Execve: " << std::endl;
-		if (this->method == "GET")
-			close(STDIN_FILENO);	
-		else {
-			freopen(this->scriptfile.c_str(),"r", stdin);
-			std::cout << "THis file name : " << this->scriptfile << std::endl;
+	if (!this->isCGI) {
+		this->isCGI = true;
+		this->start = clock();
+		srand(time(NULL));
+		this->generatedtPath = "WWW/CGI/" + toString(rand());
+		fillEnv();
+		int fd[2]; 	
+		if (pipe(fd) == -1) {
+			perror("pipe");
+			return ;
 		}
-		if (execve(av[0], (char* const*)av, this->env) < 0) {
-			perror("execve");
-			exit(127);
+		this->pid = fork();
+		if (this->pid == -1) {
+			perror("fork");
+			return ;
+		}
+		std::cout << "PID " << this->pid << std::endl;
+		if (this->pid == 0) {
+			const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
+			// std::cout << "THis CGI path : " << this->pathCgi << std::endl;
+			// std::cout << "THis path : " << this->path << std::endl;
+			close(fd[0]);
+			close(fd[1]);
+			// std::cout << "THis generated path : " << this->generatedtPath << std::endl;
+			// std::cout << "THis file name1 : " << this->scriptfile << std::endl;
+			// std::cout << "av[0]: " << av[0] << std::endl;
+			// exit(21);
+			freopen(this->generatedtPath.c_str(), "w", stdout);
+			// this->path = this->generatedtPath;
+			// std::cout << "AFTER:" << this->path << std::endl;
+			// std::cout << "Execve: " << std::endl;
+			// std::cout << "METHOD" << this->method << std::endl;
+			// dup2(fdfile, 1);
+			// close(fdfile);
+			// if (this->method == "GET")
+			// 	close(STDIN_FILENO);
+			// else {
+			// 	freopen(this->scriptfile.c_str(),"r", stdin);
+			// 	std::cout << "THis file name : " << this->scriptfile << std::endl;
+			// }
+			execve(av[0], (char* const*)av, this->env);
+			// if (execve(av[0], (char* const*)av, this->env) < 0) {
+			// 	perror("execve");
+			// 	exit(127);
+			// }
 		}
 	}
-	else {
-		std::cout << "Parent process: " << std::endl;
-		std::cout << "ENV: " << this->env << std::endl;
-		// exit(20);
-		int stat;
-		waitpid(this->pid, &stat, WNOHANG);
-		// waitpid(this->pid, &status, WEXITED);
-
-	}
-	// pid_t pidWait = waitpid(this->pid, &status, WNOHANG);
-	// this->end = clock();
-	// double processTime = (this->end - this->start) / CLOCKS_PER_SEC;
+	// waitpid(this->pid, &this->cgistat, 0);
+	pid_t res = waitpid(this->pid, &this->cgistat, 0);
+	std::cout << "stat: " << this->cgistat << std::endl;
+	std::cout << "res waitpid: " << res << std::endl;
+	this->end = clock();
+	std::cout << "start   :" << this->start << std::endl;
+	std::cout << "end   :" << this->end << std::endl;
+	double processTime = ((double)this->end - (double)this->start) / CLOCKS_PER_SEC;
+	std::cout << "Process time :" << processTime << std::endl;
+	// if (res != this->pid || processTime > 5) {
+	// 	std::cout << "didn't match " << std::endl;
+	// 	exit(99);	
+	// }
 	// if (pidWait == -1 || pidWait > 0 || processTime > 5) {
 	// 	char buf[1024];
 	// 	std::string str;
@@ -589,22 +587,18 @@ void Response::executeCgi(Request req) {
 	// 	this->file.open(this->path.c_str(), ios::in | ios::binary);
 	// 	int status;
 	// 	if (status != 0 || processTime > 5)
-    //     {
-    //         if (status != 0)
-    //             this->status = 500;
-    //         else {
-    //             kill(this->pid, SIGKILL);
-    //             waitpid(pid, 0, 0);
-    //             this->status = 504;
-    //         }
-    //         file.close();
+	//     {
+	//         if (status != 0)
+	//             this->status = 500;
+	//         else {
+	//             kill(this->pid, SIGKILL);
+	//             waitpid(pid, 0, 0);
+	//             this->status = 504;
+	//         }
+	//         file.close();
 	// 		ft_free(this->env);
-	// 		remove(this->path.c_str());
-	// 		remove(scriptfile.c_str());
-    //     }
+	// 		// remove(this->path.c_str());
+	// 		// remove(scriptfile.c_str());
+	//     }
 	// }
-}
-
-void Response::update(const Request &request){
-	this->req = request;
 }

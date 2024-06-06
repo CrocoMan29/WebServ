@@ -217,6 +217,7 @@ class Response {
 		int count;
 		double start;
 		double end;
+        int cgistat;
 		pid_t	pid;
 	public:
 		bool finish;
@@ -239,7 +240,7 @@ class Response {
 		void listDir();
 		void checkIndexFiles();
 		std::string toString(long long nb);
-		int	fillEnv(Request req);
+		int	fillEnv();
 		void	ft_free(char **env);
 		void executeCgi(Request req);
 		bool	getExt();

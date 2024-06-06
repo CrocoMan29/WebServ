@@ -106,12 +106,20 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
         }
         bodyHandler();
     } catch ( ClientError &e) {
+        _bodyParsed = true;
+        _requestLineParsed = true;
+        _headersParsed = true;
         _status = e;
     } catch (ServerError &e) {
+        _bodyParsed = true;
+        _requestLineParsed = true;
+        _headersParsed = true;
         _status = e;
     } catch (std::exception &e) {
+        _bodyParsed = true;
+        _requestLineParsed = true;
+        _headersParsed = true;
         _status = INTERNALSERVERERROR;
-        std::cout << e.what() << std::endl;
     }
     std::cout << "Status : " << _status << std::endl;
 }
