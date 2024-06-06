@@ -1,78 +1,80 @@
 # include "../../includes/Request.hpp"
 
-void Response::Delete(Request &req, const std::string &path) {
-    struct stat pathStat;
-    if (stat(path.c_str(), &pathStat) != 0) {
-        req.setStatusCode(404);
-        return;
-    }
+void Response::deleteContent(const std::string& path) {
+    if (!access(path.c_str(), W_OK | X_OK)) {
+        std::string entryName;
+        DIR* dir = opendir(path.c_str());
 
-    int deleted = -1;
-
-    if (S_ISDIR(pathStat.st_mode)) {
-        if (path.back() != '/') {
-            req.setStatusCode(409);
-            return;
-        }
-
-        DIR *dir = opendir(path.c_str());
-        if (!dir) {
-            req.setStatusCode(500);
-            return;
-        }
-
-        struct dirent *ent;
-        while ((ent = readdir(dir)) != nullptr) {
-            std::string entryName = ent->d_name;
-            if (entryName == "." || entryName == "..") continue;
-
-            std::string entryPath = path + entryName;
-            if (ent->d_type == DT_DIR) {
-                entryPath += "/";
-                Delete(req, entryPath);
-                if (req.getStatus() != 204) {
-                    closedir(dir);
-                    return;
-                }
-            } else {
-                deleted = remove(entryPath.c_str());
-                if (deleted == -1) {
-                    req.setStatusCode(500);
-                    closedir(dir);
-                    return;
+        if (dir != NULL) {
+            dirent* entry;
+            while ((entry = readdir(dir)) != NULL) {
+                entryName = entry->d_name;
+                if (entryName != "." && entryName != "..") {
+                    std::string full_path = path + "/" + entryName;
+                    if (entry->d_type == DT_DIR) {
+                        deleteContent(full_path);
+                    } else {
+                        if (access(full_path.c_str(), F_OK | W_OK) != 0)
+                            throw (-1);
+                        remove(full_path.c_str());
+                    }
                 }
             }
+            closedir(dir);
         }
-
-        closedir(dir);
-        deleted = rmdir(path.c_str());
-        if (deleted == -1) {
-            req.setStatusCode(500);
-            return;
-        }
-    } else if (S_ISREG(pathStat.st_mode)) {
-        deleted = remove(path.c_str());
-        if (deleted == -1) {
-            req.setStatusCode(500);
-            return;
-        }
+        if (rmdir(path.c_str()) == -1)
+            throw (-1);
     } else {
-        req.setStatusCode(400);
-        return;
+        throw -1;
+    }
+}
+
+void Response::delete_directory(const std::string& path, const Request& request) {
+
+    if (request.getRequestInfo().at("path")[request.getRequestInfo().at("path").length() - 1] != '/') {
+        this->setStatus(409);
+    } else {
+        this->setStatus(204);
+        try {
+            deleteContent(path);
+        } catch(const int& e) {
+            (!access(path.c_str(), W_OK | X_OK)) ? this->setStatus(500) : this->setStatus(403);
+        }
+    }
+}
+
+void Response::delete_file(const std::string& path) {
+    if (access(path.c_str(), X_OK | W_OK) != 0) {
+        this->setStatus(403);
+    } else {
+        this->setStatus(204);
+        remove(path.c_str());
+    }
+}
+
+void Response::del(const Request& request) {
+    std::string path = request.getPath();
+    
+    std::cout << "Delete: " << path << std::endl;
+    if (this->_isDeleted == false) {
+        if (isDirectory(path.c_str())) {
+            delete_directory(path, request);
+        } else if (isFile(path.c_str())) {
+            delete_file(path);
+        } else {
+            this->setStatus(404);
+        }
+        this->_isDeleted = true;
     }
 
-    req.setStatusCode(204);
-    // std::string response = req.getVersion() + " " + std::to_string(req.getStatusCode()) + " " + getStatusCodeMsg(req.getStatusCode()) + "\r\n\n";
-
-    // std::ifstream file("error_pages/deleted.html");
-    // if (!file.is_open()) {
-    //     std::cerr << "Failed to open file\n";
-    // } else {
-        // std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        // send(req.clientSocket, response.c_str(), response.size(), 0);
-        // send(req.clientSocket, body.c_str(), body.size(), 0);
-        // send(req.clientSocket, "", 1, 0);
+    // if (this->_status != 204) {
     // }
+}
 
-    // close(req.clientSocket);
+bool isFile(const char* path) {
+    struct stat s;
+    if (stat(path, &s) == 0) {
+        return S_ISREG(s.st_mode);
+    }
+    return false;
 }
