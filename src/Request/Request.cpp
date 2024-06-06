@@ -1,15 +1,12 @@
-// #include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
-// #include "../../includes/Request.hpp"
-// #include "../../includes/webServer.hpp"
 
-Request::Request():_status(200),_headersParsed(false),_bodyParsed(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_isBadRequest(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }
 
 Request::~Request(){
 }
 
-Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false),_isBadRequest(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
 }
 
 
@@ -96,6 +93,8 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
+        if(_isBadRequest)
+            return;
         splitingHeaderBody(request, readBytes);
         if(_headersParsed) {
             if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
@@ -107,22 +106,12 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
         }
         bodyHandler();
     } catch ( ClientError &e) {
-        _bodyParsed = true;
-        _requestLineParsed = true;
-        _headersParsed = true;
-        _status = e;
+        mentionAsBadReq(e);
     } catch (ServerError &e) {
-        _bodyParsed = true;
-        _requestLineParsed = true;
-        _headersParsed = true;
-        _status = e;
+        mentionAsBadReq(e);
     } catch (std::exception &e) {
-        _bodyParsed = true;
-        _requestLineParsed = true;
-        _headersParsed = true;
-        _status = INTERNALSERVERERROR;
+        mentionAsBadReq(INTERNALSERVERERROR);
     }
-    std::cout << "Status : " << _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -131,7 +120,7 @@ std::map<std::string , std::string> Request::getRequestInfo() const{
 
 void Request::splitingHeaderBody(const char *request, size_t readBytes){
     size_t it;
-
+    
     _body.clear();
     if(_headersParsed){
         readingBody(request, readBytes);
@@ -262,7 +251,6 @@ void Request::pathInCannonicalForm(){
     this->_requestInfos["path"] = _rootPath + path;
     if (finishWithSlash && _uriParts.size() > 0)
         this->_requestInfos["path"] += "/";
-    std::cout << "Path in cannonical form: " << this->_requestInfos["path"] << std::endl;
 }
 
 void Request::matchingLocation(std::vector<Location>& locations) {
@@ -346,15 +334,11 @@ void Request::bodyHandler(){
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     std::string path = "/nfs1/homes/ylarhris/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
-    std::cout << "Path: " << path << std::endl;
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
         ofs.close();
-        std::cout << "File uploaded successfully" << std::endl;
     } else {
         throw NOTFOUND;
-        std::cout << "Error opening file" << std::endl;
-        perror("Error");
     }
 }
 
@@ -437,6 +421,15 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             }
         }
     }
+}
+
+void Request::mentionAsBadReq(int e){
+    requestCleaner();
+    _bodyParsed = true;
+    _requestLineParsed = true;
+    _headersParsed = true;
+    _isBadRequest = true;
+    _status = e;
 }
 
 void Request::requestCleaner(){
