@@ -194,7 +194,7 @@ void Request::RequestLineParser(const std::string& requestLine) {
 }
 
 void isValidUri(std::string uri){
-    if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$'()*+,;=%") != std::string::npos)
+    if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&-._~:/?#[]@!$'()*+,;=%") != std::string::npos)
         throw BADREQUEST;
 }
 
