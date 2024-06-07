@@ -134,7 +134,7 @@ void webServ::setUpServer() {
 						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
        						perror("epoll_ctl");
 						}
-						close(client_socket);
+						// close(client_socket);
 						server->requestMap.erase(client_socket);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
@@ -142,7 +142,7 @@ void webServ::setUpServer() {
        						perror("epoll_ctl");
 						}
 						server->requestMap.erase(client_socket);
-						close(client_socket);
+						// close(client_socket);
 					} else if (bytes_received > 0) {
 						std::cout << "here:   " << bytes_received << std::endl; 
 						buffer[bytes_received] = '\0';

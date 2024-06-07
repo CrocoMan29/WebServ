@@ -120,6 +120,9 @@ class Request
         void postChecker();
         void requestCleaner();
         void mentionAsBadReq(int e);
+        bool isBadRequest() const{
+            return _isBadRequest;
+        };
         Location getLocation() const {
             return _location;
         };
@@ -215,6 +218,7 @@ class Response {
 		double end;
         int cgistat;
 		pid_t	pid;
+        bool    _isDeleted;
 	public:
 		bool finish;
 		Response();
@@ -240,13 +244,19 @@ class Response {
 		void	ft_free(char **env);
 		void executeCgi(Request req);
 		bool	getExt();
-		void Delete(Request &req, const std::string &path);
         void update(const Request &request);
+        void del(const Request& request);
+        void delete_directory(const std::string& path, const Request& request);
+        void delete_file(const std::string& path);
+        void deleteContent(const std::string& path);
+        void    setStatus(int status){
+            this->status = status;
+        };
 };
 
 
 
-
+bool isFile(const char* path); 
 void isValidUri(std::string uri);
 std::string toLowercase(std::string str);
 std::string randomFileGenerator();
