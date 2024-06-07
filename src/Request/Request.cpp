@@ -112,6 +112,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     } catch (std::exception &e) {
         mentionAsBadReq(INTERNALSERVERERROR);
     }
+    std::cout << "Status Req :"<< _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -359,6 +360,7 @@ void Request::readingBody(const char *body, size_t readBytes){
         if(_bodySize + readBytes >= atol(_requestInfos["content-length"].c_str())){
             _body.insert(_body.end(), body, body + atol(_requestInfos["content-length"].c_str()) - _bodySize);
             _bodySize = atol(_requestInfos["content-length"].c_str());
+            setStatusCode(CREATED);
             _bodyParsed = true;
         }
         else {
@@ -398,7 +400,7 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             _chunckState = true;
             if (_chunkSize == 0) {
                 _bodyParsed = true;
-                _status = CREATED;
+                setStatusCode(CREATED);
                 return;
             }
         }

@@ -120,6 +120,9 @@ class Request
         void postChecker();
         void requestCleaner();
         void mentionAsBadReq(int e);
+        bool isBadRequest() const{
+            return _isBadRequest;
+        };
         Location getLocation() const {
             return _location;
         };
