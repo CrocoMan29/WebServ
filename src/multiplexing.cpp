@@ -93,7 +93,7 @@ void webServ::setUpServer() {
 				// std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
 				// std::cout << "socket fd : " << server->socket_fd << " ]" << std::endl;
 
-				client_socket = accept(server->socket_fd, (struct sockaddr *)&_serv[i]._address, (socklen_t *)&_serv[i].addrLen);
+				client_socket = accept(server->socket_fd, (struct sockaddr *)&server->_address, (socklen_t *)&server->addrLen);
 				if (client_socket > 0){
 					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1) {
 						perror("fcntl");
@@ -124,23 +124,28 @@ void webServ::setUpServer() {
 				// std::cout << "client_socket : " << client_socket << std::endl;
 				// std::cout << "epoll in socket fd : " << server->socket_fd << " ]" << std::endl;
 					char buffer[1024] = {0};
+					std::cout << "########## " << client_socket << std::endl;
 					int bytes_received = recv(client_socket, buffer, sizeof(buffer) -1, 0);
+					// std::cout << "!!!!!" << buffer << "!!!!!!!!!!!!!!!!!!" << std::endl;
+					// exit(1); 
 					// std::cout << "key inside :" << server->socket_fd << std::endl;
 					// std::cout << "events[i].data.fd : "<< events[i].data.fd << std::endl;
 					// std::cout << "client_socket : "<< client_socket << std::endl;
 					// std::cout << "buffer : "<< buffer << std::endl;
 					if (bytes_received == -1) {
 						std::cout << "yassir is here : "  << client_socket << std::endl;
-						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
+						// if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
        						perror("epoll_ctl");
-						}
+						// }
+						// epoll_ctl: Resource temporarily unavailable
 						// close(client_socket);
 						server->requestMap.erase(client_socket);
+						// exit(2);
 					} else if (bytes_received == 0) {
 						std::cout << "Connection closed by client." << std::endl;
-						if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
-       						perror("epoll_ctl");
-						}
+						// if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[i].data.fd, NULL) < 0) {
+       					// 	perror("epoll_ctl");
+						// }
 						server->requestMap.erase(client_socket);
 						// close(client_socket);
 					} else if (bytes_received > 0) {
@@ -151,18 +156,18 @@ void webServ::setUpServer() {
 						// std::cout << "--hell--" << std::endl;
 						// // server->requestMap[client_socket].printAttributes();
 						server->responseMap.insert(std::pair<int, Response>(client_socket, Response()));
+						std::cout << server->requestMap[client_socket].getHeader() << std::endl;
+						std::cout << server->requestMap[client_socket].isRequestParsed() << std::endl;
 					}
-				std::cout << "EPOLLIN: " << i << std::endl;
+				// std::cout << "EPOLLIN: " << i << std::endl;
 			}
 			else if (server->requestMap[client_socket].isRequestParsed() && events[i].events & EPOLLOUT )
 			{
-				// std::cout << "Hello" << std::endl;
-				// server->requestMap.erase(client_socket);
 				server->responseMap[client_socket].sendResp(server->requestMap[client_socket] ,client_socket);
 				if (server->responseMap[client_socket].finish == true) {
 					std::cout << "finished-------:" << std::endl;
 					close(client_socket);
-					 server->requestMap.erase(client_socket);
+					server->requestMap.erase(client_socket);
 					server->responseMap.erase(client_socket);
 				}
 

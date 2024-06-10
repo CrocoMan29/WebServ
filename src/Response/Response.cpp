@@ -36,7 +36,34 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "QUERRY: " << this->querry << std::endl;
 		// exit(2);
 	}
-	if (this->method == "GET") {
+	if (req.isBadRequest()) {
+		if (this->status == 400) {
+			this->path = "./error/400.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 501) {
+			this->path = "./error/501html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 413) {
+			this->path = "./error/413.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 404) {
+			this->path = "./error/404.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 403) {
+			this->path = "./error/403.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 405) {
+			this->path = "./error/405.html";
+			file.open(this->path, std::ios::binary);
+		}
+		chunk(req);
+	}
+	if (this->method == "GET" && !req.isBadRequest()) {
 		std::cout << "GET METHOD" << std::endl;
 		if (checkPath(req)) {
 			if (this->readed && !this->isError) {
@@ -52,16 +79,25 @@ void Response::sendResp(Request req, int socket)
 			chunk(req);
 		}
 	}
-	else if (this->method == "POST") {
+	else if (this->method == "POST" && !req.isBadRequest()) {
 		std::cout << "POST METHOD" << std::endl;
-
+		if (this->status == 201) {
+			this->path = "./error/201.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 403) {
+			this->path = "./error/403.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 404) {
+			this->path = "./error/404.html";
+			file.open(this->path, std::ios::binary);
+		}
+		chunk(req);
 	}
-	else if (this->method == "DELETE") {
+	else if (this->method == "DELETE"&& !req.isBadRequest()) {
 		std::cout << " DELETE METHOD" << std::endl;
 
-	}
-	else {
-		std::cout << "method not allowed" << std::endl;
 	}
 }
 
@@ -71,8 +107,12 @@ Response::Response(const Response& copy) {
     this->path = copy.path;
     this->chunkSize = copy.chunkSize;
     this->method = copy.method;
+	this->body = copy.body;
     this->status = copy.status;
-    this->socket = copy.socket;
+	this->generatedtPath = copy.generatedtPath;
+	this->scriptfile = copy.scriptfile;
+	this->status = copy.status;
+    this->pathCgi = copy.pathCgi;
     this->readed = copy.readed;
 }
 
@@ -247,6 +287,7 @@ std::string	Response::getStatus(int stat) {
 	this->code[404] = "404 Not Found";
 	this->code[405] = "405 Method Not Allowed";
 	this->code[411] = "411 Length Required";
+	this->code[413] = "413 Content Too Large";
 	this->code[415] = "415 Unsupported Media Type";
 	//Server Error
 	this->code[500] = "500 Internal Server Error";
@@ -265,8 +306,12 @@ void    Response::setHeader() {
 	std::cout << "=================================HEADER================================" << std::endl;
 	std::cout << "Status code: " << this->status << std::endl;
 	this->header += "HTTP/1.1 " + getStatus(this->status) + "\r\n";
-	if (this->status == 301)
+	if (this->status == 301) {
+		this->path = this->path.substr(4);
+		std::cout << "redir path1 : " << this->path << std::endl;
 		this->header += "Location: " + this->path + "\r\n\r\n";
+		// exit(2);
+	}
 	else {
 		this->header += "Content-Type: " + getContentType(this->path) + "\r\n";
 		this->header += "Transfer-Encoding: chunked\r\n";
@@ -280,30 +325,18 @@ void    Response::setHeader() {
 }
 
 void	Response::chunk(Request& req) {	
-	char buf[BUFFERSIZE] = {0};	
-	// std::cout << "path: ---->" << this->path << std::endl;
-	// std::cout << "path3: ---->" << this->path << std::endl;
+	char buf[BUFFERSIZE] = {0};
 	file.read(buf, 1023);
-	// std::cout << "BUFFER: ---->" << buf << std::endl;
-	// this->count += file.gcount();
-	// std::cout << "size file: " << this->count << std::endl; 
-	// std::cout << "Gcout readed : " << file.gcount() << std::endl;
 	if (file.gcount() > 0 && this->readed) {
 		std::stringstream ss;
         ss << std::hex << file.gcount();
-		// std::cout << "buffer size: " << ss.str() << std::endl;
 		this->chunkSize = ss.str() + "\r\n";
 		this->chunkSize.append(buf, file.gcount());
         this->chunkSize.append("\r\n", 2);
-		// std::cout << "Sockeeeeeeet-->: " << this->socket << std::endl;
-		// std::cout << "File: ----->" << this->chunkSize.c_str() << std::endl;
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
-		// std::cout << "Sockeeeeeeet--<: " << this->socket << std::endl;
-		// exit(55);
+
 	}
 	else if (file.gcount() == 0 && this->readed ) {
-		// std::cout << "Gcout========" << file.gcount() << std::endl;
-		// std::cout << "PATHHHH" << this->path << std::endl;
         write(this->socket, "0\r\n\r\n", 5);
         file.close();
 		this->finish = true;
@@ -313,29 +346,22 @@ void	Response::chunk(Request& req) {
 int	Response::checkPath(Request req) {
 	if (isDirectory(this->path)) {
 		std::cout << "is Directory -------->" << std::endl;
-		if (this->path.back() != '/') {
-			// std::cout << "search for '/' -------->" << std::endl;	
+		if (this->path.back() != '/') {	
 			this->status = 301;
 			this->path += '/';
 			setHeader();
-			exit(11);
+			this->finish = true;
 		}
 		else if (this->path.back() == '/') {
-			// std::cout << "find: ====  '/' -------->" << std::endl;
 			if (directoryHasFiles(this->path)) {
-				// std::cout << "DIr has files:  -------->" << std::endl;
 				if (directoryHasIndexFile(this->path)) {
-					// std::cout << "has files:  -------->" << std::endl;
-					std::cout << "has files:  -------->"<< this->path << std::endl;
 					checkIndexFiles();
 					if (!valueOfAutoIndex) {
-						// std::cout << " FOrbidden:  -------->" << std::endl;
 						this->path = "./error/403.html";
 						this->isError = true;
 						file.open(this->path, std::ios::binary);
 					}
 					else if (valueOfAutoIndex) {
-						// std::cout << " Read from the file:  -------->" << std::endl;
 						listDir();
 						this->isError = true;
 					}
@@ -350,38 +376,38 @@ int	Response::checkPath(Request req) {
 			this->pathCgi = "/usr/bin/php-cgi";
 		else
 			this->pathCgi = "/usr/bin/python3";
-		executeCgi(req); 
-		std::cout << "generated path :" << this->generatedtPath << std::endl;
+		executeCgi(req);
 		this->path = this->generatedtPath;
 		std::cout << "::::> path :" << this->path << std::endl;
 		std::ifstream _file(this->generatedtPath, std::ios::binary);
-		if (_file.is_open() && this->cgistat == 0) {
+		std::cout << "cgi status : " << this->status << std::endl;
+		if (_file.is_open() && this->cgistat == 0 && this->status == 200) {
 			std::cout << "file opened :" << std::endl;
 			this->isError = true;
 			file.open(this->path, std::ios::binary);
 			std::cout << "::::> path2 :" << this->path << std::endl;	
 		}
-		// else if (this->status == 500 && this->cgistat != 0) {
-		// 	std::cout << "internal Error" << std::endl;
-		// 	this->path = "./error/500.html";
-		// 	this->isError = true;
-		// 	file.open(this->path, std::ios::binary);
-		// 	this->isCGI = true;
-		// }
-		// else if (this->status == 504 && this->cgistat != 0) {
-		// 	std::cout << "time out" << std::endl;
-		// 	this->path = "./error/500.html";
-		// 	this->isError = true;
-		// 	file.open(this->path, std::ios::binary);
-		// 	this->isCGI = true;
-		// }
+		else if (this->status == 500) {
+			std::cout << "internal Error" << std::endl;
+			this->path = "./error/500.html";
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+			this->isCGI = true;
+		}
+		else if (this->status == 504) {
+			std::cout << "time out" << std::endl;
+			this->path = "./error/504.html";
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+			this->isCGI = true;
+		}
 		else {
 			std::cout << "not opened :"  << std::endl;
 			this->status = 404;
 			this->path = "./error/error.html";
 			this->isError = true;
 			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
+			// this->isCGI = true;
 		}
 	}
 	else if (isRegularFile(this->path)) {
@@ -389,14 +415,11 @@ int	Response::checkPath(Request req) {
 		if (!this->readed) {
 			file.open(this->path, std::ios::binary);
 			if (!file.good()) {
-				std::cout << "Here--------------> <----------Here" << std::endl;
 				if (access(this->path.c_str(), F_OK) != -1) {
-					// std::cout << "don't have access" << std::endl;
 					this->status = 403;
 					this->path = "./error/403.html";
 				}
 				else {
-					// std::cout << "file not found" << std::endl;
 					this->status = 404;
 					this->path = "./error/error.html";
 				}
@@ -404,7 +427,6 @@ int	Response::checkPath(Request req) {
 				this->isError = true;
 			}
 			else {
-				// std::cout << "Here--------------> <----------Here" << std::endl;
 				this->readed = true;
 			}
 
@@ -457,7 +479,6 @@ void	Response::listDir() {
 		std::string body = "<html><head></head><body><ul>";
 		while ((entry = readdir(dir)) != NULL) {
 			name = entry->d_name;
-			// std::cout << "Name---->: " << name << std::endl;
 			body += "<li><a href='"+ name  +"'>"  + name +"</a></li>";
 		}
 		closedir(dir);
@@ -496,7 +517,7 @@ void	Response::checkIndexFiles() {
 }
 
 int		Response::fillEnv() {
-	this->env = new char* [9];
+	this->env = new char* [8];
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	env[1] = strdup(("QUERY_STRING=" + this->querry).c_str());
 	env[2] = strdup("REDIRECT_STATUS=200");
@@ -509,7 +530,7 @@ int		Response::fillEnv() {
 
 	// }
 	// env[7] = strdup(("HTTP_COOKIE=" + this->cookies));
-	env[8] = NULL;
+	env[7] = NULL;
 	return(1);
 }
 
@@ -527,17 +548,13 @@ std::string Response::toString(long long nb) {
 }
 
 void Response::executeCgi(Request req) {
-	if (!this->isCGI) {
-		this->isCGI = true;
+	// if (!this->isCGI) {
+	// 	this->isCGI = true;
 		this->start = clock();
 		srand(time(NULL));
 		this->generatedtPath = "WWW/CGI/" + toString(rand());
 		fillEnv();
-		int fd[2]; 	
-		if (pipe(fd) == -1) {
-			perror("pipe");
-			return ;
-		}
+		int fd[2];
 		this->pid = fork();
 		if (this->pid == -1) {
 			perror("fork");
@@ -546,54 +563,46 @@ void Response::executeCgi(Request req) {
 		std::cout << "PID " << this->pid << std::endl;
 		if (this->pid == 0) {
 			const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
-			// std::cout << "THis CGI path : " << this->pathCgi << std::endl;
-			// std::cout << "THis path : " << this->path << std::endl;
 			close(fd[0]);
 			close(fd[1]);
-			// std::cout << "THis generated path : " << this->generatedtPath << std::endl;
-			// std::cout << "THis file name1 : " << this->scriptfile << std::endl;
-			// std::cout << "av[0]: " << av[0] << std::endl;
-			// exit(21);
 			freopen(this->generatedtPath.c_str(), "w", stdout);
-			// this->path = this->generatedtPath;
-			// std::cout << "AFTER:" << this->path << std::endl;
-			// std::cout << "Execve: " << std::endl;
-			// std::cout << "METHOD" << this->method << std::endl;
-			// dup2(fdfile, 1);
-			// close(fdfile);
-			if (this->method == "GET")
-				close(STDIN_FILENO);
-			else {
-				freopen(this->scriptfile.c_str(),"r", stdin);
-				std::cout << "THis file name : " << this->scriptfile << std::endl;
-			}
+			// if (this->method == "GET")
+			// 	close(STDIN_FILENO);
+			// else {
+			// 	freopen(this->scriptfile.c_str(),"r", stdin);
+			// 	std::cout << "THis file name : " << this->scriptfile << std::endl;
+			// }
 			execve(av[0], (char* const*)av, this->env);
 			// if (execve(av[0], (char* const*)av, this->env) < 0) {
 			// 	perror("execve");
 			// 	exit(127);
 			// }
 		}
-	}
+	// }
 	// waitpid(this->pid, &this->cgistat, 0);
 	pid_t res = waitpid(this->pid, &this->cgistat, 0);
-	std::cout << "cgistat: " << this->cgistat << std::endl;
+	if(res == -1 || res > 0 ){
+	std::cout << "res waitpid 1 ||: " << res << std::endl;
+		exit(1);
+	}
 	std::cout << "res waitpid: " << res << std::endl;
+	std::cout << "cgistat: " << this->cgistat << std::endl;
 	this->end = clock();
 	std::cout << "start   :" << this->start << std::endl;
 	std::cout << "end   :" << this->end << std::endl; 	
-	double processTime = ((double)this->end - (double)this->start) / CLOCKS_PER_SEC;
+	double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
 	std::cout << "Process time :" << processTime << std::endl;
-	// if (res != this->pid || processTime > 5) {
-	// 	std::cout << "didn't match " << std::endl;
-	// 	// if (this->cgistat != 0 || processTime > 5) {
-	// 	// 	std::cout << "Process time2 :" << processTime << std::endl;
-	// 	// 	if (this->cgistat != 0)
-	// 	// 		this->status = 500;
-	// 	// 	else {
-	// 	// 		this->status = 504;
-	// 	// 	}
-	// 	// }
-	// // 		ft_free(this->env);
-	// 	exit(99);	
-	// }
+	if (res != this->pid || processTime > 5) {
+		std::cout << "didn't match " << std::endl;
+		if (this->cgistat != 0 || processTime > 5) {
+			std::cout << "Process time2 :" << processTime << std::endl;
+			if (this->cgistat != 0)
+				this->status = 500;
+			else {
+				this->status = 504;
+			}
+		}
+		ft_free(this->env);
+		// exit(99);	
+	}
 }
