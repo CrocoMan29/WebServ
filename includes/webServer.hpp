@@ -35,11 +35,14 @@ class webServ{
 		std::vector<Server> _serv;
 		std::vector<FdsInfo> _fdsinfo;
 		int client_socket;
-		std::map<int, Server*> fd_to_server;
 		// std::map<int, Request> fd_to_request;
 		// std::map<int, Response> fd_to_response;
 	public:
+		std::map<int, Server*> fd_to_server;
 		webServ(std::vector<Server> servers);
+		webServ(const webServ &obj);
+		webServ &operator=(const webServ &obj);
+		double takeTime();
 		void setUpServer();
 		~webServ();
 		std::vector<Server> getServers() const {

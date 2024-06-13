@@ -1,12 +1,12 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_isBadRequest(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_isBadRequest(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0){
 }
 
 Request::~Request(){
 }
 
-Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false),_isBadRequest(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false){
+Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false),_isBadRequest(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0){
 }
 
 
@@ -31,6 +31,7 @@ Request &Request::operator=(const Request &rhs){
         _status = rhs._status;
         _requestLineParsed = rhs._requestLineParsed;
         _clientMaxBodySize = rhs._clientMaxBodySize;
+		_timeOut = rhs._timeOut;
     }
     return *this;
 }
@@ -93,7 +94,7 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
-        if(_isBadRequest)
+        if(_isBadRequest == true)
             return;
         splitingHeaderBody(request, readBytes);
         if(_headersParsed) {

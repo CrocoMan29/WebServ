@@ -97,7 +97,9 @@ class Request
         bool                                _isPathSet;
         long                                _clientMaxBodySize;
         bool                                _isBadRequest;
+		double								_timeOut;
     public:
+		clock_t								_time;
         Request();
         ~Request();
         Request(std::string root, std::vector<std::string> index, long clientMaxBodySize);
@@ -120,6 +122,12 @@ class Request
         void postChecker();
         void requestCleaner();
         void mentionAsBadReq(int e);
+		void setTimeOut(double timeout){
+			this->_timeOut = timeout;
+		}
+		double getTimeOut() const {
+			return _timeOut;
+		}
         bool isBadRequest() const{
             return _isBadRequest;
         };
