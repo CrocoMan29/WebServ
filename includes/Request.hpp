@@ -226,7 +226,7 @@ class Response {
 		double end;
         int cgistat;
 		pid_t	pid;
-        bool    _isDeleted;
+        int    _isDeleted;
 	public:
 		bool finish;
 		Response();

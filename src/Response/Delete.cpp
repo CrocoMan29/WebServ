@@ -46,6 +46,7 @@ void Response::delete_directory(const std::string& path, const Request& request)
 void Response::delete_file(const std::string& path) {
     if (access(path.c_str(), X_OK | W_OK) != 0) {
         this->setStatus(403);
+        std::cout << "delete file with path:" << path << std::endl;
     } else {
         this->setStatus(204);
         remove(path.c_str());
@@ -53,18 +54,17 @@ void Response::delete_file(const std::string& path) {
 }
 
 void Response::del(const Request& request) {
-    std::string path = request.getPath();
-    
-    std::cout << "Delete: " << path << std::endl;
-    if (this->_isDeleted == false) {
+    std::string path = "/home/ylr/Desktop/WebServ/" + request.getPath();
+    if (this->_isDeleted == 0) {
         if (isDirectory(path.c_str())) {
             delete_directory(path, request);
         } else if (isFile(path.c_str())) {
+            std::cout << "delete file" << std::endl;
             delete_file(path);
         } else {
             this->setStatus(404);
         }
-        this->_isDeleted = true;
+        this->_isDeleted = 1;
     }
 
     // if (this->_status != 204) {

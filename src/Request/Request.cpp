@@ -101,7 +101,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
             if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
                 pathInCannonicalForm();
                 matchingLocation(locations);
-                isallowedMethod();
+                // isallowedMethod();
                 checkingBadRequests();
             }
         }
@@ -290,12 +290,8 @@ void Request::matchingLocation(std::vector<Location>& locations) {
     }
     if(!_location.root.empty())
         _rootPath = _location.root;
-    for (std::vector<std::string>::iterator it = _location.allowMethods.begin(); it != _location.allowMethods.end(); ++it) {
-        if (_requestInfos["method"].compare(*it) == 0) {
-            return;
-        }
-    }
-    throw METHODNOTALLOWED;
+    std::cout << "location name : " << _location.name << std::endl;
+    isallowedMethod();
 }
 
 void Request::isallowedMethod(){
@@ -334,7 +330,7 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/nfs1/homes/ylarhris/Desktop/WebServ"+_location.upload_store + "/" + _file;
+    std::string path = "/home/ylr/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
@@ -440,13 +436,13 @@ void Request::requestCleaner(){
     _uriParts.clear();
     _headers.clear();
     _body.clear();
+    _partialChunkSize.clear();
+    _file.clear();
     _bodySize = 0;
     _chunkSize = 0;
     _bodyParsed = false;
     _headersParsed = false;
     _requestLineParsed = false;
-    _file.clear();
-    _partialChunkSize.clear();
     _chunckState = false;
     _checkingRequestInfo = false;
     _chunkCRLF = false;
