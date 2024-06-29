@@ -1,0 +1,69 @@
+key outside :6
+new connection...............
+finish
+time Out :  0.008803
+key outside :7
+new connection...............
+finish
+time Out :  0.008866
+****current time****(outside) : 5e-06
+########## 7
+time Out :  0.008866
+location name : /
+Status Req :200
+----------hell------------
+===================response end============================
+===================response end============================
+1
+key outside :8
+new connection...............
+finish
+time Out :  0.009205
+****current time****(outside) : 5e-06
+########## 8
+time Out :  0.009205
+location name : /
+Status Req :200
+----------hell------------
+===================response end============================
+===================response end============================
+1
+****current time****(outside) : 9.5e-05
+----------hell------------
+==========================Rspsonse started..... ?=================================
+sock/ : 8
+Path: WWW/
+Method: GET
+stat: 200
+QUERRY: 
+GET METHOD
+is Directory -------->
+new path1/: WWW/
+new path1/: WWW/
+=================================HEADER================================
+Status code: 200
+===========Head=======
+HTTP/1.1 200 OK
+Content-Type: text/html
+Transfer-Encoding: chunked
+connection: close
+
+
+socket: 8
+=================================HEADER END================================
+=================================HEADER================================
+Status code: 200
+===========Head=======
+HTTP/1.1 200 OK
+Content-Type: text/html
+Transfer-Encoding: chunked
+connection: close
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+Transfer-Encoding: chunked
+connection: close
+
+
+socket: 8
+=================================HEADER END================================

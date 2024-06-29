@@ -1,9 +1,10 @@
 // # include "../../includes/Response.hpp"
 # include "../../includes/Request.hpp"
 
-Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false) {
+Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false),finish(false){
 	// path = "";
 	// method = "";
+	this->_isDeleted = 0;
 	this->count = 0;
 	this->env = NULL;
 	this->start = 0;
@@ -96,6 +97,7 @@ void Response::sendResp(Request req, int socket)
 		chunk(req);
 	}
 	else if (this->method == "DELETE"&& !req.isBadRequest()) {
+		this->del(req);
 		std::cout << " DELETE METHOD" << std::endl;
 
 	}
@@ -114,6 +116,7 @@ Response::Response(const Response& copy) {
 	this->status = copy.status;
     this->pathCgi = copy.pathCgi;
     this->readed = copy.readed;
+	this->_isDeleted = copy._isDeleted;
 }
 
 Response& Response::operator=(const Response& rhs) {
@@ -126,19 +129,20 @@ Response& Response::operator=(const Response& rhs) {
         this->status = rhs.status;
         this->socket = rhs.socket;
         this->readed = rhs.readed;
+		this->_isDeleted = rhs._isDeleted;
     }   
     return (*this);
 }
-
 
 Response::~Response() {
 	std::cout << "===================response end============================" << std::endl;
 }
 
 bool Response::isDirectory(const std::string& path) {
-	struct stat save;
-	if ((stat(path.c_str(), &save) == 0) && S_ISDIR(save.st_mode))
-		return (true);
+	struct stat statbuf;
+    if (stat(path.c_str(), &statbuf) != 0) {
+        return false; // Cannot access path
+    }
 	return (false);
 }
 
@@ -216,7 +220,7 @@ std::string Response::getContentType(std::string& path) {
 	this->mimetypes[".prc"] = "application/x-pilot";
 	this->mimetypes[".pdb"] = "application/x-pilot";
 	this->mimetypes[".rar"] = "application/x-rar-compressed";
-	this->mimetypes[".rpm"] = "application/x-redhat-package-manager";
+	this->mimetypes[".rpm"] = "application/x-	-package-manager";
 	this->mimetypes[".sea"] = "application/x-sea";
 	this->mimetypes[".swf"] = "application/x-shockwave-flash";
 	this->mimetypes[".sit"] = "application/x-stuffit";
@@ -603,6 +607,6 @@ void Response::executeCgi(Request req) {
 			}
 		}
 		ft_free(this->env);
-		// exit(99);	
+		// exit(99);
 	}
 }
