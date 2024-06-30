@@ -139,11 +139,12 @@ Response::~Response() {
 }
 
 bool Response::isDirectory(const std::string& path) {
-	struct stat statbuf;
+    struct stat statbuf;
     if (stat(path.c_str(), &statbuf) != 0) {
         return false; // Cannot access path
     }
-	return (false);
+    return S_ISDIR(statbuf.st_mode);
+
 }
 
 bool Response::isRegularFile(const std::string& path) {
