@@ -57,6 +57,7 @@ void Response::del(const Request& request) {
     std::string path = "/home/ylr/Desktop/WebServ/" + request.getPath();
     if (this->_isDeleted == 0) {
         if (isDirectory(path.c_str())) {
+            std::cout << "delete directory" << std::endl;
             delete_directory(path, request);
         } else if (isFile(path.c_str())) {
             std::cout << "delete file" << std::endl;
