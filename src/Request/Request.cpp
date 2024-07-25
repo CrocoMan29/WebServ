@@ -330,7 +330,7 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/home/ylr/Desktop/WebServ"+_location.upload_store + "/" + _file;
+    std::string path = "/home/croco/Desktop/neww"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());

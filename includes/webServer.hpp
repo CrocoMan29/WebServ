@@ -38,7 +38,7 @@ class webServ{
 		// std::map<int, Request> fd_to_request;
 		// std::map<int, Response> fd_to_response;
 	public:
-		std::map<int, Server*> fd_to_server;
+		std::map<int, Server> fd_to_server;
 		webServ(std::vector<Server> servers);
 		webServ(const webServ &obj);
 		webServ &operator=(const webServ &obj);
@@ -51,5 +51,6 @@ class webServ{
 		int guard(int n, const char *er);
 		void fdData(FdsInfo tmp, int fd);
 		void acceptConnexion(int epoll_fd);
+		void destroySocket(int &epoll_fd, int &c_socket, Server &server);
 		// int epollIn(int i, int &epoll_fd, epoll_event &events[MAX_EVENTS]);
 };

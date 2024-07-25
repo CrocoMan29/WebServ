@@ -2,7 +2,19 @@
 #include "includes/webServer.hpp"
 # include "includes/Request.hpp" 
 
+void ignore_sigpipe() {
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGPIPE, &sa, NULL) == -1) {
+        std::cerr << "Failed to ignore SIGPIPE: " << strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main (int ac, char **av){
+	// ignore_sigpipe();
 	if (ac != 2)
 	{
 		std::cerr << "too many argument" << std::endl;
