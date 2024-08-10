@@ -22,7 +22,7 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "sock/ : " << this->socket << std::endl;
 		this->path = req.getRequestInfo()["path"];
 		this->method = req.getRequestInfo()["method"];
-		this->querry = req.getRequestInfo()["query"];
+		this->querry = req.getQueryString();
 		// this->cookies = req.getRequestInfo()["cookies"];
 		this->status = req.getStatus();
 		this->valueOfAutoIndex = req.getLocation().autoIndex;

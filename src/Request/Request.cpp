@@ -1,12 +1,12 @@
 # include "../../includes/Request.hpp"
 
-Request::Request():_status(200),_headersParsed(false),_bodyParsed(false),_isBadRequest(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0){
+Request::Request(): CONSTRUCTREQUEST{
 }
 
 Request::~Request(){
 }
 
-Request::Request(std::string root, std::vector<std::string> index, long cmbs):_rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false),_isBadRequest(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0){
+Request::Request(std::string root, std::vector<std::string> index, long cmbs):CONSTRUCTPARAMREQ{
 }
 
 
@@ -39,6 +39,7 @@ Request &Request::operator=(const Request &rhs){
 Request::Request(const Request &copy){
     *this = copy;
 }
+
 std::string toLowercase(std::string str) {
     std::string newStr(str);
     for (size_t i = 0; i < str.length(); ++i)
@@ -106,7 +107,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
             }
         }
         bodyHandler();
-    } catch ( ClientError &e) {
+    } catch (ClientError &e) {
         mentionAsBadReq(e);
     } catch (ServerError &e) {
         mentionAsBadReq(e);
@@ -330,7 +331,7 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/home/croco/Desktop/neww"+_location.upload_store + "/" + _file;
+    std::string path = "/home/yassine-larhrissi/Desktop/WebServ"+_location.upload_store + "/" + _file;
     std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
