@@ -20,6 +20,8 @@
 # include "./webServer.hpp"
 # include "./parseConfigFile.hpp"
 # define BUFFERSIZE 1024
+# define CONSTRUCTREQUEST _status(200),_headersParsed(false),_bodyParsed(false),_isBadRequest(false), _clientMaxBodySize(0),_requestLineParsed(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0)
+# define CONSTRUCTPARAMREQ _rootPath(root), _index(index), _clientMaxBodySize(cmbs), _status(200),_headersParsed(false),_bodyParsed(false),_requestLineParsed(false),_isBadRequest(false), _bodySize(0), _chunckState(false), _checkingRequestInfo(false), _chunkSize(0), _chunkCRLF(false), _isPathSet(false), _timeOut(0)
 
 // class Location;
 
@@ -192,6 +194,11 @@ class Request
         };
         void setStatusCode(int status) {
             _status = status;
+        };
+        std::string getQueryString() const {
+            if (this->_requestInfos.find("query") == this->_requestInfos.end())
+                return "";
+            return this->_requestInfos.at("query");
         };
 };
 

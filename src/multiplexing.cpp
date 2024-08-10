@@ -187,6 +187,7 @@ void webServ::setUpServer() {
 							std::cout << "time Out :  " << server.requestMap[c_lient].getTimeOut() << std::endl;
 							buffer[bytes_received] = '\0';
 							server.requestMap[c_lient].requestParser(buffer, server._locations, bytes_received);
+							std::cout << "Querry string" << server.requestMap[c_lient].getQueryString() << std::endl;
 							server.responseMap.insert(std::pair<int, Response>(c_lient, Response()));
 							std::cout << server.requestMap[c_lient].isRequestParsed() << std::endl;
 						}
