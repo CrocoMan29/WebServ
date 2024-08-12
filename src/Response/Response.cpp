@@ -22,17 +22,20 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "sock/ : " << this->socket << std::endl;
 		this->path = req.getRequestInfo()["path"];
 		this->method = req.getRequestInfo()["method"];
-		this->querry = req.getQueryString();
+		this->querry = req.getRequestInfo()["query"];
 		// this->cookies = req.getRequestInfo()["cookies"];
 		this->status = req.getStatus();
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
+		this->scriptfile = this->path;
 		// for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 		// 	std::cout << "index File:  " << *it << std::endl;
 		// }
 		std::cout << "Path: " << this->path << std::endl;
+		std::cout << "script Path: " << this->scriptfile << std::endl;
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
+		std::cout << "cookies: " << this->cookies << std::endl;
 		// std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
 		std::cout << "QUERRY: " << this->querry << std::endl;
 		// exit(2);
@@ -40,28 +43,23 @@ void Response::sendResp(Request req, int socket)
 	if (req.isBadRequest()) {
 		if (this->status == 400) {
 			this->path = "./error/400.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 501) {
 			this->path = "./error/501html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 413) {
 			this->path = "./error/413.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 404) {
 			this->path = "./error/404.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 403) {
 			this->path = "./error/403.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 405) {
 			this->path = "./error/405.html";
-			file.open(this->path, std::ios::binary);
 		}
+		file.open(this->path, std::ios::binary);
 		chunk(req);
 	}
 	if (this->method == "GET" && !req.isBadRequest()) {
@@ -84,22 +82,19 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "POST METHOD" << std::endl;
 		if (this->status == 201) {
 			this->path = "./error/201.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 403) {
 			this->path = "./error/403.html";
-			file.open(this->path, std::ios::binary);
 		}
 		else if (this->status == 404) {
 			this->path = "./error/404.html";
-			file.open(this->path, std::ios::binary);
 		}
+		file.open(this->path, std::ios::binary);
 		chunk(req);
 	}
 	else if (this->method == "DELETE"&& !req.isBadRequest()) {
 		this->del(req);
 		std::cout << " DELETE METHOD" << std::endl;
-
 	}
 }
 
@@ -332,6 +327,7 @@ void    Response::setHeader() {
 void	Response::chunk(Request& req) {	
 	char buf[BUFFERSIZE] = {0};
 	file.read(buf, 1023);
+	std::cout << "Buffer:    " << buf << std::endl;
 	if (file.gcount() > 0 && this->readed) {
 		std::stringstream ss;
         ss << std::hex << file.gcount();
@@ -339,7 +335,6 @@ void	Response::chunk(Request& req) {
 		this->chunkSize.append(buf, file.gcount());
         this->chunkSize.append("\r\n", 2);
 		write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
-
 	}
 	else if (file.gcount() == 0 && this->readed ) {
         write(this->socket, "0\r\n\r\n", 5);
@@ -381,6 +376,7 @@ int	Response::checkPath(Request req) {
 			this->pathCgi = "/usr/bin/php-cgi";
 		else
 			this->pathCgi = "/usr/bin/python3";
+		std::cout << "CGI PATH::  " << this->pathCgi << std::endl;
 		executeCgi(req);
 		this->path = this->generatedtPath;
 		std::cout << "::::> path :" << this->path << std::endl;
@@ -391,6 +387,7 @@ int	Response::checkPath(Request req) {
 			this->isError = true;
 			file.open(this->path, std::ios::binary);
 			std::cout << "::::> path2 :" << this->path << std::endl;	
+			// exit(2);
 		}
 		else if (this->status == 500) {
 			std::cout << "internal Error" << std::endl;
@@ -522,7 +519,7 @@ void	Response::checkIndexFiles() {
 }
 
 int		Response::fillEnv() {
-	this->env = new char* [8];
+	this->env = new char* [9];
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	env[1] = strdup(("QUERY_STRING=" + this->querry).c_str());
 	env[2] = strdup("REDIRECT_STATUS=200");
@@ -534,8 +531,8 @@ int		Response::fillEnv() {
 	// else {
 
 	// }
-	// env[7] = strdup(("HTTP_COOKIE=" + this->cookies));
-	env[7] = NULL;
+	env[7] = strdup(("HTTP_COOKIE=" + this->cookies).c_str());
+	env[8] = NULL;
 	return(1);
 }
 
@@ -560,54 +557,61 @@ void Response::executeCgi(Request req) {
 		this->generatedtPath = "WWW/CGI/" + toString(rand());
 		fillEnv();
 		int fd[2];
+		pipe(fd);
 		this->pid = fork();
 		if (this->pid == -1) {
 			perror("fork");
 			return ;
 		}
-		std::cout << "PID " << this->pid << std::endl;
+		// std::cout << "PID " << this->pid << std::endl;
+		// std::cout << "generated path: " << this->generatedtPath << std::endl;
+		// std::cout << "path: " << this->path << std::endl;
 		if (this->pid == 0) {
 			const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
 			close(fd[0]);
 			close(fd[1]);
-			freopen(this->generatedtPath.c_str(), "w", stdout);
-			// if (this->method == "GET")
-			// 	close(STDIN_FILENO);
+			(freopen(this->generatedtPath.c_str(), "w", stdout));
+			if (this->method == "GET")
+				close(STDIN_FILENO);
 			// else {
 			// 	freopen(this->scriptfile.c_str(),"r", stdin);
 			// 	std::cout << "THis file name : " << this->scriptfile << std::endl;
 			// }
+			for (int i = 0; this->env[i] != NULL; i++) {
+                std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
+            }
 			execve(av[0], (char* const*)av, this->env);
 			// if (execve(av[0], (char* const*)av, this->env) < 0) {
 			// 	perror("execve");
 			// 	exit(127);
 			// }
 		}
+		pid_t res = waitpid(this->pid, &this->cgistat, 0);
 	// }
 	// waitpid(this->pid, &this->cgistat, 0);
-	pid_t res = waitpid(this->pid, &this->cgistat, 0);
-	if(res == -1 || res > 0 ){
-	std::cout << "res waitpid 1 ||: " << res << std::endl;
-		exit(1);
-	}
-	std::cout << "res waitpid: " << res << std::endl;
-	std::cout << "cgistat: " << this->cgistat << std::endl;
-	this->end = clock();
-	std::cout << "start   :" << this->start << std::endl;
-	std::cout << "end   :" << this->end << std::endl; 	
-	double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
-	std::cout << "Process time :" << processTime << std::endl;
-	if (res != this->pid || processTime > 5) {
-		std::cout << "didn't match " << std::endl;
-		if (this->cgistat != 0 || processTime > 5) {
-			std::cout << "Process time2 :" << processTime << std::endl;
-			if (this->cgistat != 0)
-				this->status = 500;
-			else {
-				this->status = 504;
-			}
-		}
-		ft_free(this->env);
-		// exit(99);
-	}
+	// pid_t res = waitpid(this->pid, &this->cgistat, WNOHANG);
+	// if(res == -1 || res > 0 ){
+	// std::cout << "res waitpid 1 ||: " << res << std::endl;
+	// 	exit(1);
+	// }
+	// std::cout << "res waitpid: " << res << std::endl;
+	// std::cout << "cgistat: " << this->cgistat << std::endl;
+	// this->end = clock();
+	// std::cout << "start   :" << this->start << std::endl;
+	// std::cout << "end   :" << this->end << std::endl; 	
+	// double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
+	// std::cout << "Process time :" << processTime << std::endl;
+	// if (res != this->pid || processTime > 5) {
+	// 	std::cout << "didn't match " << std::endl;
+	// 	if (this->cgistat != 0 || processTime > 5) {
+	// 		std::cout << "Process time2 :" << processTime << std::endl;
+	// 		if (this->cgistat != 0)
+	// 			this->status = 500;
+	// 		else {
+	// 			this->status = 504;
+	// 		}
+	// 	}
+	// 	ft_free(this->env);
+	// 	exit(99);
+	// }
 }
