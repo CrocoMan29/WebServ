@@ -220,6 +220,7 @@ class Response {
 		std::string generatedtPath;
 		std::string scriptfile;
 		std::string pathCgi;
+        std::string cgiHeader;
 		char **env;
 		int status;
 		int socket;
