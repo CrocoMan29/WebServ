@@ -335,7 +335,7 @@ void Response::setHeader()
 		// this->header += "connection: close\r\n\r\n";
 	}
 	this->header += "connection: close\r\n";
-	if ((this->scriptfile.find(".php") == std::string::npos) && !flag)
+	if ((this->scriptfile.find(".php") == std::string::npos))
 	{
 		this->header += "\r\n";
 		std::cout << "===========Head=======\n" << this->header << std::endl;
