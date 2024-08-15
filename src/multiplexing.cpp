@@ -104,10 +104,8 @@ void webServ::setUpServer() {
 		struct epoll_event event;
 		event.data.fd = _serv[i].socket_fd;
 		event.events = EPOLLIN | EPOLLOUT;
-		// fdData(tmp, _serv[i].socket_fd);
 		if (guard(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serv[i].socket_fd, &event), "epoll_ctl error") < 0)
 			continue;
-		// _fdsinfo.push_back(tmp);
 		fd_to_server[_serv[i].socket_fd] = _serv[i];
 	}
 	while (true){
@@ -117,19 +115,18 @@ void webServ::setUpServer() {
 		for (int i = 0; i < num_events; i++)
 		{
 			Server& server = fd_to_server[events[i].data.fd];
-				std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
-				std::cout << "socket fd : " << server.socket_fd << " ]" << std::endl;
+			std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
+			std::cout << "socket fd : " << server.socket_fd << " ]" << std::endl;
 			double currTime;
-			if (events[i].data.fd == server.socket_fd)
+			int curr_fd = events[i].data.fd;
+			if (curr_fd == server.socket_fd)
 			{
-
 				client_socket = accept(server.socket_fd, (struct sockaddr *)&server._address, (socklen_t *)&server.addrLen);
 				if (client_socket > 0){
 					if (fcntl(client_socket, F_SETFL, O_NONBLOCK) == -1) {
 						perror("fcntl");
 					}
 				}
-				
 				std::cout << "key outside :" << client_socket << std::endl;
 				std::cout << "new connection..............." << std::endl;
 				struct epoll_event event;
@@ -139,71 +136,54 @@ void webServ::setUpServer() {
 					continue;
 				server.requestMap.insert(std::pair<int, Request>(client_socket, Request(server.rootPath, server.index, server.client_max_body_size)));
 				std::cout << "finish" << std::endl;
-				// }
 				server.requestMap[client_socket].setTimeOut(takeTime());
-				// double time= takeTime();
 				fd_to_server[client_socket] = server;
 				std::cout << "time Out :  " << server.requestMap[client_socket].getTimeOut() << std::endl;
 				continue;
 			}
-			currTime = takeTime() - server.requestMap[client_socket].getTimeOut();
+			currTime = takeTime() - server.requestMap[curr_fd].getTimeOut();
 			std::cout << "****current time****(outside) : " << currTime << std::endl;
 			if (currTime >= 5)
 			{
 				std::cout << "****current time**** : (inside)" << currTime << std::endl;
-				destroySocket(epoll_fd, client_socket, server);
-				// epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_socket, NULL);
-				// close(client_socket);
-				// server.requestMap.erase(client_socket);
-				// server.responseMap.erase(client_socket);
+				destroySocket(epoll_fd, curr_fd, server);
 				std::cout << "time OUT done!!!!!!\n";
-				// server.requestMap[client_socket].setTimeOut(takeTime());
 			}
 			else{
-				int c_lient = events[i].data.fd;
+				int curr_fd = events[i].data.fd;
 				if ((events[i].events & EPOLLIN ))
 				{
-						// Server *server = fd_to_server[events[i].data.fd];
-				        std::cout << "socket fd epollin: " << server.socket_fd << " ]" << std::endl;
-						char buffer[1024] = {0};
-						std::cout << "********** " << fd_to_server[c_lient].socket_fd << std::endl;
-						std::cout << "########## " << c_lient << std::endl;
-						int bytes_received = recv(c_lient, buffer, sizeof(buffer) -1, 0);
-						if (bytes_received == -1) {
-							destroySocket(epoll_fd, c_lient, server);
-							// epoll_ctl(epoll_fd, EPOLL_CTL_DEL, c_lient, NULL);
-							// close(c_lient);
-							// server.requestMap.erase(c_lient);
-							// server.responseMap.erase(c_lient);
-							std::cout << "yassir is here : "  << c_lient << std::endl;
-						}if (bytes_received == 0) {
-							destroySocket(epoll_fd, c_lient, server);
-							// epoll_ctl(epoll_fd, EPOLL_CTL_DEL, c_lient, NULL);
-							// close(c_lient);
-							// server.requestMap.erase(c_lient);
-							// server.responseMap.erase(c_lient);
-							std::cout << "Connection closed by client." << std::endl;
-						}if (bytes_received > 0) {
-							std::cout << "time Out :  " << server.requestMap[c_lient].getTimeOut() << std::endl;
-							buffer[bytes_received] = '\0';
-							server.requestMap[c_lient].requestParser(buffer, server._locations, bytes_received);
-							std::cout << "Querry string" << server.requestMap[c_lient].getQueryString() << std::endl;
-							server.responseMap.insert(std::pair<int, Response>(c_lient, Response()));
-							std::cout << server.requestMap[c_lient].isRequestParsed() << std::endl;
-						}
+				    // std::cout << "socket fd epollin: " << server.socket_fd << " ]" << std::endl;
+					char buffer[1024] = {0};
+					// std::cout << "********** " << fd_to_server[curr_fd].socket_fd << std::endl;
+					// std::cout << "########## " << curr_fd << std::endl;
+					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
+					if (bytes_received == -1) {
+						destroySocket(epoll_fd, curr_fd, server);
+						std::cout << "yassir is here : "  << curr_fd << std::endl;
+					}if (bytes_received == 0) {
+						destroySocket(epoll_fd, curr_fd, server);
+						std::cout << "Connection closed by client." << std::endl;
+					}if (bytes_received > 0) {
+						std::cout << "time Out :  " << server.requestMap[curr_fd].getTimeOut() << std::endl;
+						buffer[bytes_received] = '\0';
+						server.requestMap[curr_fd].requestParser(buffer, server._locations, bytes_received);
+						std::cout << "Querry string" << server.requestMap[curr_fd].getQueryString() << std::endl;
+						server.responseMap.insert(std::pair<int, Response>(curr_fd, Response()));
+						std::cout << server.requestMap[curr_fd].isRequestParsed() << std::endl;
+					}
 				}
-				if (server.requestMap[c_lient].isRequestParsed() && (events[i].events & EPOLLOUT ))
+				if (server.requestMap[curr_fd].isRequestParsed() && (events[i].events & EPOLLOUT ))
 				{
 					std::cout << "----------hell------------" << std::endl;
-					server.responseMap[c_lient].sendResp(server.requestMap[c_lient] ,c_lient);
-					if (server.responseMap[c_lient].finish == true) {
+					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
+					if (server.responseMap[curr_fd].finish == true) {
 						std::cout << "finished-------:" << std::endl;
-						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, c_lient, NULL);
-						close(c_lient);
-						server.requestMap.erase(c_lient);
-						server.responseMap.erase(c_lient);
+						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, curr_fd, NULL);
+						close(curr_fd);
+						server.requestMap.erase(curr_fd);
+						server.responseMap.erase(curr_fd);
 					}
-
 				}
 			}
 		}
