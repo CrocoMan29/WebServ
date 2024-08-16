@@ -394,6 +394,7 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
             if(chunkSizeStr.find_first_not_of("0123456789abcdef") != std::string::npos || chunkSizeStr.empty())
                 throw std::runtime_error("Invalid Chunk Size");    
             _chunkSize = std::strtoul(chunkSizeStr.c_str(), NULL, 16);
+            _bodySize += _chunkSize;
             strBody = strBody.substr(pos + 2);
             _chunckState = true;
             if (_chunkSize == 0) {
@@ -416,7 +417,7 @@ void Request::setChunkedBody(const char *body, size_t readBytes) {
                 }
             } else {
                 _body.insert(_body.end(), strBody.begin(), strBody.end());
-                _chunkSize -= strBody.size();
+                _chunkSize -= strBody.size();   
                 return;
             }
         }

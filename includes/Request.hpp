@@ -200,6 +200,14 @@ class Request
                 return "";
             return this->_requestInfos.at("query");
         };
+        size_t      getBodySize() const {
+            return _bodySize;
+        };
+        size_t      getContentLength() const {
+            if (this->_requestInfos.find("content-length") == this->_requestInfos.end())
+                return 0;
+            return std::atol(this->_requestInfos.at("content-length").c_str());
+        };
 };
 
 

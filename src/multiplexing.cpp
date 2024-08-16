@@ -176,6 +176,8 @@ void webServ::setUpServer() {
 				if (server.requestMap[curr_fd].isRequestParsed() && (events[i].events & EPOLLOUT ))
 				{
 					std::cout << "----------hell------------" << std::endl;
+					std::cout << "Content Length : " << server.requestMap[curr_fd].getContentLength() << std::endl;
+					std::cout << "Body Size : " << server.requestMap[curr_fd].getBodySize() << std::endl;
 					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
 					if (server.responseMap[curr_fd].finish == true) {
 						std::cout << "finished-------:" << std::endl;
