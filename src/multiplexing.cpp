@@ -115,8 +115,6 @@ void webServ::setUpServer() {
 		for (int i = 0; i < num_events; i++)
 		{
 			Server& server = fd_to_server[events[i].data.fd];
-			std::cout << "event fd : " << events[i].data.fd << ";" << std::endl;
-			std::cout << "socket fd : " << server.socket_fd << " ]" << std::endl;
 			double currTime;
 			int curr_fd = events[i].data.fd;
 			if (curr_fd == server.socket_fd)
@@ -127,40 +125,36 @@ void webServ::setUpServer() {
 						perror("fcntl");
 					}
 				}
-				std::cout << "key outside :" << client_socket << std::endl;
-				std::cout << "new connection..............." << std::endl;
+				// char buffer[1024] = {0};
+				// int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
+				// std::cout << buffer << std::endl;
 				struct epoll_event event;
 				event.events =  EPOLLIN | EPOLLOUT;
 				event.data.fd = client_socket;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &event) < 0)
 					continue;
 				server.requestMap.insert(std::pair<int, Request>(client_socket, Request(server.rootPath, server.index, server.client_max_body_size)));
-				std::cout << "finish" << std::endl;
 				server.requestMap[client_socket].setTimeOut(takeTime());
 				fd_to_server[client_socket] = server;
 				std::cout << "time Out :  " << server.requestMap[client_socket].getTimeOut() << std::endl;
 				continue;
 			}
 			currTime = takeTime() - server.requestMap[curr_fd].getTimeOut();
-			std::cout << "****current time****(outside) : " << currTime << std::endl;
+			// std::cout << "****current time****(outside) : " << currTime << std::endl;
 			if (currTime >= 5)
 			{
-				std::cout << "****current time**** : (inside)" << currTime << std::endl;
 				destroySocket(epoll_fd, curr_fd, server);
 				std::cout << "time OUT done!!!!!!\n";
 			}
 			else{
-				int curr_fd = events[i].data.fd;
+				// int curr_fd = events[i].data.fd;
 				if ((events[i].events & EPOLLIN ))
 				{
-				    // std::cout << "socket fd epollin: " << server.socket_fd << " ]" << std::endl;
 					char buffer[1024] = {0};
-					// std::cout << "********** " << fd_to_server[curr_fd].socket_fd << std::endl;
-					// std::cout << "########## " << curr_fd << std::endl;
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
+					std::cout << buffer << std::endl;
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
-						std::cout << "yassir is here : "  << curr_fd << std::endl;
 					}if (bytes_received == 0) {
 						destroySocket(epoll_fd, curr_fd, server);
 						std::cout << "Connection closed by client." << std::endl;

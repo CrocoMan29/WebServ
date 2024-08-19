@@ -326,7 +326,7 @@ void Response::setHeader()
 	if (this->status == 301)
 	{
 		this->path = this->path.substr(4);
-		this->header += "Location: " + this->path + "\r\n\r\n";
+		this->header += "Location: /" + this->path + "\r\n\r\n";
 	}
 	else
 	{
