@@ -125,9 +125,6 @@ void webServ::setUpServer() {
 						perror("fcntl");
 					}
 				}
-				// char buffer[1024] = {0};
-				// int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
-				// std::cout << buffer << std::endl;
 				struct epoll_event event;
 				event.events =  EPOLLIN | EPOLLOUT;
 				event.data.fd = client_socket;
@@ -136,42 +133,33 @@ void webServ::setUpServer() {
 				server.requestMap.insert(std::pair<int, Request>(client_socket, Request(server.rootPath, server.index, server.client_max_body_size)));
 				server.requestMap[client_socket].setTimeOut(takeTime());
 				fd_to_server[client_socket] = server;
-				std::cout << "time Out :  " << server.requestMap[client_socket].getTimeOut() << std::endl;
 				continue;
 			}
 			currTime = takeTime() - server.requestMap[curr_fd].getTimeOut();
-			// std::cout << "****current time****(outside) : " << currTime << std::endl;
 			if (currTime >= 5)
-			{
 				destroySocket(epoll_fd, curr_fd, server);
-				std::cout << "time OUT done!!!!!!\n";
-			}
 			else{
-				// int curr_fd = events[i].data.fd;
 				if ((events[i].events & EPOLLIN ))
 				{
 					char buffer[1024] = {0};
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
-					std::cout << buffer << std::endl;
+					// std::cout << buffer << std::endl;
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
 					}if (bytes_received == 0) {
 						destroySocket(epoll_fd, curr_fd, server);
-						std::cout << "Connection closed by client." << std::endl;
 					}if (bytes_received > 0) {
-						std::cout << "time Out :  " << server.requestMap[curr_fd].getTimeOut() << std::endl;
 						buffer[bytes_received] = '\0';
 						server.requestMap[curr_fd].requestParser(buffer, server._locations, bytes_received);
 						std::cout << "Querry string" << server.requestMap[curr_fd].getQueryString() << std::endl;
 						server.responseMap.insert(std::pair<int, Response>(curr_fd, Response()));
-						std::cout << server.requestMap[curr_fd].isRequestParsed() << std::endl;
 					}
 				}
 				if (server.requestMap[curr_fd].isRequestParsed() && (events[i].events & EPOLLOUT ))
 				{
-					std::cout << "----------hell------------" << std::endl;
-					std::cout << "Content Length : " << server.requestMap[curr_fd].getContentLength() << std::endl;
-					std::cout << "Body Size : " << server.requestMap[curr_fd].getBodySize() << std::endl;
+					// std::cout << "----------hell------------" << std::endl;
+					// std::cout << "Content Length : " << server.requestMap[curr_fd].getContentLength() << std::endl;
+					// std::cout << "Body Size : " << server.requestMap[curr_fd].getBodySize() << std::endl;
 					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
 					if (server.responseMap[curr_fd].finish == true) {
 						std::cout << "finished-------:" << std::endl;
