@@ -131,7 +131,7 @@ void webServ::setUpServer() {
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_socket, &event) < 0)
 					continue;
 				server.requestMap.insert(std::pair<int, Request>(client_socket, Request(server.rootPath, server.index, server.client_max_body_size)));
-				server.requestMap[client_socket].setTimeOut(takeTime());
+				server.requestMap[client_socket].setTimeOut(takeTime());	
 				fd_to_server[client_socket] = server;
 				continue;
 			}
@@ -153,13 +153,16 @@ void webServ::setUpServer() {
 						server.requestMap[curr_fd].requestParser(buffer, server._locations, bytes_received);
 						std::cout << "Querry string" << server.requestMap[curr_fd].getQueryString() << std::endl;
 						server.responseMap.insert(std::pair<int, Response>(curr_fd, Response()));
+						server.requestMap[client_socket].setTimeOut(takeTime());	
 					}
+
 				}
 				if (server.requestMap[curr_fd].isRequestParsed() && (events[i].events & EPOLLOUT ))
 				{
 					// std::cout << "----------hell------------" << std::endl;
 					// std::cout << "Content Length : " << server.requestMap[curr_fd].getContentLength() << std::endl;
 					// std::cout << "Body Size : " << server.requestMap[curr_fd].getBodySize() << std::endl;
+					server.requestMap[client_socket].setTimeOut(takeTime());
 					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
 					if (server.responseMap[curr_fd].finish == true) {
 						std::cout << "finished-------:" << std::endl;

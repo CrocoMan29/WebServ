@@ -1,7 +1,7 @@
 // # include "../../includes/Response.hpp"
 #include "../../includes/Request.hpp"
 
-Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false), finish(false)
+Response::Response() : status(0), socket(0), readed(false), isCGI(false), isError(false), finish(false) , isNot(false)
 {
 	// path = "";
 	// method = "";
@@ -14,6 +14,7 @@ Response::Response() : status(0), socket(0), readed(false), isCGI(false), isErro
 
 void Response::sendResp(Request req, int socket)
 {
+	std::cout << "before res :" << req.getAbspath() << std::endl;
 	if (!this->readed)
 	{
 		std::cout << "==========================Rspsonse started..... ?=================================" << std::endl;
@@ -29,8 +30,10 @@ void Response::sendResp(Request req, int socket)
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
 		this->scriptfile = this->path;
+		// this->bodysize = req.getBodySize();
+		this->postpath = req.getAbspath();
 		// for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
-		// 	std::cout << "index File:  " << *it << std::endl;
+			// std::cout << "index File:  " << *it << std::endl;
 		// }
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "script Path: " << this->scriptfile << std::endl;
@@ -40,6 +43,11 @@ void Response::sendResp(Request req, int socket)
 		// std::cout << "AUTOindex: " << this->valueOfAutoIndex << std::endl;
 		std::cout << "QUERRY: " << this->querry << std::endl;
 		std::cout << "CGI FLAG " << isCGI << std::endl;
+		std::cout << "====Post path " << this->postpath<< std::endl;
+		// std::cout << "body size " << this->bodysize << std::endl;
+		// if (this->method == "POST") {
+			// exit(2);
+		// }
 	}
 	if (req.isBadRequest())
 	{
@@ -64,6 +72,7 @@ void Response::sendResp(Request req, int socket)
 		file.open(this->path, std::ios::binary);
 		chunk(req);
 	}
+
 	if (this->method == "GET" && !req.isBadRequest())
 	{
 		std::cout << "GET METHOD" << std::endl;
@@ -88,20 +97,41 @@ void Response::sendResp(Request req, int socket)
 	else if (this->method == "POST" && !req.isBadRequest())
 	{
 		std::cout << "POST METHOD" << std::endl;
-		if (this->status == 201)
+		if (checkPath(req))
 		{
-			this->path = "./error/201.html";
+			if (this->readed && !this->isError)
+			{
+				setHeader();
+				this->isError = true;
+			}
+			else if (this->isError && !this->readed)
+			{
+				this->readed = true;
+				if (this->readed)
+				{
+					setHeader();
+				}
+			}
+			std::cout << "POST PATH: " << this->postpath << std::endl;
+			// exit(2);
+			chunk(req);
 		}
-		else if (this->status == 403)
-		{
-			this->path = "./error/403.html";
-		}
-		else if (this->status == 404)
-		{
-			this->path = "./error/404.html";
-		}
-		file.open(this->path, std::ios::binary);
-		chunk(req);
+		// if (this->status == 201)
+		// {
+		// 	this->path = "./error/201.html";
+		// 	file.open(this->path, std::ios::binary);
+		// }
+		// else if (this->status == 403)
+		// {
+		// 	this->path = "./error/403.html";
+		// 	file.open(this->path, std::ios::binary);
+		// }
+		// else if (this->status == 404)
+		// {
+		// 	this->path = "./error/404.html";
+		// 	file.open(this->path, std::ios::binary);
+		// }
+		// chunk(req);
 	}
 	else if (this->method == "DELETE" && !req.isBadRequest())
 	{
@@ -179,8 +209,6 @@ std::string Response::getContentType(std::string &path)
 	this->mimetypes[".jpeg"] = "image/jpeg";
 	this->mimetypes[".jpg"] = "image/jpeg";
 	this->mimetypes[".js"] = "application/javascript";
-	this->mimetypes[".atom"] = "application/atom+xml";
-	this->mimetypes[".rss"] = "application/rss+xml";
 	this->mimetypes[".mml"] = "text/mathml";
 	this->mimetypes[".txt"] = "text/plain";
 	this->mimetypes[".jad"] = "text/vnd.sun.j2me.app-descriptor";
@@ -199,9 +227,6 @@ std::string Response::getContentType(std::string &path)
 	this->mimetypes[".bmp"] = "image/x-ms-bmp";
 	this->mimetypes[".woff"] = "font/woff";
 	this->mimetypes[".woff2"] = "font/woff2";
-	this->mimetypes[".jar"] = "application/java-archive";
-	this->mimetypes[".war"] = "application/java-archive";
-	this->mimetypes[".ear"] = "application/java-archive";
 	this->mimetypes[".json"] = "application/json";
 	this->mimetypes[".hqx"] = "application/mac-binhex40";
 	this->mimetypes[".doc"] = "application/msword";
@@ -216,18 +241,6 @@ std::string Response::getContentType(std::string &path)
 	this->mimetypes[".xls"] = "application/vnd.ms-excel";
 	this->mimetypes[".eot"] = "application/vnd.ms-fontobject";
 	this->mimetypes[".ppt"] = "application/vnd.ms-powerpoint";
-	this->mimetypes[".odg"] = "application/vnd.oasis.opendocument.graphics";
-	this->mimetypes[".odp"] = "application/vnd.oasis.opendocument.presentation";
-	this->mimetypes[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-	this->mimetypes[".odt"] = "application/vnd.oasis.opendocument.text";
-	this->mimetypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	this->mimetypes[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-	this->mimetypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	this->mimetypes[".wmlc"] = "application/vnd.wap.wmlc";
-	this->mimetypes[".wasm"] = "application/wasm";
-	this->mimetypes[".7z"] = "application/x-7z-compressed";
-	this->mimetypes[".cco"] = "application/x-cocoa";
-	this->mimetypes[".jardiff"] = "application/x-java-archive-diff";
 	this->mimetypes[".jnlp"] = "application/x-java-jnlp-file";
 	this->mimetypes[".run"] = "application/x-makeself";
 	this->mimetypes[".pl"] = "application/x-perl";
@@ -359,29 +372,26 @@ void Response::chunk(Request &req)
 	std::stringstream ss;
 	if (this->isCGI)
 	{
-		if (this->scriptfile.find(".php") != std::string::npos) {
-			char buffer[80000];
-			file.read(buffer, 80000);
-			// std::cout << "CGI path :" << this->path << std::endl;
+		if (this->scriptfile.find(".php") != std::string::npos)
+		{
+			char buffer[BUFFERSIZE] = {0};
+			file.read(buffer, 1023);
+			std::cout << "Buffer:    " << buffer << std::endl;
 			ss << buffer;
 			str = ss.str();
-			// std::cout << "find cookies in script filee" << std::endl;
-			// std::cout << "strrrr: " << str << std::endl;
 			if ((pos = str.find("\r\n\r\n")) != std::string::npos)
 			{
 				int i = (str.length() - (pos + 4)) * -1;
 				this->cgiHeader = str.substr(0, pos + 4);
 				this->header += this->cgiHeader;
 				write(this->socket, this->header.c_str(), this->header.length());
-				// std::cout << "remove header from the script " << cgiHeader<< std::endl;
 				file.clear();
 				file.seekg(i, std::ios_base::cur);
 				std::string bodyy = buffer + (pos + 4);
-				// std::cout << "-------------------------------->" << std::endl;
-				// std::cout << "body of filee" << bodyy << std::endl;
 				char buf[80000] = {0};
 				file.read(buf, 80000);
-				// std::cout << "BUF:  " << buf << std::endl;
+				// std::cout << "Buffer:    " << buf << std::endl;
+				// exit(2);
 				if (file.gcount() > 0 && this->readed)
 				{
 					std::stringstream sd;
@@ -391,7 +401,6 @@ void Response::chunk(Request &req)
 					sizereaded.append("\r\n", 2);
 					write(this->socket, sizereaded.c_str(), sizereaded.length());
 					this->isCGI = false;
-					// exit(9);
 				}
 				else if (file.gcount() == 0 && this->readed)
 				{
@@ -427,7 +436,7 @@ void Response::chunk(Request &req)
 	else
 	{
 		char buf[BUFFERSIZE] = {0};
-		file.read(buf, 1023);;
+		file.read(buf, 1023);
 		if (file.gcount() > 0 && this->readed)
 		{
 			std::stringstream ss;
@@ -480,7 +489,7 @@ int Response::checkPath(Request req)
 			}
 		}
 	}
-	else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)) && !this->isCGI)
+	else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)))
 	{
 		std::cout << "CGI----</ " << std::endl;
 		if (this->path.rfind(".php") != std::string::npos)
@@ -488,43 +497,47 @@ int Response::checkPath(Request req)
 		else
 			this->pathCgi = "/usr/bin/python3";
 		std::cout << "CGI PATH::  " << this->pathCgi << std::endl;
-		executeCgi(req);
-		this->path = this->generatedtPath;
-		std::cout << "::::> path :" << this->path << std::endl;
-		std::ifstream _file(this->generatedtPath, std::ios::binary);
-		std::cout << "cgi status : " << this->status << std::endl;
-		if (_file.is_open() && this->cgistat == 0 && this->status == 200)
-		{
-			std::cout << "file opened :" << std::endl;
-			this->isError = true;
-			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
-		}
-		else if (this->status == 500)
-		{
-			std::cout << "internal Error" << std::endl;
-			this->path = "./error/500.html";
-			this->isError = true;
-			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
-		}
-		else if (this->status == 504)
-		{
-			std::cout << "time out" << std::endl;
-			this->path = "./error/504.html";
-			this->isError = true;
-			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
+		int d = executeCgi(req);
+		if(d == 1) {
+			this->path = this->generatedtPath;
+			std::ifstream _file(this->generatedtPath, std::ios::binary);
+			std::cout << "cgi status : " << this->cgistat << std::endl;
+			if (_file.is_open() && this->status == 200)
+			{
+				std::cout << "file opened :" << std::endl;
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+				this->isCGI = true;
+			}
+			else if (this->status == 500)
+			{
+				std::cout << "internal Error" << std::endl;
+				this->path = "./error/500.html";
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+				this->isCGI = true;
+			}
+			else if (this->status == 504)
+			{
+				std::cout << "time out" << std::endl;
+				this->path = "./error/504.html";
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+				this->isCGI = true;
+			}
+			else
+			{
+				std::cout << "not opened :" << std::endl;
+				this->status = 404;
+				this->path = "./error/error.html";
+				this->isError = true;
+				file.open(this->path, std::ios::binary);
+				this->isCGI = true;
+			}
 		}
 		else
-		{
-			std::cout << "not opened :" << std::endl;
-			this->status = 404;
-			this->path = "./error/error.html";
-			this->isError = true;
-			file.open(this->path, std::ios::binary);
-			this->isCGI = true;
-		}
+			return 0;
+		
 	}
 	else if (isRegularFile(this->path))
 	{
@@ -648,10 +661,20 @@ void Response::checkIndexFiles()
 		}
 	}
 }
-
+long long Response::fileSize(std::string path)
+{
+    struct stat metadata;
+    stat(path.c_str(), &metadata);
+    return metadata.st_size;
+}
 int Response::fillEnv()
 {
 	this->env = new char *[9];
+	this->bodysize = fileSize(this->postpath);
+	std::cout << "body size " << this->bodysize << std::endl;
+	std::cout << "Post path " << this->postpath<< std::endl;
+	// if (this->method == "POST")
+	// 	exit(2);
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	env[1] = strdup(("QUERY_STRING=" + this->querry).c_str());
 	env[2] = strdup("REDIRECT_STATUS=200");
@@ -660,9 +683,9 @@ int Response::fillEnv()
 	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
 	if (this->method == "GET")
 		env[6] = strdup("CONTENT_LENGTH=0");
-	// else {
-
-	// }
+	else {
+		env[6] = strdup(("CONTENT_LENGTH=" + toString(this->bodysize)).c_str());
+	}
 	env[7] = strdup(("HTTP_COOKIE=" + this->cookies).c_str());
 	env[8] = NULL;
 	return (1);
@@ -670,21 +693,19 @@ int Response::fillEnv()
 
 void Response::ft_free(char **env)
 {
-	for (int i = 0; env[i]; i++)
-	{
+	for (int i = 0; env[i]; i++) {
 		free(env[i]);
 	}
 	delete[] env;
 }
 
-std::string Response::toString(long long nb)
-{
+std::string Response::toString(long long nb) {
 	std::stringstream ss;
 	ss << nb;
 	return (ss.str());
 }
 
-void Response::executeCgi(Request req)
+int Response::executeCgi(Request req)
 {
 	if (!this->isCGI)
 	{
@@ -699,7 +720,7 @@ void Response::executeCgi(Request req)
 		if (this->pid == -1)
 		{
 			perror("fork");
-			return;
+			return 1;
 		}
 		if (this->pid == 0)
 		{
@@ -709,47 +730,35 @@ void Response::executeCgi(Request req)
 			(freopen(this->generatedtPath.c_str(), "w", stdout));
 			if (this->method == "GET")
 				close(STDIN_FILENO);
-			// else {
-			// 	freopen(this->scriptfile.c_str(),"r", stdin);
-			// 	std::cout << "THis file name : " << this->scriptfile << std::endl;
-			// }
-			for (int i = 0; this->env[i] != NULL; i++)
-			{
+			else {
+				std::cerr << "POST PATH::: " <<  this->postpath << std::endl;
+				freopen(this->postpath.c_str(),"r", stdin);
+			}
+			for (int i = 0; this->env[i] != NULL; i++) {
 				std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
 			}
 			execve(av[0], (char *const *)av, this->env);
-			if (execve(av[0], (char *const *)av, this->env) < 0)
-			{
-				perror("execve");
-				exit(127);
-			}
+			perror("execve");
 		}
-		pid_t res = waitpid(this->pid, &this->cgistat, 0);
-		// }
-		// waitpid(this->pid, &this->cgistat, 0);
-		// pid_t res = waitpid(this->pid, &this->cgistat, WNOHANG);
-		// if(res == -1 || res > 0 ){
-		// std::cout << "res waitpid 1 ||: " << res << std::endl;
-		// 	exit(1);
-		// }
-		// std::cout << "res waitpid: " << res << std::endl;
-		// std::cout << "cgistat: " << this->cgistat << std::endl;
-		// this->end = clock();
-		// std::cout << "start   :" << this->start << std::endl;
-		// std::cout << "end   :" << this->end << std::endl;
-		// double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
-		// std::cout << "Process time :" << processTime << std::endl;
-		// if (res != this->pid || processTime > 5) {
-		// 	std::cout << "didn't match " << std::endl;
-		// 	if (this->cgistat != 0 || processTime > 5) {
-		// 		std::cout << "Process time2 :" << processTime << std::endl;
-		// 		if (this->cgistat != 0)
-		// 			this->status = 500;
-		// 		else {
-		// 			this->status = 504;
-		// 		}
-		// 	}
-		// 	ft_free(this->env);
-		// 	exit(99);
 	}
+	pid_t res = waitpid(this->pid, &this->cgistat, WNOHANG);
+	std::cout << "res : " << res << std::endl;
+	std::cout << "cgi stat: " << this->cgistat << std::endl;
+	if (res  == 0 ) {
+		this->end = clock();
+   		float processTime = static_cast<float>(this->end - this->start ) / CLOCKS_PER_SEC;
+		// this->end = clock();
+		// double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
+			std::cout << "Process time2 :" << processTime << std::endl;
+		if ( processTime > 4) {
+			std::cout << "Process time2 :" << processTime << std::endl;
+			this->status = 504;
+			return 1;
+		}
+		// ft_free(this->env);
+	}
+	else if(res) {
+		return 1;
+	}
+	return 0;
 }

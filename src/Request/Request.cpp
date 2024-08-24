@@ -32,6 +32,7 @@ Request &Request::operator=(const Request &rhs){
         _requestLineParsed = rhs._requestLineParsed;
         _clientMaxBodySize = rhs._clientMaxBodySize;
 		_timeOut = rhs._timeOut;
+        abspath = rhs.abspath;
     }
     return *this;
 }
@@ -114,7 +115,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     } catch (std::exception &e) {
         mentionAsBadReq(INTERNALSERVERERROR);
     }
-    std::cout << "Status Req :"<< _status << std::endl;
+    //std::cout << "Status Req :"<< _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -291,7 +292,7 @@ void Request::matchingLocation(std::vector<Location>& locations) {
     }
     if(!_location.root.empty())
         _rootPath = _location.root;
-    std::cout << "location name : " << _location.name << std::endl;
+    //std::cout << "location name : " << _location.name << std::endl;
     isallowedMethod();
 }
 
@@ -331,8 +332,10 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    std::string path = "/nfs/homes/yismaail/Desktop/neww"+_location.upload_store + "/" + _file;
-    std::ofstream ofs(path.c_str(), std::ios_base::app | std::ios::binary);
+    // std::string path = "/nfs/homes/yismaail/Desktop/neww"+_location.upload_store + "/" + _file;
+    this->abspath = "/nfs/homes/ymenyoub/Desktop/test"+_location.upload_store + "/" + _file;
+    //std::cout << "Req Post :" << this->abspath << std::endl;
+    std::ofstream ofs( this->abspath.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
         ofs.close();

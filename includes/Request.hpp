@@ -100,6 +100,7 @@ class Request
         long                                _clientMaxBodySize;
         bool                                _isBadRequest;
 		double								_timeOut;
+        std::string                          abspath;
     public:
 		clock_t								_time;
         Request();
@@ -176,6 +177,9 @@ class Request
         std::string getHeader() const {
             return _headers;
         };
+        std::string getAbspath() const {
+            return abspath;
+        };
         std::vector<std::string> getIndexes() const {
             return _index;
         }
@@ -229,6 +233,7 @@ class Response {
 		std::string scriptfile;
 		std::string pathCgi;
         std::string cgiHeader;
+        std::string postpath;
 		char **env;
 		int status;
 		int socket;
@@ -236,13 +241,15 @@ class Response {
 		bool isError;
 		bool isCGI;
 		bool valueOfAutoIndex;
+        bool isNot;
 		Request req;
 		int count;
-		double start;
-		double end;
+		clock_t start;
+		clock_t end;
         int cgistat;
 		pid_t	pid;
         int    _isDeleted;
+        double bodysize;
 	public:
 		bool finish;
 		Response();
@@ -266,8 +273,9 @@ class Response {
 		std::string toString(long long nb);
 		int	fillEnv();
 		void	ft_free(char **env);
-		void executeCgi(Request req);
+		int executeCgi(Request req);
 		bool	getExt();
+        long long fileSize(std::string path);
         void update(const Request &request);
         void del(const Request& request);
         void delete_directory(const std::string& path, const Request& request);
