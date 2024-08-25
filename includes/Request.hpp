@@ -223,6 +223,7 @@ class Response {
 		std::string type;
 		std::string header;
 		std::string path;
+		std::string reqType;
 		std::string chunkSize;
 		std::string method;
 		std::string querry;
@@ -234,6 +235,7 @@ class Response {
 		std::string pathCgi;
         std::string cgiHeader;
         std::string postpath;
+        std::string conLength;
 		char **env;
 		int status;
 		int socket;

@@ -338,6 +338,7 @@ void Request::bodyHandler(){
     std::ofstream ofs( this->abspath.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
+        ofs.flush();
         ofs.close();
     } else {
         throw NOTFOUND;

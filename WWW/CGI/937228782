@@ -1,39 +1,12 @@
-<?php
-ob_start();
-session_start();
+Set-Cookie: PHPSESSID=ts0rtr3ju2smjmitsa8ve4rafp; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-type: text/html; charset=UTF-8
 
-if (isset($_COOKIE["name"]) && isset($_COOKIE["email"]) && isset($_COOKIE["profile"])) {
-    echo "<meta http-equiv='refresh' content='0; url=profile.php'>";
-    exit(0);
-}
+GET
 
-if (isset($_POST["submit"])) {
-    setcookie("name", $_POST["name"], time() + (60 * 60 * 24), "/");
-    setcookie("email", $_POST["email"], time() + (60 * 60 * 24  ), "/");
-    $uploadDir = "../uploads/";
-    if (!file_exists($uploadDir))
-        mkdir($uploadDir, 0777, true);
-    $uploadedFiles = [];
-    foreach ($_FILES["media"]["tmp_name"] as $key => $tmpName) {
-        $randomString = bin2hex(random_bytes(8));
-        $file_name = $randomString . "_" . basename($_FILES["media"]["name"][$key]);
-        $uploadFile = $uploadDir . $file_name;
-        if (move_uploaded_file($tmpName, $uploadFile))
-            $uploadedFiles[] = $file_name;
-    }
-    if (!empty($uploadedFiles)) {
-        foreach ($uploadedFiles as $file) {
-            setcookie("profile", $file, time() + (60 * 60 * 24), "/");
-            echo "<meta http-equiv='refresh' content='0; url=profile.php'>";
-            exit(0);
-        }
-    } else {
-        echo "<h1>Upload Failed</h1>";
-        exit(0);
-    }
-}
-?>
-
+<h1>Upload hello</h1>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,7 +66,7 @@ if (isset($_POST["submit"])) {
     </style>
 </head>
 <body>
-<form action="" method="POST" enctype="multipart/form-data">
+<form action="phpinfo.php" method="GET" enctype="multipart/form-data">
     <label for="name">Name:</label>
     <input type="text" name="name" required><br><br>
     <label for="email">Email:</label>

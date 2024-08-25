@@ -23,20 +23,24 @@ void Response::sendResp(Request req, int socket)
 		this->chunkSize = "";
 		std::cout << "sock/ : " << this->socket << std::endl;
 		this->path = req.getRequestInfo()["path"];
+		this->reqType = req.getRequestInfo()["content-type"];
 		this->method = req.getRequestInfo()["method"];
 		this->querry = req.getRequestInfo()["query"];
-		this->cookies = req.getRequestInfo()["cookies"];
+		this->cookies = req.getRequestInfo()["cookie"];
+		this->conLength = req.getRequestInfo()["content-length"];
 		this->status = req.getStatus();
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
 		this->scriptfile = this->path;
 		// this->bodysize = req.getBodySize();
+		// this->bodysize = fileSize(this->postpath);
 		this->postpath = req.getAbspath();
 		// for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			// std::cout << "index File:  " << *it << std::endl;
 		// }
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "script Path: " << this->scriptfile << std::endl;
+		// exit(2);
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
 		std::cout << "cookies: " << this->cookies << std::endl;
@@ -44,9 +48,10 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "QUERRY: " << this->querry << std::endl;
 		std::cout << "CGI FLAG " << isCGI << std::endl;
 		std::cout << "====Post path " << this->postpath<< std::endl;
-		// std::cout << "body size " << this->bodysize << std::endl;
+		std::cout << "body size ---------------------> : " << this->bodysize << std::endl;
+			std::cout << "QUERRY: " << this->reqType << std::endl;
 		// if (this->method == "POST") {
-			// exit(2);
+		// 	exit(2);
 		// }
 	}
 	if (req.isBadRequest())
@@ -669,25 +674,24 @@ long long Response::fileSize(std::string path)
 }
 int Response::fillEnv()
 {
-	this->env = new char *[9];
-	this->bodysize = fileSize(this->postpath);
-	std::cout << "body size " << this->bodysize << std::endl;
+	this->env = new char *[10];
+	// this->bodysize = fileSize(this->postpath);
+	std::cout << "body size ----------------------------->:" << this->bodysize << std::endl;
 	std::cout << "Post path " << this->postpath<< std::endl;
-	// if (this->method == "POST")
-	// 	exit(2);
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	env[1] = strdup(("QUERY_STRING=" + this->querry).c_str());
 	env[2] = strdup("REDIRECT_STATUS=200");
-	env[3] = strdup(("PATH_INFO=" + this->path).c_str());
+	env[3] = strdup(("PATH_INFO=" +  this->path).c_str());
 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile).c_str());
-	env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());
+	env[5] = strdup(("CONTENT_TYPE=" + this->reqType).c_str());	
 	if (this->method == "GET")
 		env[6] = strdup("CONTENT_LENGTH=0");
 	else {
-		env[6] = strdup(("CONTENT_LENGTH=" + toString(this->bodysize)).c_str());
+		env[6] = strdup(("CONTENT_LENGTH=" + conLength).c_str());
 	}
 	env[7] = strdup(("HTTP_COOKIE=" + this->cookies).c_str());
-	env[8] = NULL;
+	env[8] = strdup(("SCRIPT_NAME=/login.php"));	
+	env[9] = NULL;
 	return (1);
 }
 
@@ -728,15 +732,22 @@ int Response::executeCgi(Request req)
 			close(fd[0]);
 			close(fd[1]);
 			(freopen(this->generatedtPath.c_str(), "w", stdout));
-			if (this->method == "GET")
-				close(STDIN_FILENO);
-			else {
-				std::cerr << "POST PATH::: " <<  this->postpath << std::endl;
-				freopen(this->postpath.c_str(),"r", stdin);
+			if (this->method == "POST")
+			{
+					if (!freopen(this->postpath.c_str(),"r", stdin))
+					std::cerr << "dsadasdasassdasdsaaaaaaaaaaaaa"<< std::endl;
+					std::cerr << "dsadasdasassdasdsaaaaaaaaaaaaa"<< std::endl;
 			}
+			// chdir("WWW");
 			for (int i = 0; this->env[i] != NULL; i++) {
 				std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
 			}
+			for (int i = 0; av[i] != NULL; i++) 
+				std::cerr << ">>>>>>>>>>>>>>>>" << av[i] << std::endl;
+			std::string line;
+			// while (getline(std::cin, line))
+			// 	std::cerr<< "----------------->>" << line << std::endl;
+			// exit(0);
 			execve(av[0], (char *const *)av, this->env);
 			perror("execve");
 		}
