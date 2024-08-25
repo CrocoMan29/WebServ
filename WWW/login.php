@@ -12,9 +12,8 @@ if (isset($_COOKIE["name"]) && isset($_COOKIE["email"]) && isset($_COOKIE["profi
 
 echo "<h1>Upload hello</h1>";
 
-
 if (isset($_POST["submit"])) {
-    echo "<h1>Upload hello</h1>";
+    echo "<h1>Upload hello2</h1>";
     setcookie("name", $_POST["name"], time() + (60 * 60 * 24), "/");
     setcookie("email", $_POST["email"], time() + (60 * 60 * 24), "/");
     $uploadDir = "../uploads/";
@@ -100,7 +99,7 @@ if (isset($_POST["submit"])) {
     </style>
 </head>
 <body>
-<form action="phpinfo.php" method=_POST" enctype="multipart/form-data">
+<form action="" method="POST" enctype="multipart/form-data">
     <label for="name">Name:</label>
     <input type="text" name="name" required><br><br>
     <label for="email">Email:</label>

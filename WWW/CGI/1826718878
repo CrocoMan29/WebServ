@@ -1,4 +1,4 @@
-Set-Cookie: PHPSESSID=62ua0pdrgfs9envjv5fafciira; path=/
+Set-Cookie: PHPSESSID=fokh41pb6bjo206m7u3qipdovj; path=/
 Expires: Thu, 19 Nov 1981 08:52:00 GMT
 Cache-Control: no-store, no-cache, must-revalidate
 Pragma: no-cache
@@ -66,7 +66,7 @@ GET
     </style>
 </head>
 <body>
-<form action="phpinfo.php" method="POST" enctype="multipart/form-data">
+<form action="" method="POST" enctype="multipart/form-data">
     <label for="name">Name:</label>
     <input type="text" name="name" required><br><br>
     <label for="email">Email:</label>

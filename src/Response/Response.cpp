@@ -14,7 +14,6 @@ Response::Response() : status(0), socket(0), readed(false), isCGI(false), isErro
 
 void Response::sendResp(Request req, int socket)
 {
-	std::cout << "before res :" << req.getAbspath() << std::endl;
 	if (!this->readed)
 	{
 		std::cout << "==========================Rspsonse started..... ?=================================" << std::endl;
@@ -379,6 +378,7 @@ void Response::chunk(Request &req)
 	{
 		if (this->scriptfile.find(".php") != std::string::npos)
 		{
+			std::cout << "GENERATED PATH::: " << this->path << std::endl;
 			char buffer[BUFFERSIZE] = {0};
 			file.read(buffer, 1023);
 			std::cout << "Buffer:    " << buffer << std::endl;
@@ -442,6 +442,8 @@ void Response::chunk(Request &req)
 	{
 		char buf[BUFFERSIZE] = {0};
 		file.read(buf, 1023);
+		std::cout << "GENERATED PATH::: " << this->path << std::endl;
+		std::cout << "BUFFER:::: " << buf << std::endl;
 		if (file.gcount() > 0 && this->readed)
 		{
 			std::stringstream ss;
@@ -462,7 +464,7 @@ void Response::chunk(Request &req)
 
 int Response::checkPath(Request req)
 {
-	if (isDirectory(this->path))
+	if (isDirectory(this->path) && this->method == "GET")
 	{
 		std::cout << "is Directory -------->" << std::endl;
 		if (this->path.back() != '/')
@@ -501,13 +503,13 @@ int Response::checkPath(Request req)
 			this->pathCgi = "/usr/bin/php-cgi";
 		else
 			this->pathCgi = "/usr/bin/python3";
-		std::cout << "CGI PATH::  " << this->pathCgi << std::endl;
+		std::cout << "CGI PATH::  " << this->generatedtPath << std::endl;
 		int d = executeCgi(req);
 		if(d == 1) {
 			this->path = this->generatedtPath;
 			std::ifstream _file(this->generatedtPath, std::ios::binary);
 			std::cout << "cgi status : " << this->cgistat << std::endl;
-			if (_file.is_open() && this->status == 200)
+			if (_file.is_open() && (this->status == 200 || this->status == 201))
 			{
 				std::cout << "file opened :" << std::endl;
 				this->isError = true;
@@ -674,7 +676,7 @@ long long Response::fileSize(std::string path)
 }
 int Response::fillEnv()
 {
-	this->env = new char *[10];
+	this->env = new char *[9];
 	// this->bodysize = fileSize(this->postpath);
 	std::cout << "body size ----------------------------->:" << this->bodysize << std::endl;
 	std::cout << "Post path " << this->postpath<< std::endl;
@@ -683,15 +685,17 @@ int Response::fillEnv()
 	env[2] = strdup("REDIRECT_STATUS=200");
 	env[3] = strdup(("PATH_INFO=" +  this->path).c_str());
 	env[4] = strdup(("SCRIPT_FILENAME=" + this->scriptfile).c_str());
-	env[5] = strdup(("CONTENT_TYPE=" + this->reqType).c_str());	
+	if (this->method == "GET")
+		env[5] = strdup(("CONTENT_TYPE=" + getContentType(this->path)).c_str());	
+	else
+		env[5] = strdup(("CONTENT_TYPE=" + this->reqType).c_str());	
 	if (this->method == "GET")
 		env[6] = strdup("CONTENT_LENGTH=0");
 	else {
 		env[6] = strdup(("CONTENT_LENGTH=" + conLength).c_str());
 	}
-	env[7] = strdup(("HTTP_COOKIE=" + this->cookies).c_str());
-	env[8] = strdup(("SCRIPT_NAME=/login.php"));	
-	env[9] = NULL;
+	env[7] = strdup(("HTTP_COOKIE=" + this->cookies).c_str());	
+	env[8] = NULL;
 	return (1);
 }
 
@@ -733,21 +737,10 @@ int Response::executeCgi(Request req)
 			close(fd[1]);
 			(freopen(this->generatedtPath.c_str(), "w", stdout));
 			if (this->method == "POST")
-			{
-					if (!freopen(this->postpath.c_str(),"r", stdin))
-					std::cerr << "dsadasdasassdasdsaaaaaaaaaaaaa"<< std::endl;
-					std::cerr << "dsadasdasassdasdsaaaaaaaaaaaaa"<< std::endl;
-			}
-			// chdir("WWW");
+				freopen(this->postpath.c_str(),"r", stdin);
 			for (int i = 0; this->env[i] != NULL; i++) {
 				std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
 			}
-			for (int i = 0; av[i] != NULL; i++) 
-				std::cerr << ">>>>>>>>>>>>>>>>" << av[i] << std::endl;
-			std::string line;
-			// while (getline(std::cin, line))
-			// 	std::cerr<< "----------------->>" << line << std::endl;
-			// exit(0);
 			execve(av[0], (char *const *)av, this->env);
 			perror("execve");
 		}
@@ -758,8 +751,6 @@ int Response::executeCgi(Request req)
 	if (res  == 0 ) {
 		this->end = clock();
    		float processTime = static_cast<float>(this->end - this->start ) / CLOCKS_PER_SEC;
-		// this->end = clock();
-		// double processTime = (double)(this->end - this->start) / (double)CLOCKS_PER_SEC;
 			std::cout << "Process time2 :" << processTime << std::endl;
 		if ( processTime > 4) {
 			std::cout << "Process time2 :" << processTime << std::endl;
