@@ -144,7 +144,8 @@ void webServ::setUpServer() {
 					char buffer[1024] = {0};
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
 					
-					// std::cerr << "Received : "<< buffer << std::endl;
+					std::cerr << "Received : "<< buffer << std::endl;
+					
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
 					}if (bytes_received == 0) {
@@ -163,6 +164,7 @@ void webServ::setUpServer() {
 					// std::cout << "----------hell------------" << std::endl;
 					// std::cout << "Content Length : " << server.requestMap[curr_fd].getContentLength() << std::endl;
 					// std::cout << "Body Size : " << server.requestMap[curr_fd].getBodySize() << std::endl;
+					std::cout << "Request flag :" <<  server.requestMap[curr_fd].isRequestParsed() << std::endl;
 					server.requestMap[client_socket].setTimeOut(takeTime());
 					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
 					if (server.responseMap[curr_fd].finish == true) {
