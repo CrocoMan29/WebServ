@@ -117,25 +117,8 @@ void Response::sendResp(Request req, int socket)
 				}
 			}
 			std::cout << "POST PATH: " << this->postpath << std::endl;
-			// exit(2);
 			chunk(req);
 		}
-		// if (this->status == 201)
-		// {
-		// 	this->path = "./error/201.html";
-		// 	file.open(this->path, std::ios::binary);
-		// }
-		// else if (this->status == 403)
-		// {
-		// 	this->path = "./error/403.html";
-		// 	file.open(this->path, std::ios::binary);
-		// }
-		// else if (this->status == 404)
-		// {
-		// 	this->path = "./error/404.html";
-		// 	file.open(this->path, std::ios::binary);
-		// }
-		// chunk(req);
 	}
 	else if (this->method == "DELETE" && !req.isBadRequest())
 	{
@@ -412,6 +395,8 @@ void Response::chunk(Request &req)
 					write(this->socket, "0\r\n\r\n", 5);
 					file.close();	
 					this->finish = true;
+					// ft_free(this->env);
+
 				}
 			}
 		}
@@ -435,6 +420,7 @@ void Response::chunk(Request &req)
 				file.close();
 				this->finish = true;
 				this->isCGI = false;
+				// ft_free(this->env);
 			}
 		}
 	}
@@ -464,125 +450,267 @@ void Response::chunk(Request &req)
 
 int Response::checkPath(Request req)
 {
-	if (isDirectory(this->path) && this->method == "GET")
-	{
-		std::cout << "is Directory -------->" << std::endl;
-		if (this->path.back() != '/')
+	// if (this->method == "GET") {
+		if (isDirectory(this->path))
 		{
-			this->status = 301;
-			this->path += '/';
-			setHeader();
-			this->finish = true;
-		}
-		else if (this->path.back() == '/')
-		{
-			if (directoryHasFiles(this->path))
+			std::cout << "is Directory -------->" << std::endl;
+			if (this->path.back() != '/')
 			{
-				if (directoryHasIndexFile(this->path))
+				this->status = 301;
+				this->path += '/';
+				setHeader();
+				this->finish = true;
+			}
+			else if (this->path.back() == '/')
+			{
+				if (directoryHasFiles(this->path))
 				{
-					checkIndexFiles();
-					if (!valueOfAutoIndex)
+					if (directoryHasIndexFile(this->path))
 					{
-						this->path = "./error/403.html";
-						this->isError = true;
-						file.open(this->path, std::ios::binary);
-					}
-					else if (valueOfAutoIndex)
-					{
-						listDir();
-						this->isError = true;
+						checkIndexFiles();
+						if (!valueOfAutoIndex)
+						{
+							this->path = "./error/403.html";
+							this->isError = true;
+							file.open(this->path, std::ios::binary);
+						}
+						else if (valueOfAutoIndex)
+						{
+							listDir();
+							this->isError = true;
+						}
 					}
 				}
 			}
 		}
-	}
-	else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)))
-	{
-		std::cout << "CGI----</ " << std::endl;
-		if (this->path.rfind(".php") != std::string::npos)
-			this->pathCgi = "/usr/bin/php-cgi";
-		else
-			this->pathCgi = "/usr/bin/python3";
-		std::cout << "CGI PATH::  " << this->generatedtPath << std::endl;
-		int d = executeCgi(req);
-		if(d == 1) {
-			this->path = this->generatedtPath;
-			std::ifstream _file(this->generatedtPath, std::ios::binary);
-			std::cout << "cgi status : " << this->cgistat << std::endl;
-			if (_file.is_open() && (this->status == 200 || this->status == 201))
-			{
-				std::cout << "file opened :" << std::endl;
-				this->isError = true;
-				file.open(this->path, std::ios::binary);
-				this->isCGI = true;
-			}
-			else if (this->status == 500)
-			{
-				std::cout << "internal Error" << std::endl;
-				this->path = "./error/500.html";
-				this->isError = true;
-				file.open(this->path, std::ios::binary);
-				this->isCGI = true;
-			}
-			else if (this->status == 504)
-			{
-				std::cout << "time out" << std::endl;
-				this->path = "./error/504.html";
-				this->isError = true;
-				file.open(this->path, std::ios::binary);
-				this->isCGI = true;
-			}
-			else
-			{
-				std::cout << "not opened :" << std::endl;
-				this->status = 404;
-				this->path = "./error/error.html";
-				this->isError = true;
-				file.open(this->path, std::ios::binary);
-				this->isCGI = true;
-			}
-		}
-		else
-			return 0;
-		
-	}
-	else if (isRegularFile(this->path))
-	{
-		std::cout << "is Regular file: " << std::endl;
-		if (!this->readed)
+		else if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)))
 		{
-			file.open(this->path, std::ios::binary);
-			if (!file.good())
-			{
-				if (access(this->path.c_str(), F_OK) != -1)
+			std::cout << "CGI----</ " << std::endl;
+			if (this->path.rfind(".php") != std::string::npos)
+				this->pathCgi = "/usr/bin/php-cgi";
+			else
+				this->pathCgi = "/usr/bin/python3";
+			std::cout << "CGI PATH::  " << this->generatedtPath << std::endl;
+			int d = executeCgi(req);
+			if(d == 1) {
+				this->path = this->generatedtPath;
+				std::ifstream _file(this->generatedtPath, std::ios::binary);
+				std::cout << "cgi status : " << this->cgistat << std::endl;
+				if (_file.is_open() && (this->status == 200 || this->status == 201))
 				{
-					this->status = 403;
-					this->path = "./error/403.html";
+					std::cout << "file opened :" << std::endl;
+					this->isError = true;
+					file.open(this->path, std::ios::binary);
+					this->isCGI = true;
+				}
+				else if (this->status == 500)
+				{
+					std::cout << "internal Error" << std::endl;
+					this->path = "./error/500.html";
+					this->isError = true;
+					file.open(this->path, std::ios::binary);
+					this->isCGI = true;
+				}
+				else if (this->status == 504)
+				{
+					std::cout << "time out" << std::endl;
+					this->path = "./error/504.html";
+					this->isError = true;
+					file.open(this->path, std::ios::binary);
+					this->isCGI = true;
 				}
 				else
 				{
+					std::cout << "not opened :" << std::endl;
 					this->status = 404;
 					this->path = "./error/error.html";
+					this->isError = true;
+					file.open(this->path, std::ios::binary);
+					this->isCGI = true;
 				}
-				file.open(this->path, std::ios::binary);
-				this->isError = true;
 			}
 			else
+				return 0;
+			
+		}
+		else if (isRegularFile(this->path))
+		{
+			std::cout << "is Regular file: " << std::endl;
+			if (!this->readed)
 			{
-				this->readed = true;
+				file.open(this->path, std::ios::binary);
+				if (!file.good())
+				{
+					if (access(this->path.c_str(), F_OK) != -1)
+					{
+						this->status = 403;
+						this->path = "./error/403.html";
+					}
+					else
+					{
+						this->status = 404;
+						this->path = "./error/error.html";
+					}
+					file.open(this->path, std::ios::binary);
+					this->isError = true;
+				}
+				else
+				{
+					this->readed = true;
+				}
 			}
 		}
+		else
+		{
+			std::cout << "Not found-------<" << std::endl;
+			this->status = 404;
+			this->path = "./error/error.html";
+			this->isError = true;
+			file.open(this->path, std::ios::binary);
+		}
+		return (1);
 	}
-	else
-	{
-		std::cout << "Not found-------<" << std::endl;
-		this->status = 404;
-		this->path = "./error/error.html";
-		this->isError = true;
-		file.open(this->path, std::ios::binary);
-	}
-	return (1);
-}
+	// else if (this->method == "POST") 
+	// {
+	// 		// if (isDirectory(this->path))
+	// 		// {
+	// 		// 	std::cout << "is Directory -------->" << std::endl;
+	// 		// 	if (this->path.back() != '/')
+	// 		// 	{
+	// 		// 		this->status = 301;
+	// 		// 		this->path += '/';
+	// 		// 		setHeader();
+	// 		// 		this->finish = true;
+	// 		// 	}
+	// 		// 	else if (this->path.back() == '/')
+	// 		// 	{
+	// 		// 		if (directoryHasFiles(this->path))
+	// 		// 		{
+	// 		// 			if (directoryHasIndexFile(this->path))
+	// 		// 			{
+	// 		// 				checkIndexFiles();
+	// 		// 				if (!valueOfAutoIndex)
+	// 		// 				{
+	// 		// 					this->path = "./error/403.html";
+	// 		// 					this->isError = true;
+	// 		// 					file.open(this->path, std::ios::binary);
+	// 		// 				}
+	// 		// 				else if (valueOfAutoIndex)
+	// 		// 				{
+	// 		// 					listDir();
+	// 		// 					this->isError = true;
+	// 		// 				}
+	// 		// 			}
+	// 		// 		}
+	// 		// 	}
+	// 		// }
+	// 		if (((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)))
+	// 		{
+	// 			std::cout << "CGI----</ " << std::endl;
+	// 			if (this->path.rfind(".php") != std::string::npos)
+	// 				this->pathCgi = "/usr/bin/php-cgi";
+	// 			else
+	// 				this->pathCgi = "/usr/bin/python3";
+	// 			std::cout << "CGI PATH::  " << this->generatedtPath << std::endl;
+	// 			int d = executeCgi(req);
+	// 			if(d == 1) {
+	// 				this->path = this->generatedtPath;
+	// 				std::ifstream _file(this->generatedtPath, std::ios::binary);
+	// 				std::cout << "cgi status : " << this->cgistat << std::endl;
+	// 				if (_file.is_open() && (this->status == 200 || this->status == 201))
+	// 				{
+	// 					std::cout << "file opened :" << std::endl;
+	// 					this->isError = true;
+	// 					file.open(this->path, std::ios::binary);
+	// 					this->isCGI = true;
+	// 				}
+	// 				else if (this->status == 500)
+	// 				{
+	// 					std::cout << "internal Error" << std::endl;
+	// 					this->path = "./error/500.html";
+	// 					this->isError = true;
+	// 					file.open(this->path, std::ios::binary);
+	// 					this->isCGI = true;
+	// 				}
+	// 				else if (this->status == 504)
+	// 				{
+	// 					std::cout << "time out" << std::endl;
+	// 					this->path = "./error/504.html";
+	// 					this->isError = true;
+	// 					file.open(this->path, std::ios::binary);
+	// 					this->isCGI = true;
+	// 				}
+	// 				else
+	// 				{
+	// 					std::cout << "not opened :" << std::endl;
+	// 					this->status = 404;
+	// 					this->path = "./error/error.html";
+	// 					this->isError = true;
+	// 					file.open(this->path, std::ios::binary);
+	// 					this->isCGI = true;
+	// 				}
+	// 			}
+	// 			else
+	// 				return 0;
+				
+	// 		}
+	// 		else if (this->status == 201 || this->status == 403 ||this->status == 404 ) 
+	// 		{
+	// 			std::cout << "HHEJKWHKJA" << std::endl;
+	// 			if (this->status == 201)
+	// 			{
+	// 				this->path = "./error/201.html";
+	// 				file.open(this->path, std::ios::binary);
+	// 			}
+	// 			else if (this->status == 403)
+	// 			{
+	// 				this->path = "./error/403.html";
+	// 				file.open(this->path, std::ios::binary);
+	// 			}
+	// 			else if (this->status == 404)
+	// 			{
+	// 				this->path = "./error/404.html";
+	// 				file.open(this->path, std::ios::binary);
+	// 			}
+	// 		}
+	// 		else if (isRegularFile(this->path))
+	// 		{
+	// 			std::cout << "is Regular file: " << std::endl;
+	// 			if (!this->readed)
+	// 			{
+	// 				file.open(this->path, std::ios::binary);
+	// 				if (!file.good())
+	// 				{
+	// 					if (access(this->path.c_str(), F_OK) != -1)
+	// 					{
+	// 						this->status = 403;
+	// 						this->path = "./error/403.html";
+	// 					}
+	// 					else
+	// 					{
+	// 						this->status = 404;
+	// 						this->path = "./error/error.html";
+	// 					}
+	// 					file.open(this->path, std::ios::binary);
+	// 					this->isError = true;
+	// 				}
+	// 				else
+	// 				{
+	// 					this->readed = true;
+	// 				}
+	// 			}
+	// 		}
+	// 		else
+	// 		{
+	// 			std::cout << "Not found-------<" << std::endl;
+	// 			this->status = 404;
+	// 			this->path = "./error/error.html";
+	// 			this->isError = true;
+	// 			file.open(this->path, std::ios::binary);
+	// 		}
+	// 	}
+	// 	return (1);
+// }
 bool Response::getExt()
 {
 	if ((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos))
@@ -728,16 +856,16 @@ int Response::executeCgi(Request req)
 		if (this->pid == -1)
 		{
 			perror("fork");
-			return 1;
+			// return 1;
 		}
 		if (this->pid == 0)
 		{
 			const char *av[] = {this->pathCgi.c_str(), this->path.c_str(), NULL};
-			close(fd[0]);
-			close(fd[1]);
 			(freopen(this->generatedtPath.c_str(), "w", stdout));
-			if (this->method == "POST")
+			if (this->method == "POST") {
+				std::cerr << " here ------------------> " << this->method << "  " << this->postpath << std::endl; 
 				freopen(this->postpath.c_str(),"r", stdin);
+			}
 			for (int i = 0; this->env[i] != NULL; i++) {
 				std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
 			}

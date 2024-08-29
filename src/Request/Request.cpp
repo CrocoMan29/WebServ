@@ -90,7 +90,7 @@ void Request::collector(std::string &token){
 
     separatorPos = token.find(": ");
     if(separatorPos != std::string::npos){
-        _requestInfos.insert(std::pair<std::string , std::string>(toLowercase(token.substr(0, separatorPos)), toLowercase(token.substr(separatorPos + 2))));
+        _requestInfos.insert(std::pair<std::string , std::string>(toLowercase(token.substr(0, separatorPos)), token.substr(separatorPos + 2)));
     }
 }
 
@@ -134,8 +134,6 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes){
             _headers = std::string(request).substr(0, it);
             collectData();
             _headersParsed = true;
-            if(readBytes - it - 4 <= 0)
-                _bodyParsed = true;
             readingBody(request + it + 4, readBytes - it - 4);
         }
         else {
@@ -229,6 +227,7 @@ void Request::pathInCannonicalForm(){
     bool                        finishWithSlash = false;
 
     extractingQuerryString();
+    // REPLACE SPECIAL CHARACTERS ;
     if (_requestInfos["path"][_requestInfos["path"].length() - 1] == '/')
         finishWithSlash = true;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
@@ -333,7 +332,7 @@ void Request::bodyHandler(){
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
     // std::string path = "/nfs/homes/yismaail/Desktop/neww"+_location.upload_store + "/" + _file;
-    this->abspath = "/nfs/homes/ymenyoub/Desktop/test"+_location.upload_store + "/" + _file;
+    this->abspath = "/nfs/homes/ylarhris/Desktop/WebServ"+_location.upload_store + "/" + _file;
     //std::cout << "Req Post :" << this->abspath << std::endl;
     std::ofstream ofs( this->abspath.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
@@ -355,20 +354,22 @@ void Request::postChecker(){
 }
 
 void Request::readingBody(const char *body, size_t readBytes){
-    if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
-        setChunkedBody(body, readBytes);
-    }
-    else if(_requestInfos.find("content-length") != _requestInfos.end()){
-        if(_bodySize + readBytes >= atol(_requestInfos["content-length"].c_str())){
-            _body.insert(_body.end(), body, body + atol(_requestInfos["content-length"].c_str()) - _bodySize);
-            _bodySize = atol(_requestInfos["content-length"].c_str());
-            setStatusCode(CREATED);
-            _bodyParsed = true;
+    if(_requestInfos["method"] == "POST"){
+        if(_requestInfos.find("transfer-encoding") != _requestInfos.end()){
+            setChunkedBody(body, readBytes);
         }
-        else {
-            _body.insert(_body.end(), body, body + readBytes);
-            _bodySize += readBytes;
-        }
+        else if(_requestInfos.find("content-length") != _requestInfos.end()){
+            if(_bodySize + readBytes >= atol(_requestInfos["content-length"].c_str())){
+                _body.insert(_body.end(), body, body + atol(_requestInfos["content-length"].c_str()) - _bodySize);
+                _bodySize = atol(_requestInfos["content-length"].c_str());
+                setStatusCode(CREATED);
+                _bodyParsed = true;
+            }
+            else {
+                _body.insert(_body.end(), body, body + readBytes);
+                _bodySize += readBytes;
+            }
+        } 
     }
     else {
         _bodyParsed = true;

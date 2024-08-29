@@ -16,7 +16,7 @@ if (isset($_POST["submit"])) {
     echo "<h1>Upload hello2</h1>";
     setcookie("name", $_POST["name"], time() + (60 * 60 * 24), "/");
     setcookie("email", $_POST["email"], time() + (60 * 60 * 24), "/");
-    $uploadDir = "../uploads/";
+    $uploadDir = "./uploads/";
     if (!file_exists($uploadDir))
         mkdir($uploadDir, 0777, true);
     $uploadedFiles = [];

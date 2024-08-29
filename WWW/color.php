@@ -10,6 +10,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 if (isset($_POST['btn']))
 {
+    print_r($_POST);
+    $contents = file_get_contents("php://stdin");
+    echo "$contents";
     $col=$_POST['t1'];
     if(isset($col))
     {

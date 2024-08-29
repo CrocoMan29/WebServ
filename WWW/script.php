@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: text/html");
+    header("Content-Type: text/html");
 ?>
 <!DOCTYPE html>
 <html>
