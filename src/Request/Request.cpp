@@ -56,6 +56,8 @@ void Request::collectData(){
     int         lineNumber = 0;
     char        *token;
 
+    if(!_headersParsed)
+        return;
     token = strtok((char *)_headers.c_str(),"\r\n");
     while (token)
     {
@@ -105,8 +107,8 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
                 matchingLocation(locations);
                 checkingBadRequests();
             }
+            bodyHandler();
         }
-        bodyHandler();
     } catch (ClientError &e) {
         mentionAsBadReq(e);
     } catch (ServerError &e) {
@@ -114,7 +116,6 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     } catch (std::exception &e) {
         mentionAsBadReq(INTERNALSERVERERROR);
     }
-    //std::cout << "Status Req :"<< _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -130,14 +131,13 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes){
     }
     else {
         if ((it = std::string(request).find("\r\n\r\n")) != std::string::npos){
-            _headers = std::string(request).substr(0, it);
-            collectData();
+            _headers.append(std::string(request).substr(0, it));
             _headersParsed = true;
+            collectData();
             readingBody(request + it + 4, readBytes - it - 4);
         }
         else {
-            _headers = std::string(request);
-            collectData();
+            _headers.append(std::string(request));
         }
     }
 }
@@ -231,7 +231,6 @@ char fromHex(char ch) {
 
 std::string Request::urlDecode(const std::string &encoded) {
     std::string decoded = "";
-    std::cerr << "Inside UrlDecode " << encoded << std::endl;
     for (size_t i = 0; i < encoded.length(); i++) {
         if (encoded[i] == '%') {
             if (i + 2 < encoded.length()) {
@@ -257,7 +256,6 @@ void Request::pathInCannonicalForm(){
     bool                        finishWithSlash = false;
 
     extractingQuerryString();
-    // REPLACE SPECIAL CHARACTERS ;
     if (_requestInfos["path"][_requestInfos["path"].length() - 1] == '/')
         finishWithSlash = true;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
@@ -360,13 +358,11 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    // std::string path = "/nfs/homes/yismaail/Desktop/neww"+_location.upload_store + "/" + _file;
     char cd[50];
     if (!getcwd(cd, sizeof(cd)))
         throw INTERNALSERVERERROR;
     std::string scd(cd); 
     this->abspath =  scd +_location.upload_store + "/" + _file;
-    //std::cout << "Req Post :" << this->abspath << std::endl;
     std::ofstream ofs( this->abspath.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());
