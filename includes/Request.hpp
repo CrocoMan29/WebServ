@@ -292,7 +292,7 @@ class Response {
 
 
 bool isFile(const char* path); 
-void isValidUri(std::string uri);
+bool isValidUri(std::string uri);
 std::string toLowercase(std::string str);
 std::string randomFileGenerator();
 
