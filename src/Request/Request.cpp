@@ -189,8 +189,9 @@ void Request::RequestLineParser(const std::string& requestLine) {
     }
     if (!endsWithVersion)
         throw BADREQUEST;
-    _requestInfos.insert(std::make_pair("path", parts[1]));
-    isValidUri(parts[1]);
+    isValidUri(urlDecode(parts[1]));
+    std::cout << "Path : " << urlDecode(parts[1]) << std::endl;
+    _requestInfos.insert(std::make_pair("path", urlDecode(parts[1])));
     _requestLineParsed = true;
 }
 
@@ -220,6 +221,30 @@ void Request::checkingBadRequests(){
         _checkingRequestInfo = true;
     }
 }
+
+char fromHex(char ch) {
+    return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
+std::string Request::urlDecode(const std::string &encoded) {
+    std::string decoded = "";
+    for (size_t i = 0; i < encoded.length(); i++) {
+        if (encoded[i] == '%') {
+            if (i + 2 < encoded.length()) {
+                char h1 = fromHex(encoded[i + 1]);
+                char h2 = fromHex(encoded[i + 2]);
+                decoded += (h1 << 4) | h2;
+                i += 2;
+            }
+        } else if (encoded[i] == '+') {
+            decoded += ' ';
+        } else {
+            decoded += encoded[i];
+        }
+    }
+    return decoded;
+}
+
 
 void Request::pathInCannonicalForm(){
     std::string                 path;
