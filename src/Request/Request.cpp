@@ -56,6 +56,8 @@ void Request::collectData(){
     int         lineNumber = 0;
     char        *token;
 
+    if(!_headersParsed)
+        return;
     token = strtok((char *)_headers.c_str(),"\r\n");
     while (token)
     {
@@ -103,11 +105,10 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
             if (_headersParsed && _requestLineParsed && !_checkingRequestInfo) {
                 pathInCannonicalForm();
                 matchingLocation(locations);
-                // isallowedMethod();
                 checkingBadRequests();
             }
+            bodyHandler();
         }
-        bodyHandler();
     } catch (ClientError &e) {
         mentionAsBadReq(e);
     } catch (ServerError &e) {
@@ -115,7 +116,6 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
     } catch (std::exception &e) {
         mentionAsBadReq(INTERNALSERVERERROR);
     }
-    //std::cout << "Status Req :"<< _status << std::endl;
 }
 
 std::map<std::string , std::string> Request::getRequestInfo() const{
@@ -131,14 +131,13 @@ void Request::splitingHeaderBody(const char *request, size_t readBytes){
     }
     else {
         if ((it = std::string(request).find("\r\n\r\n")) != std::string::npos){
-            _headers = std::string(request).substr(0, it);
-            collectData();
+            _headers.append(std::string(request).substr(0, it));
             _headersParsed = true;
+            collectData();
             readingBody(request + it + 4, readBytes - it - 4);
         }
         else {
-            _headers = std::string(request);
-            collectData();
+            _headers.append(std::string(request));
         }
     }
 }
@@ -189,14 +188,19 @@ void Request::RequestLineParser(const std::string& requestLine) {
     }
     if (!endsWithVersion)
         throw BADREQUEST;
-    _requestInfos.insert(std::make_pair("path", parts[1]));
-    isValidUri(parts[1]);
+    _requestInfos.insert(std::make_pair("path", urlDecode(parts[1])));
+    std::cerr << _requestInfos["path"] << std::endl;
+    if(!isValidUri(_requestInfos["path"])){
+        _requestLineParsed = true;
+        throw BADREQUEST;
+    }
     _requestLineParsed = true;
 }
 
-void isValidUri(std::string uri){
-    if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&-._~:/?#[]@!$'()*+,;=%") != std::string::npos)
-        throw BADREQUEST;
+bool isValidUri(std::string uri){
+    if(uri.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&-._~:/?#[]@!$'()*+,;=% ") != std::string::npos)
+        return false;
+    return true;
 }
 
 void Request::checkingBadRequests(){
@@ -221,13 +225,37 @@ void Request::checkingBadRequests(){
     }
 }
 
+char fromHex(char ch) {
+    return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
+std::string Request::urlDecode(const std::string &encoded) {
+    std::string decoded = "";
+    for (size_t i = 0; i < encoded.length(); i++) {
+        if (encoded[i] == '%') {
+            if (i + 2 < encoded.length()) {
+                char h1 = fromHex(encoded[i + 1]);
+                char h2 = fromHex(encoded[i + 2]);
+                decoded += (h1 << 4) | h2;
+                i += 2;
+            }
+        } else if (encoded[i] == '+') {
+            decoded += ' ';
+        } else {
+            decoded += encoded[i];
+        }
+    }
+    std::cerr << "Decoded : " << decoded << std::endl;
+    return decoded;
+}
+
+
 void Request::pathInCannonicalForm(){
     std::string                 path;
     char                        *token;
     bool                        finishWithSlash = false;
 
     extractingQuerryString();
-    // REPLACE SPECIAL CHARACTERS ;
     if (_requestInfos["path"][_requestInfos["path"].length() - 1] == '/')
         finishWithSlash = true;
     token = strtok((char *)this->_requestInfos["path"].c_str(),"/");
@@ -291,7 +319,6 @@ void Request::matchingLocation(std::vector<Location>& locations) {
     }
     if(!_location.root.empty())
         _rootPath = _location.root;
-    //std::cout << "location name : " << _location.name << std::endl;
     isallowedMethod();
 }
 
@@ -331,9 +358,11 @@ void Request::bodyHandler(){
     }
     if(_file.empty())
         _file = randomFileGenerator() + getExtension(_requestInfos["content-type"]);
-    // std::string path = "/nfs/homes/yismaail/Desktop/neww"+_location.upload_store + "/" + _file;
-    this->abspath = "/nfs/homes/ylarhris/Desktop/WebServ"+_location.upload_store + "/" + _file;
-    //std::cout << "Req Post :" << this->abspath << std::endl;
+    char cd[50];
+    if (!getcwd(cd, sizeof(cd)))
+        throw INTERNALSERVERERROR;
+    std::string scd(cd); 
+    this->abspath =  scd +_location.upload_store + "/" + _file;
     std::ofstream ofs( this->abspath.c_str(), std::ios_base::app | std::ios::binary);
     if (ofs.is_open()) {
         ofs.write(_body.data(), _body.size());

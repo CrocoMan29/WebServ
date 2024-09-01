@@ -153,6 +153,7 @@ void webServ::setUpServer() {
 					}if (bytes_received > 0) {
 						buffer[bytes_received] = '\0';
 						server.requestMap[curr_fd].requestParser(buffer, server._locations, bytes_received);
+						// std::cout << "===========Path=========="<< server.requestMap[curr_fd].getPath() << std::endl;
 						std::cout << "Querry string" << server.requestMap[curr_fd].getQueryString() << std::endl;
 						server.responseMap.insert(std::pair<int, Response>(curr_fd, Response()));
 						server.requestMap[client_socket].setTimeOut(takeTime());	

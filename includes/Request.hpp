@@ -109,6 +109,7 @@ class Request
         Request(const Request &copy);
         Request &operator=(const Request &rhs);
         std::map<std::string , std::string> getRequestInfo() const;
+        std::string urlDecode(const std::string &path);
         void RequestLineParser(const std::string& requestLine);
         void requestParser(const char* request,std::vector<Location> &locations, size_t readBytes);
         void collectData();
@@ -291,7 +292,7 @@ class Response {
 
 
 bool isFile(const char* path); 
-void isValidUri(std::string uri);
+bool isValidUri(std::string uri);
 std::string toLowercase(std::string str);
 std::string randomFileGenerator();
 
