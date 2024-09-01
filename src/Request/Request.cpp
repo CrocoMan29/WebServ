@@ -32,6 +32,7 @@ Request &Request::operator=(const Request &rhs){
         _requestLineParsed = rhs._requestLineParsed;
         _clientMaxBodySize = rhs._clientMaxBodySize;
 		_timeOut = rhs._timeOut;
+        _isBadRequest = rhs._isBadRequest;
         abspath = rhs.abspath;
     }
     return *this;
@@ -110,6 +111,7 @@ void Request::requestParser(const char *request ,std::vector<Location> &location
             bodyHandler();
         }
     } catch (ClientError &e) {
+        std::cerr << "Cli" << std::endl;
         mentionAsBadReq(e);
     } catch (ServerError &e) {
         mentionAsBadReq(e);
