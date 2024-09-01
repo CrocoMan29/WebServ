@@ -1,6 +1,0 @@
-Set-Cookie: name=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0; path=/
-Set-Cookie: email=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0; path=/
-Set-Cookie: profile=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0; path=/
-Content-type: text/html; charset=UTF-8
-
-<meta http-equiv='refresh' content='0; url=login.php'>
