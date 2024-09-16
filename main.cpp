@@ -15,12 +15,13 @@ void ignore_sigpipe() {
 
 int main (int ac, char **av){
 	// ignore_sigpipe();
+	std::string filename;
 	if (ac != 2)
 	{
-		std::cerr << "too many argument" << std::endl;
-		return (1);
+		filename = "./default.config";
 	}
-	std::string filename = av[1];
+	else
+		filename = av[1];
 	// std::cout<< "filename = " << filename << std::endl; 
 	try
 	{
