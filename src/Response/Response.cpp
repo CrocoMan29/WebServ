@@ -39,7 +39,6 @@ void Response::sendResp(Request req, int socket)
 		// }
 		std::cout << "Path: " << this->path << std::endl;
 		std::cout << "script Path: " << this->scriptfile << std::endl;
-		// exit(2);
 		std::cout << "Method: " << this->method << std::endl;
 		std::cout << "stat: " << this->status << std::endl;
 		std::cout << "cookies: " << this->cookies << std::endl;
@@ -49,49 +48,51 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "====Post path " << this->postpath<< std::endl;
 		std::cout << "body size ---------------------> : " << this->bodysize << std::endl;
 		std::cout << "QUERRY: " << this->reqType << std::endl;
+		// if (this->method == "POST")
+		// 	exit(2);
 	}
-	bool f = false;
-	if (req.isBadRequest() && !f)
-	{
-		f = true;
-		std::cout << f << std::endl;
-		// exit(9);
-		if (this->status == 400) {
-			this->path = "./error/400.html";
-		}
-		else if (this->status == 501) {
-			this->path = "./error/501html";
-		}
-		else if (this->status == 413) {
-			this->path = "./error/413.html";
-		}
-		else if (this->status == 404) {
-			this->path = "./error/error.html";
-		}
-		else if (this->status == 403) {
-			this->path = "./error/403.html";
-		}
-		else if (this->status == 405) {
-			this->path = "./error/405.html";
-		}
-		std::cout << "ps path" << this->path << std::endl;
-		if (this->readed && !this->isError)
-			{
-				setHeader();
-				this->isError = true;
-			}
-			else if (this->isError && !this->readed)
-			{
-				this->readed = true;
-				if (this->readed)
-				{
-					setHeader();
-				}
-			}
-		file.open(this->path, std::ios::binary);
-		chunk(req);
-		this->finish = true;
-	}
+	// bool f = false;
+	// if (req.isBadRequest() && !f)
+	// {
+	// 	f = true;
+	// 	std::cout << f << std::endl;
+	// 	// exit(9);
+	// 	if (this->status == 400) {
+	// 		this->path = "./error/400.html";
+	// 	}
+	// 	else if (this->status == 501) {
+	// 		this->path = "./error/501html";
+	// 	}
+	// 	else if (this->status == 413) {
+	// 		this->path = "./error/413.html";
+	// 	}
+	// 	else if (this->status == 404) {
+	// 		this->path = "./error/error.html";
+	// 	}
+	// 	else if (this->status == 403) {
+	// 		this->path = "./error/403.html";
+	// 	}
+	// 	else if (this->status == 405) {
+	// 		this->path = "./error/405.html";
+	// 	}
+	// 	std::cout << "ps path" << this->path << std::endl;
+	// 	if (this->readed && !this->isError)
+	// 		{
+	// 			setHeader();
+	// 			this->isError = true;
+	// 		}
+	// 		else if (this->isError && !this->readed)
+	// 		{
+	// 			this->readed = true;
+	// 			if (this->readed)
+	// 			{
+	// 				setHeader();
+	// 			}
+	// 		}
+	// 	file.open(this->path, std::ios::binary);
+	// 	chunk(req);
+	// 	this->finish = true;
+	// }
 
 	if (this->method == "GET" && !req.isBadRequest())
 	{

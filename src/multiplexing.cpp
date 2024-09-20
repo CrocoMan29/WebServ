@@ -144,7 +144,7 @@ void webServ::setUpServer() {
 					char buffer[1024] = {0};
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
 					
-					// std::cerr << "Received : "<< buffer << std::endl;
+					std::cerr << "Received : "<< buffer << std::endl;
 					
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
@@ -154,7 +154,6 @@ void webServ::setUpServer() {
 						buffer[bytes_received] = '\0';
 						server.requestMap[curr_fd].requestParser(buffer, server._locations, bytes_received);
 						// std::cout << "===========Path=========="<< server.requestMap[curr_fd].getPath() << std::endl;
-						std::cout << "Querry string" << server.requestMap[curr_fd].getQueryString() << std::endl;
 						server.responseMap.insert(std::pair<int, Response>(curr_fd, Response()));
 						server.requestMap[client_socket].setTimeOut(takeTime());	
 					}
