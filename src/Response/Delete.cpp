@@ -53,8 +53,13 @@ void Response::delete_file(const std::string& path) {
     }
 }
 
-void Response::del(const Request& request) {
-    std::string path = "/home/ylr/Desktop/WebServ/" + request.getPath();
+void Response::del(const Request& request) {    
+    char cd[50];
+
+    if (!getcwd(cd, sizeof(cd)))
+        throw INTERNALSERVERERROR;
+    std::string path(cd);
+    
     if (this->_isDeleted == 0) {
         if (isDirectory(path.c_str())) {
             std::cout << "delete directory" << std::endl;
