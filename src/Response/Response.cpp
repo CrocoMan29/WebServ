@@ -51,49 +51,53 @@ void Response::sendResp(Request req, int socket)
 		// if (this->method == "POST")
 		// 	exit(2);
 	}
-	// bool f = false;
-	// if (req.isBadRequest() && !f)
-	// {
-	// 	f = true;
-	// 	std::cout << f << std::endl;
-	// 	// exit(9);
-	// 	if (this->status == 400) {
-	// 		this->path = "./error/400.html";
-	// 	}
-	// 	else if (this->status == 501) {
-	// 		this->path = "./error/501html";
-	// 	}
-	// 	else if (this->status == 413) {
-	// 		this->path = "./error/413.html";
-	// 	}
-	// 	else if (this->status == 404) {
-	// 		this->path = "./error/error.html";
-	// 	}
-	// 	else if (this->status == 403) {
-	// 		this->path = "./error/403.html";
-	// 	}
-	// 	else if (this->status == 405) {
-	// 		this->path = "./error/405.html";
-	// 	}
-	// 	std::cout << "ps path" << this->path << std::endl;
-	// 	if (this->readed && !this->isError)
-	// 		{
-	// 			setHeader();
-	// 			this->isError = true;
-	// 		}
-	// 		else if (this->isError && !this->readed)
-	// 		{
-	// 			this->readed = true;
-	// 			if (this->readed)
-	// 			{
-	// 				setHeader();
-	// 			}
-	// 		}
-	// 	file.open(this->path, std::ios::binary);
-	// 	chunk(req);
-	// 	this->finish = true;
-	// }
-
+	bool f = false;
+	if (req.isBadRequest() && !f)
+	{
+		f = true;
+		std::cout << f << std::endl;
+		// exit(9);
+		if (this->status == 400) {
+			this->path = "./error/400.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 501) {
+			this->path = "./error/501html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 413) {
+			this->path = "./error/413.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 404) {
+			this->path = "./error/error.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 403) {
+			this->path = "./error/403.html";
+			file.open(this->path, std::ios::binary);
+		}
+		else if (this->status == 405) {
+			this->path = "./error/405.html";
+			file.open(this->path, std::ios::binary);
+		}
+		std::cout << "ps path" << this->path << std::endl;
+		if (this->readed && !this->isError)
+		{
+			setHeader();
+			this->isError = true;
+		}
+		else if (this->isError && !this->readed)
+		{
+			this->readed = true;
+			if (this->readed)
+			{
+				setHeader();
+			}
+		}
+		chunk(req);
+		this->finish = true;
+	}
 	if (this->method == "GET" && !req.isBadRequest())
 	{
 		std::cout << "GET METHOD" << std::endl;
@@ -139,8 +143,39 @@ void Response::sendResp(Request req, int socket)
 	}
 	else if (this->method == "DELETE" && !req.isBadRequest())
 	{
-		this->del(req);
 		std::cout << " DELETE METHOD" << std::endl;
+		// exit(2);
+		this->del(req);
+
+		// if (this->status == 200 || this->status == 404 || this->status == 403) 
+		// {
+		// 	if (this->status == 200)
+		// 		this->path = "./error/201.html";
+		// 	else if (this->status == 403)
+		// 		this->path = "./error/403.html";
+		// 	else if (this->status == 404)
+		// 		this->path = "./error/error.html";
+		if (checkPath(req))
+		{
+			if (this->readed && !this->isError)
+			{
+				setHeader();
+				this->isError = true;
+			}
+			else if (this->isError && !this->readed)
+			{
+				this->readed = true;
+				if (this->readed)
+				{
+					setHeader();
+				}
+			}
+			file.open(this->path, std::ios::binary);
+			std::cout << "before chunck  <<<<<<<<< "  << std::endl;
+			chunk(req);
+			std::cout << "After chunck  <<<<<<<<< "  << std::endl;
+			// exit(1);
+		}
 	}
 }
 
@@ -446,7 +481,16 @@ void Response::chunk(Request &req)
 		file.read(buf, 1023);
 		std::cout << "GENERATED PATH::: " << this->path << std::endl;
 		std::cout << "BUFFER:::: " << buf << std::endl;
-		// exit(2);
+		std::cout << "METHODDDDDD >>> " << this->method << std::endl;
+		std::cout << "STATUSSSSSSSSSSSS :: " << this->status << std::endl;
+		// if (file.is_open()) {
+		// 	std::cout << "GOOd" << std::endl;
+		// 	exit(2);
+		// }
+		// else {
+		// 	std::cout << "NOT GOOD" << std::endl;
+		// 	exit(4);	
+		// }
 		if (file.gcount() > 0 && this->readed)
 		{
 			std::stringstream ss;
@@ -458,6 +502,7 @@ void Response::chunk(Request &req)
 		}
 		else if (file.gcount() == 0 && this->readed)
 		{
+			// exit(2);
 			write(this->socket, "0\r\n\r\n", 5);
 			file.close();
 			this->finish = true;
@@ -468,18 +513,23 @@ void Response::chunk(Request &req)
 int Response::checkPath(Request req)
 {
 		if (this->method == "POST" && (!((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos))))
-		{	
-			std::cout << "here:" <<std::endl;
-			// exit(2);
+		{
 			if (this->status == 201)
 				this->path = "./error/201.html";
 			else if (this->status == 403)
 				this->path = "./error/403.html";
 			else if (this->status == 404)
 				this->path = "./error/error.html";
-			// exit(2);
 		}
-		if (isDirectory(this->path))
+		else if (this->method == "DELETE") {
+			if (this->status == 200)
+				this->path = "./error/201.html";
+			else if (this->status == 403)
+				this->path = "./error/403.html";
+			else if (this->status == 404)
+				this->path = "./error/error.html";
+		}
+		else if (isDirectory(this->path))
 		{
 			std::cout << "is Directory -------->" << std::endl;
 			if (this->path.back() != '/')
