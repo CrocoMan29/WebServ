@@ -99,6 +99,7 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
+        std::cout << "******************** Request ****************************************" << std::endl;
         if(_isBadRequest == true)
             return;
         splitingHeaderBody(request, readBytes);

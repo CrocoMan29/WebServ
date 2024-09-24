@@ -56,11 +56,14 @@ void Response::delete_file(const std::string& path) {
 void Response::del(const Request& request) {    
     char cd[50];
 
+    std::cout << "////////////////////DELETE\\\\\\\\\\\\\\\\\\\\" << std::endl;
     if (!getcwd(cd, sizeof(cd)))
         throw INTERNALSERVERERROR;
     std::string path(cd);
+    path = path +"/"+request.getPath();
     
     if (this->_isDeleted == 0) {
+        std::cout << "delete path : " << path << std::endl;
         if (isDirectory(path.c_str())) {
             std::cout << "delete directory" << std::endl;
             delete_directory(path, request);
