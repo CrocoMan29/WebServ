@@ -31,8 +31,6 @@ void Response::sendResp(Request req, int socket)
 		this->valueOfAutoIndex = req.getLocation().autoIndex;
 		this->indexFile = req.getIndexes();
 		this->scriptfile = this->path;
-		// this->bodysize = req.getBodySize();
-		// this->bodysize = fileSize(this->postpath);
 		this->postpath = req.getAbspath();
 		// for (std::vector<std::string>::iterator it = indexFile.begin(); it != indexFile.end(); it++ ) {
 			// std::cout << "index File:  " << *it << std::endl;
@@ -48,8 +46,6 @@ void Response::sendResp(Request req, int socket)
 		std::cout << "====Post path " << this->postpath<< std::endl;
 		std::cout << "body size ---------------------> : " << this->bodysize << std::endl;
 		std::cout << "QUERRY: " << this->reqType << std::endl;
-		// if (this->method == "POST")
-		// 	exit(2);
 	}
 	bool f = false;
 	if (req.isBadRequest() && !f)
@@ -342,12 +338,14 @@ std::string Response::getStatus(int stat)
 	this->code[200] = "200 OK";
 	this->code[201] = "201 Created";
 	this->code[202] = "202 Accepted";
+	this->code[204] = "204 No Content";
 	this->code[301] = "301 Moved Permanently";
 	this->code[400] = "400 Bad Request";
 	this->code[401] = "401 Unauthorized";
 	this->code[403] = "403 Forbidden";
 	this->code[404] = "404 Not Found";
 	this->code[405] = "405 Method Not Allowed";
+	this->code[409] = "409 Conflict";
 	this->code[411] = "411 Length Required";
 	this->code[413] = "413 Content Too Large";
 	this->code[415] = "415 Unsupported Media Type";
@@ -423,8 +421,6 @@ void Response::chunk(Request &req)
 				std::string bodyy = buffer + (pos + 4);
 				char buf[80000] = {0};
 				file.read(buf, 80000);
-				// std::cout << "Buffer:    " << buf << std::endl;
-				// exit(2);
 				if (file.gcount() > 0 && this->readed)
 				{
 					std::stringstream sd;
@@ -472,18 +468,6 @@ void Response::chunk(Request &req)
 	{
 		char buf[BUFFERSIZE] = {0};
 		file.read(buf, 1023);
-		std::cout << "GENERATED PATH::: " << this->path << std::endl;
-		std::cout << "BUFFER:::: " << buf << std::endl;
-		std::cout << "METHODDDDDD >>> " << this->method << std::endl;
-		std::cout << "STATUSSSSSSSSSSSS :: " << this->status << std::endl;
-		// if (file.is_open()) {
-		// 	std::cout << "GOOd" << std::endl;
-		// 	exit(2);
-		// }
-		// else {
-		// 	std::cout << "NOT GOOD" << std::endl;
-		// 	exit(4);	
-		// }
 		if (file.gcount() > 0 && this->readed)
 		{
 			std::stringstream ss;
@@ -494,9 +478,7 @@ void Response::chunk(Request &req)
 			write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
 		}
 		else if (file.gcount() == 0 && this->readed)
-		{	
-			std::cout << "RESPONSE ========== 0" << std::endl;
-			// exit(2);
+		{
 			write(this->socket, "0\r\n\r\n", 5);
 			file.close();
 			this->finish = true;
@@ -517,11 +499,13 @@ int Response::checkPath(Request req)
 		}
 		else if (this->method == "DELETE") {
 			if (this->status == 204)
-				this->path = "./error/201.html";
+				this->path = "./error/204.html";
 			else if (this->status == 403)
 				this->path = "./error/403.html";
 			else if (this->status == 404)
 				this->path = "./error/error.html";
+			else if (this->status == 409)
+				this->path = "./error/409.html";
 		}
 		else if (isDirectory(this->path))
 		{
