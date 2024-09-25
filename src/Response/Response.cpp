@@ -146,15 +146,6 @@ void Response::sendResp(Request req, int socket)
 		std::cout << " DELETE METHOD" << std::endl;
 		// exit(2);
 		this->del(req);
-
-		// if (this->status == 200 || this->status == 404 || this->status == 403) 
-		// {
-		// 	if (this->status == 200)
-		// 		this->path = "./error/201.html";
-		// 	else if (this->status == 403)
-		// 		this->path = "./error/403.html";
-		// 	else if (this->status == 404)
-		// 		this->path = "./error/error.html";
 		if (checkPath(req))
 		{
 			if (this->readed && !this->isError)
@@ -173,7 +164,9 @@ void Response::sendResp(Request req, int socket)
 			file.open(this->path, std::ios::binary);
 			std::cout << "before chunck  <<<<<<<<< "  << std::endl;
 			chunk(req);
+			file.close();
 			std::cout << "After chunck  <<<<<<<<< "  << std::endl;
+			this->finish = true;
 			// exit(1);
 		}
 	}
@@ -501,7 +494,8 @@ void Response::chunk(Request &req)
 			write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
 		}
 		else if (file.gcount() == 0 && this->readed)
-		{
+		{	
+			std::cout << "RESPONSE ========== 0" << std::endl;
 			// exit(2);
 			write(this->socket, "0\r\n\r\n", 5);
 			file.close();
@@ -522,7 +516,7 @@ int Response::checkPath(Request req)
 				this->path = "./error/error.html";
 		}
 		else if (this->method == "DELETE") {
-			if (this->status == 200)
+			if (this->status == 204)
 				this->path = "./error/201.html";
 			else if (this->status == 403)
 				this->path = "./error/403.html";

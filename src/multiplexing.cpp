@@ -167,9 +167,12 @@ void webServ::setUpServer() {
 					// std::cout << "Request flag :" <<  server.requestMap[curr_fd].isRequestParsed() << std::endl;
 					server.requestMap[client_socket].setTimeOut(takeTime());
 					server.responseMap[curr_fd].sendResp(server.requestMap[curr_fd] ,curr_fd);
+					std::cout << "OUT OF RESP FUNCTION ----->" << std::endl;
+					std::cout << "RESPONSE FLAGGGGGGGGGG ----->"  << server.responseMap[curr_fd].finish << std::endl;
 					if (server.responseMap[curr_fd].finish == true) {
 						std::cout << "finished-------:" << std::endl;
-						exit(2);
+						std::cout << "RESPONSE FLAGGGGGGGGGG ----->"  << server.responseMap[curr_fd].finish << std::endl;
+						// exit(2);
 						epoll_ctl(epoll_fd, EPOLL_CTL_DEL, curr_fd, NULL);
 						close(curr_fd);
 						server.requestMap.erase(curr_fd);
