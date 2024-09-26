@@ -51,8 +51,6 @@ void Response::sendResp(Request req, int socket)
 	if (req.isBadRequest() && !f)
 	{
 		f = true;
-		std::cout << f << std::endl;
-		// exit(9);
 		if (this->status == 400) {
 			this->path = "./error/400.html";
 			file.open(this->path, std::ios::binary);
@@ -77,12 +75,9 @@ void Response::sendResp(Request req, int socket)
 			this->path = "./error/405.html";
 			file.open(this->path, std::ios::binary);
 		}
-		std::cout << "ps path" << this->path << std::endl;
 		if (!this->readed) {
 			setHeader(); 
 			this->readed = true;
-			std::cout << "this readed ::   " << this->readed << std::endl;
-			// exit(2);
 		}
 		chunk(req);
 		this->finish = true;
@@ -108,64 +103,6 @@ void Response::sendResp(Request req, int socket)
 			chunk(req);
 		}
 	}
-	// else if (this->method == "POST" && !req.isBadRequest())
-	// {
-	// 	std::cout << "POST METHOD" << std::endl;
-	// 	if (checkPath(req))
-	// 	{
-	// 		std::cout << "ps path" << this->path << std::endl;
-	// 		if (!this->readed) {
-	// 			setHeader(); 
-	// 			this->readed = true;
-	// 		}
-	// 		file.open(this->path, std::ios::binary);
-	// 		chunk(req);
-	// 		file.close();
-	// 		this->finish = true;
-	// 	}
-	// }
-	// else if (this->method == "POST" && !req.isBadRequest())
-	// {
-	// 	std::cout << "POST METHOD" << std::endl;
-	// 	std::cout << "this path { ---> " <<  this->path << std::endl;
-	// 	std::cout << "this script { ---> " <<  this->scriptfile << std::endl;
-	// 	// if ((!((this->path.rfind(".py") != std::string::npos) || (this->path.rfind(".php") != std::string::npos)))) 
-	// 	// {
-	// 	// 	if (checkPath(req))
-	// 	// 	{
-	// 	// 		std::cout << "ps path ------------<" << this->path << std::endl;
-	// 	// 		if (!this->readed) {
-	// 	// 			setHeader(); 
-	// 	// 			this->readed = true;
-	// 	// 		}
-	// 	// 		file.open(this->path, std::ios::binary);
-	// 	// 		chunk(req);
-	// 	// 		file.close();
-	// 	// 		this->finish = true;
-	// 	// 	}
-	// 	// }
-	// 	// else 
-	// 	// {
-	// 	if (checkPath(req))
-	// 	{
-	// 		std::cout << "ps path /////" << this->path << std::endl;
-	// 		if (this->readed && !this->isError)
-	// 		{
-	// 			setHeader();
-	// 			this->isError = true;
-	// 		}
-	// 		else if (this->isError &&  !this->readed)
-	// 		{
-	// 			this->readed = true;
-	// 			if (this->readed)
-	// 			{
-	// 				setHeader();
-	// 			}
-	// 		}
-	// 		chunk(req);
-	// 	}
-	// 	// }
-	// }
 	else if (this->method == "POST" && !req.isBadRequest())
 	{
 		std::cout << "POST METHOD" << std::endl;
@@ -506,10 +443,7 @@ void Response::chunk(Request &req)
 	{
 		char buf[BUFFERSIZE] = {0};
 		file.read(buf, 1023);
-		std::cout << "Buffer:    " << buf << std::endl;
-		// std::cout << "--------------------------------------->STATUS:   >>>>----- " << this->status << std::endl;
-		std::cout << "FLAGGGGGGGGGGGGGG--------> " << this->readed << std::endl;
-		// exit(2);
+		std::cout << "REGULAR Buffer:    " << buf << std::endl;
 		if (file.gcount() > 0 && this->readed)
 		{
 			std::stringstream ss;
@@ -639,8 +573,6 @@ int Response::checkPath(Request req)
 		else if (isRegularFile(this->path))
 		{
 			std::cout << "is Regular file: " << std::endl;
-			std::cout << "is Regular PATH: " << this->path << std::endl;
-			// exit(2);
 			if (!this->readed)
 			{
 				file.open(this->path, std::ios::binary);
@@ -770,9 +702,6 @@ long long Response::fileSize(std::string path)
 int Response::fillEnv()
 {
 	this->env = new char *[9];
-	// this->bodysize = fileSize(this->postpath);
-	std::cout << "body size ----------------------------->:" << this->bodysize << std::endl;
-	std::cout << "Post path " << this->postpath<< std::endl;
 	env[0] = strdup(("REQUEST_METHOD=" + this->method).c_str());
 	env[1] = strdup(("QUERY_STRING=" + this->querry).c_str());
 	env[2] = strdup("REDIRECT_STATUS=200");
@@ -846,10 +775,9 @@ int Response::executeCgi(Request req)
 		if ( processTime > 4) {
 			std::cout << "Process time2 :" << processTime << std::endl;
 			this->status = 504;
-			// Kill the CGI process if it's still running
 			if (this->pid > 0) {
-				kill(this->pid, SIGKILL); // Forcefully terminate the process
-				waitpid(this->pid, &this->cgistat, 0); // Clean up the process
+				kill(this->pid, SIGKILL);
+				waitpid(this->pid, &this->cgistat, 0);
 			}
 			return 1;
 		}

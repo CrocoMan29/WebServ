@@ -46,7 +46,6 @@ void Response::delete_directory(const std::string& path, const Request& request)
 void Response::delete_file(const std::string& path) {
     if (access(path.c_str(), X_OK | W_OK) != 0) {
         this->setStatus(403);
-        std::cout << "delete file with path:" << path << std::endl;
     } else {
         this->setStatus(204);
         remove(path.c_str());
@@ -56,19 +55,15 @@ void Response::delete_file(const std::string& path) {
 void Response::del(const Request& request) {    
     char cd[50];
 
-    std::cout << "////////////////////DELETE\\\\\\\\\\\\\\\\\\\\" << std::endl;
     if (!getcwd(cd, sizeof(cd)))
         throw INTERNALSERVERERROR;
     std::string path(cd);
     path = path +"/"+request.getPath();
     
     if (this->_isDeleted == 0) {
-        std::cout << "delete path : " << path << std::endl;
         if (isDirectory(path.c_str())) {
-            std::cout << "delete directory" << std::endl;
             delete_directory(path, request);
         } else if (isFile(path.c_str())) {
-            std::cout << "delete file" << std::endl;
             delete_file(path);
         } else {
             this->setStatus(404);
