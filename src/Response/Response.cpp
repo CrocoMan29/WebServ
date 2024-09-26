@@ -550,6 +550,8 @@ int Response::checkPath(Request req)
 				this->path = "./error/error.html";
 			else if (this->status == 409)
 				this->path = "./error/409.html";
+			else if (this->status == 500)
+				this->path = "./error/500.html";
 			return 1;
 		}
 		if (isDirectory(this->path))
@@ -816,10 +818,8 @@ int Response::executeCgi(Request req)
 		int fd[2];
 		pipe(fd);
 		this->pid = fork();
-		if (this->pid == -1)
-		{
+		if (this->pid == -1) {
 			perror("fork");
-			// return 1;
 		}
 		if (this->pid == 0)
 		{
@@ -828,16 +828,16 @@ int Response::executeCgi(Request req)
 			if (this->method == "POST") {
 				freopen(this->postpath.c_str(),"r", stdin);
 			}
-			for (int i = 0; this->env[i] != NULL; i++) {
-				std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
-			}
+			// for (int i = 0; this->env[i] != NULL; i++) {
+			// 	std::cerr << "env[" << i << "]: " << this->env[i] << std::endl;
+			// }
 			execve(av[0], (char *const *)av, this->env);
 			perror("execve");
 		}
 	}
 	pid_t res = waitpid(this->pid, &this->cgistat, WNOHANG);
-	std::cout << "res : " << res << std::endl;
-	std::cout << "cgi stat: " << this->cgistat << std::endl;
+	// std::cout << "res : " << res << std::endl;
+	// std::cout << "cgi stat: " << this->cgistat << std::endl;
 	if (res  == 0 ) 
 	{
 		this->end = clock();
@@ -846,9 +846,13 @@ int Response::executeCgi(Request req)
 		if ( processTime > 4) {
 			std::cout << "Process time2 :" << processTime << std::endl;
 			this->status = 504;
+			// Kill the CGI process if it's still running
+			if (this->pid > 0) {
+				kill(this->pid, SIGKILL); // Forcefully terminate the process
+				waitpid(this->pid, &this->cgistat, 0); // Clean up the process
+			}
 			return 1;
 		}
-		// ft_free(this->env);
 	}
 	else if(res) {
 		return 1;

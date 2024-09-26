@@ -75,9 +75,6 @@ void Response::del(const Request& request) {
         }
         this->_isDeleted = 1;
     }
-
-    // if (this->_status != 204) {
-    // }
 }
 
 bool isFile(const char* path) {
