@@ -3,7 +3,9 @@ Cache-Control: no-store, no-cache, must-revalidate
 Pragma: no-cache
 Content-type: text/html; charset=UTF-8
 
+GET
 
+<h1>Upload hello</h1>
 <!DOCTYPE html>
 <html lang="en">
 <head>

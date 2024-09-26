@@ -13,10 +13,10 @@ Content-type: text/html; charset=UTF-8
   <div class="card">
     <div class="card__header">
       <div class="card__profile">
-        <img src="http://127.0.0.1:8080/uploads/7246890cc08ab5e8_MainAfter.png" alt="A man smiling" />
+        <img src="http://127.0.0.1:8080/uploads/1db327eb6423d0cd_MainAfter.png" alt="A man smiling" />
       </div>
       <div class="card__name">
-        <h2>fasfsa</h2>
+        <h2>asdas</h2>
         <div class="card__handle">
           <span class="handle">sadasfsa@gmail</span>
           <span class="circle"></span>
