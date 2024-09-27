@@ -16,12 +16,18 @@ void ignore_sigpipe() {
 int main (int ac, char **av){
 	// ignore_sigpipe();
 	std::string filename;
-	if (ac != 2)
+	if (ac == 1)
 	{
 		filename = "./default.config";
 	}
-	else
+	else if (ac == 2)
+	{
+
 		filename = av[1];
+	}else {
+		std::cout << "Wrong number of argument !!!"<< std::endl;
+		exit(1);
+	}
 	// std::cout<< "filename = " << filename << std::endl; 
 	try
 	{
