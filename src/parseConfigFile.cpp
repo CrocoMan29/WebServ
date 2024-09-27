@@ -48,7 +48,6 @@ void Conf::checkbracket(std::vector<std::string>&lines)
 		std::vector<std::string> line = split(*it, ' ');
 		if (line[0] == "server")
 		{
-			// std::cout << "---i'm here---" << std::endl;
 			if (line.size() > 2 && line[1] != "{")
 				throw std::invalid_argument("ERROR: syntaxe error");
 			bracket++;
@@ -68,7 +67,6 @@ void Conf::checkbracket(std::vector<std::string>&lines)
 			
 		}
 	}
-	// std::cout << c_bracket << std::endl;
 	if (bracket != 0)
 		throw std::invalid_argument("ERROR: bracket missing");
 	
@@ -105,21 +103,10 @@ void Conf::splitServers(std::vector<std::string> &lines, std::vector<Server> &se
             }
             server.r_server = raw;
             server.is_duplicate = false;
-			// if (server.is_duplicate == true)
-			// 	std::cout << "is duplicate = true" << std::endl;
-			// else
-			// 	std::cout << "is duplicate = false" << std::endl;
             servers.push_back(server);
             raw.clear();
         }
     }
-	// for (int i = 0; i < 10; i++)
-	// {
-	// 	std::cout << "i = " << i << std::endl;
-	// 	printServer(servers[i]);
-	// 	i--;
-	// }
-	// printServer(servers[1]);
 }
 
 void Conf::printConfFile(std::vector<std::string>&line){
@@ -137,18 +124,3 @@ void Conf::parseServer(Server &server)
 	server.checkSyntaxe(server.r_server);
 	syntax_error(server._locations);
 }
-// void Conf::printServer(Server *server)
-// {
-// 	if (server)
-// 	{
-// 		int i = 0;
-// 		std::cout << i << std::endl;
-// 		for (std::vector<std::string>::iterator it = server->r_server.begin(); it != server->r_server.end(); it++)
-// 		{
-// 			std::cout<< "--->" << *it << std::endl;
-// 		}
-// 		i++;
-// 		std::cout << i << std::endl;
-
-// 	}
-// }

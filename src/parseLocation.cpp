@@ -7,7 +7,6 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 		Location location;
 		int braket = 0;
 		std::vector<std::string> info = split(*it, ' ');
-			// std::cout << *it << std::endl;
 		if (info[0] == "location")
 		{
 			if (info.size() != 3 || (info[1][0] != '/' && info[1] != "*.php" && info[1] != "*.py") || info[2] != "{")
@@ -16,7 +15,6 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 			std::vector<std::string> rawlocation;
 			rawlocation.push_back(info[1]);
 			it = server_info.erase(it);
-			// std::cout << "yassir" << std::endl;
             while (it != server_info.end() && (*it)[0] != '}')
             {
                 if (!((*it).empty()))
@@ -34,7 +32,6 @@ void Server::splitLocation(std::vector<std::string> &server_info)
 void checkSemiColon(std::vector<std::string> &info)
 {
 	int semi = 0;
-	// std::cout << "==> |" << info[info.size() - 1][info[info.size() - 1].size() - 1] << "|" << std::endl;
 	if (info[info.size() - 1][info[info.size() - 1].size() - 1] == ';')
 	{
 		for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
@@ -52,7 +49,6 @@ void checkSemiColon(std::vector<std::string> &info)
 			throw std::invalid_argument("Syntax Error: semicolon missing");
 	if (semi > 1)
 		throw std::invalid_argument("Syntax Error: more than one semicolon");
-	// std::cout << semi << std::endl;
 }
 
 void Server::enterData(std::vector<std::string> &info)
@@ -83,21 +79,12 @@ void Server::enterData(std::vector<std::string> &info)
 	else if (info.size() >= 2 && info[0] == "index")
 	{
 		setIndex(info);
-		// if (info.size() == 2)
-		// {
-		// 	if (!this->index.empty())
-		// 		throw std::invalid_argument("ERROR");
-		// 	this->index = info[1];
-		// }
-		// else
-		// 	throw std::invalid_argument("Syntax Error: wrong number of arguments");
 	}
 	else if (info.size() > 1 && info[0] == "client_max_body_size")
 		setClientMaxBodySize(info);
 	else
 		if (info.size() > 0 && !info[0].empty())
-            throw std::invalid_argument("Syntax Error: unknow argument"); 
-	// std::cout << info[info.size() - 1] << std::endl;
+            throw std::invalid_argument("Syntax Error: unknow argument");
 }
 
 void Server::checkSyntaxe(std::vector<std::string> &server_info)

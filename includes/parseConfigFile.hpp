@@ -11,7 +11,6 @@
 #include "ErrorPage.hpp"
 #include "Location.hpp"
 #include "Request.hpp"
-// #include "Response.hpp"
 
 class Request;
 class Response;
@@ -52,13 +51,11 @@ class Server
 		void setClientMaxBodySize(std::vector<std::string> &info);
 		std::string getErrorPage(std::string path, std::string status);
 		bool findCodes(int code);
-		// void syntax_error(std::vector<Location> &locations);
 };
 
 class Conf{
 	public:
 		std::vector<Server> _servers;
-		// int c_bracket;
 		Conf();
 		void parseConfigFile(std::string &filename);
 		void checkbracket(std::vector<std::string>&lines);
@@ -69,7 +66,6 @@ class Conf{
 		void dataValidityLocation(Location &loc, std::string root);
 		void lastCheck(std::vector<Server> &servers);
 		void betweenServers(Server &server1, Server &server2);
-		// void printServer(Server *server);
 		
 };
 std::ostream &operator<<(std::ostream &os, const Conf &obj);

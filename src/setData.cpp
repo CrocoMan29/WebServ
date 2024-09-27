@@ -77,9 +77,7 @@ void Server::checkHost(std::string &info)
 		throw std::invalid_argument("Syntax Error: invalid host");
 	host += check;
 	this->host = host;
-	// std::cout << this->host << std::endl;
 }
-//! find_codes not finished
 bool Server::findCodes(int code)
 {
 	std::vector<int> codes;

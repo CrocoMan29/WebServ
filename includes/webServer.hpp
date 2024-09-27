@@ -13,8 +13,6 @@
 # include <cstring>
 # include <sys/epoll.h>
 #include <fcntl.h>
-// # include "../includes/Request.hpp"
-// # include "../includes/Response.hpp"
 
 
 
@@ -35,8 +33,6 @@ class webServ{
 		std::vector<Server> _serv;
 		std::vector<FdsInfo> _fdsinfo;
 		int client_socket;
-		// std::map<int, Request> fd_to_request;
-		// std::map<int, Response> fd_to_response;
 	public:
 		std::map<int, Server> fd_to_server;
 		webServ(std::vector<Server> servers);
@@ -52,5 +48,4 @@ class webServ{
 		void fdData(FdsInfo tmp, int fd);
 		void acceptConnexion(int epoll_fd);
 		void destroySocket(int &epoll_fd, int &c_socket, Server &server);
-		// int epollIn(int i, int &epoll_fd, epoll_event &events[MAX_EVENTS]);
 };
