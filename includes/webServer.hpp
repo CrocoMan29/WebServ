@@ -45,7 +45,5 @@ class webServ{
 			return this->_servers ;
 		}
 		int guard(int n, const char *er);
-		void fdData(FdsInfo tmp, int fd);
-		void acceptConnexion(int epoll_fd);
 		void destroySocket(int &epoll_fd, int &c_socket, Server &server);
 };

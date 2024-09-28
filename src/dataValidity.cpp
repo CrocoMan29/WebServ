@@ -27,10 +27,6 @@ void Conf::dataValidity(Server &server)
 
 	Location loc;
 	loc.checkfile(server.error_page);
-	// for (std::vector<int>::iterator it = status_code.begin(); it != status_code.end(); it++)
-	// {
-	// 	std::cout<< *it << std::endl;
-	// }
 }
 
 void Conf::dataValidityLocation(Location &loc, std::string root)
@@ -79,7 +75,6 @@ void Conf::betweenServers(Server &server1, Server &server2)
 			server2.is_duplicate = true;
 			std::vector<int>::iterator iter = std::find(server2.ports.begin(), server2.ports.end(), *it);
 			server2.ports.erase(iter);
-			// std::cout << *iter << std::endl;
 		}
 	}
 }

@@ -76,6 +76,7 @@ void webServ::setUpServer() {
 		if (guard(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _serv[i].socket_fd, &event), "epoll_ctl error") < 0)
 			continue;
 		fd_to_server[_serv[i].socket_fd] = _serv[i];
+		// std::cout << "connection ..." << std::endl;
 	}
 	while (true){
 		int num_events;
@@ -102,10 +103,11 @@ void webServ::setUpServer() {
 				server.requestMap.insert(std::pair<int, Request>(client_socket, Request(server.rootPath, server.index, server.client_max_body_size)));
 				server.requestMap[client_socket].setTimeOut(takeTime());	
 				fd_to_server[client_socket] = server;
+				// std::cout << "connection accepted *_* " << std::endl;
 				continue;
 			}
 			currTime = takeTime() - server.requestMap[curr_fd].getTimeOut();
-			if (currTime >= 10){
+			if (currTime >= 25){
 				destroySocket(epoll_fd, curr_fd, server);
 			}
 			else{
@@ -113,6 +115,7 @@ void webServ::setUpServer() {
 				{
 					char buffer[1024] = {0};
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
+					// std::cout << "buffer : " << buffer << std::endl;
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
 					}if (bytes_received == 0) {

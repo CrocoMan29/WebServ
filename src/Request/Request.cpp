@@ -99,7 +99,7 @@ void Request::collector(std::string &token){
 
 void Request::requestParser(const char *request ,std::vector<Location> &locations, size_t readBytes){
     try{
-        std::cout << "******************** Request ****************************************" << std::endl;
+        // std::cout << "******************** Request ****************************************" << std::endl;
         if(_isBadRequest == true)
             return;
         splitingHeaderBody(request, readBytes);
@@ -192,7 +192,7 @@ void Request::RequestLineParser(const std::string& requestLine) {
     if (!endsWithVersion)
         throw BADREQUEST;
     _requestInfos.insert(std::make_pair("path", urlDecode(parts[1])));
-    std::cerr << _requestInfos["path"] << std::endl;
+    // std::cerr << _requestInfos["path"] << std::endl;
     if(!isValidUri(_requestInfos["path"])){
         _requestLineParsed = true;
         throw BADREQUEST;
@@ -248,7 +248,7 @@ std::string Request::urlDecode(const std::string &encoded) {
             decoded += encoded[i];
         }
     }
-    std::cerr << "Decoded : " << decoded << std::endl;
+    // std::cerr << "Decoded : " << decoded << std::endl;
     return decoded;
 }
 

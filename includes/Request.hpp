@@ -143,7 +143,7 @@ class Request
         std::string getExtension(const std::string &contentType){
             std::string extension = "";
             
-            std::cout << "content type: " << contentType << std::endl;
+            // std::cout << "content type: " << contentType << std::endl;
             if (contentType == "text/html")
                 extension = ".html";
             else if (contentType == "text/css")
