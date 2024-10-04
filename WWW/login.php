@@ -1,7 +1,7 @@
 <?php
 // phpinfo();
 echo $_SERVER['REQUEST_METHOD'] . "\n";
-echo $_POST['name'] . "\n";
+// echo $_POST['name'] . "\n";
 ob_start();
 session_start();
 
