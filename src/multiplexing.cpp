@@ -115,7 +115,6 @@ void webServ::setUpServer() {
 				{
 					char buffer[1024] = {0};
 					int bytes_received = recv(curr_fd, buffer, sizeof(buffer) -1, 0);
-					// std::cout << "buffer : " << buffer << std::endl;
 					if (bytes_received == -1) {
 						destroySocket(epoll_fd, curr_fd, server);
 					}if (bytes_received == 0) {

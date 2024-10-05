@@ -16,7 +16,7 @@ void Response::sendResp(Request req, int socket)
 {
 	if (!this->readed)
 	{
-		// std::cout << "==========================Rspsonse started..... ?=================================" << std::endl;
+		// std::cout << "===========	===============Rspsonse started..... ?=================================" << std::endl;
 		this->req = req;
 		this->socket = socket;
 		this->chunkSize = "";
@@ -65,6 +65,8 @@ void Response::sendResp(Request req, int socket)
 			this->readed = true;
 		}
 		chunk(req);
+		write(this->socket, "0\r\n\r\n", 5);
+		file.close();
 		this->finish = true;
 	}
 	if (this->method == "GET" && !req.isBadRequest())
@@ -118,6 +120,7 @@ void Response::sendResp(Request req, int socket)
 			}
 			file.open(this->path.c_str(), std::ios::binary);
 			chunk(req);
+			write(this->socket, "0\r\n\r\n", 5);
 			file.close();
 			this->finish = true;
 		}
@@ -418,6 +421,7 @@ void Response::chunk(Request &req)
 			this->chunkSize.append(buf, file.gcount());
 			this->chunkSize.append("\r\n", 2);
 			write(this->socket, this->chunkSize.c_str(), this->chunkSize.length());
+
 		}
 		else if (file.gcount() == 0 && this->readed)
 		{
@@ -622,7 +626,6 @@ void Response::checkIndexFiles()
 		this->file.open(newPath.c_str(), std::ios::binary);
 		if (file.is_open())
 		{
-			// file.close();
 			this->path = newPath;
 			std::cout << this->path << std::endl;
 			this->status = 200;
